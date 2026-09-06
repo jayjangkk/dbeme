@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+examples/output/
+
+# Dataset caches are regenerable but expensive; keep them. They stay small
+# (~700 kB for the ~140 points the demos visit) because only the parameter
+# points a device actually uses are ever computed.
+.venv-gds/

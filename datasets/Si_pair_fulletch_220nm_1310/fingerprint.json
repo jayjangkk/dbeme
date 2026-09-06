@@ -1,0 +1,34 @@
+{
+  "cross_section": "CoupledStrips|t=2.2e-07|gap=2e-07|pyoptik:main/Si/Li-293K|pyoptik:main/SiO2/Malitson|pyoptik:main/SiO2/Malitson",
+  "mesh": [
+    220,
+    83
+  ],
+  "mode_numbers": 6,
+  "parameter_grid": {
+    "w1": {
+      "count": 32,
+      "max": 9.1e-07,
+      "min": 6.1e-07,
+      "sum": 2.416e-05
+    },
+    "w2": {
+      "count": 43,
+      "max": 5.4e-07,
+      "min": 1.8e-07,
+      "sum": 1.548e-05
+    }
+  },
+  "parameter_names": [
+    "w1",
+    "w2"
+  ],
+  "solver": "EmepyFDE",
+  "thickness_m": 2.2e-07,
+  "wavelength_m": 1.31e-06,
+  "window_m": [
+    2.125e-06,
+    -8e-07,
+    8e-07
+  ]
+}

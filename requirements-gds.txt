@@ -1,0 +1,15 @@
+# Layout toolchain - install into a SEPARATE virtual environment.
+#
+#   python -m venv .venv-gds
+#   .venv-gds/Scripts/pip install -r requirements-gds.txt
+#
+# It must stay separate from .venv: gdsfactory 7.x pins numpy<2 while the
+# simulator needs numpy 2.x, and even on 9.x there is no reason to couple the
+# two - nothing in the layout path imports the simulator (see
+# studies/sirac/gds.py and reports/07_sirac_optimization.md §14.1).
+#
+# 9.20.8, not 7.27.2: 7.27.2 needs numpy<2, for which no Python 3.13 wheel
+# exists.  9.20.8 is the last patch of the most-patched 9.x line and supports
+# 3.11-3.13.  The 7.x API calls this project uses (add_polygon, add_port) are
+# unchanged in it.
+gdsfactory==9.20.8

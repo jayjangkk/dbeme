@@ -1,0 +1,35 @@
+{
+  "basis_convention": 2,
+  "cross_section": "FullEtchStrip|t=2.2e-07|pyoptik:main/Si/Li-293K|pyoptik:main/SiO2/Malitson|pyoptik:main/SiO2/Malitson",
+  "mesh": [
+    160,
+    80
+  ],
+  "mode_numbers": 6,
+  "parameter_grid": {
+    "curvature": {
+      "count": 81,
+      "max": 200000.0,
+      "min": -200000.0,
+      "sum": 0.0
+    },
+    "top_width": {
+      "count": 56,
+      "max": 1.5e-06,
+      "min": 4e-07,
+      "sum": 5.32e-05
+    }
+  },
+  "parameter_names": [
+    "top_width",
+    "curvature"
+  ],
+  "solver": "EmepyFDE",
+  "thickness_m": 2.2e-07,
+  "wavelength_m": 1.55e-06,
+  "window_m": [
+    1.6e-06,
+    -8e-07,
+    8e-07
+  ]
+}

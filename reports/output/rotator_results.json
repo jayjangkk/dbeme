@@ -1,0 +1,123 @@
+{
+  "device": {
+    "w_core_nm": [
+      450.0,
+      550.0,
+      850.0
+    ],
+    "w_slab_nm": [
+      450.0,
+      1550.0,
+      850.0
+    ],
+    "slab_thickness_nm": 90.0,
+    "length_um": 100.0,
+    "sections": 141,
+    "dataset_points": 368,
+    "wavelength_nm": 1550.0
+  },
+  "branches": {
+    "te0_index": 0,
+    "rotating_index": 1,
+    "rotating_neff": [
+      1.7491111755371094,
+      2.2518351078033447
+    ],
+    "rotating_te_fraction": [
+      0.06536865234375,
+      0.96484375
+    ],
+    "te0_neff": [
+      2.359398126602173,
+      2.7035439014434814
+    ]
+  },
+  "checks": [
+    {
+      "name": "reciprocity  T_f = T_b^T (5.1)",
+      "criterion": "< 1e-03",
+      "measured": 0.00023267179535597847,
+      "passed": true,
+      "note": "2 end-to-end guided modes"
+    },
+    {
+      "name": "reflection blocks symmetric (5.1)",
+      "criterion": "< 1e-02",
+      "measured": 7.819704960012276e-11,
+      "passed": true,
+      "note": "R = R^T at both ports"
+    },
+    {
+      "name": "power conservation, no projection",
+      "criterion": "|1 - sum| < 1e-02",
+      "measured": 0.10550518146512511,
+      "passed": false,
+      "note": "worst of 2 end-to-end guided launches"
+    },
+    {
+      "name": "branch tracking (5.13)",
+      "criterion": "link > 0.5",
+      "measured": 0.997938334941864,
+      "passed": true,
+      "note": "weakest section-to-section link over 2 branches"
+    },
+    {
+      "name": "mode-basis convergence (5.2)",
+      "criterion": "residual falls with N",
+      "measured": 0.10550518146512511,
+      "passed": true,
+      "note": "N=[3, 4, 5, 6] -> 8.0e-02, 8.0e-02, 8.0e-02, 1.1e-01"
+    },
+    {
+      "name": "slicing independence (5.4)",
+      "criterion": "max|dT| < 1e-03",
+      "measured": 3.806242919905743e-05,
+      "passed": true,
+      "note": "coarse vs fine z-sampling"
+    }
+  ],
+  "mode_convergence": {
+    "3": 0.07999468137430177,
+    "4": 0.07999468137430177,
+    "5": 0.07999468137430177,
+    "6": 0.10550518146512511
+  },
+  "at_length": {
+    "length_um": 100.0,
+    "tm0_to_te1": 0.9959769097342949,
+    "te0_through": 0.999504123185985
+  },
+  "thresholds_um": {
+    "99pc": 37.61306532663316,
+    "99.9pc": 76.15577889447235
+  },
+  "validation": {
+    "lengths_um": [
+      25.0,
+      50.0,
+      100.0,
+      150.0,
+      200.0,
+      300.0
+    ],
+    "dataset": [
+      0.9350949203095076,
+      0.9921771169477256,
+      0.9959769097342949,
+      0.9940936514922569,
+      0.9930964409818592,
+      0.99824947014325
+    ],
+    "direct": [
+      0.9389803005771505,
+      0.9925271159540234,
+      0.9996753430690963,
+      0.9999630004894801,
+      0.9996921956091199,
+      0.9955442962916098
+    ],
+    "max_difference": 0.006595754627260697,
+    "dataset_seconds": 1269.490599155426,
+    "direct_seconds": 352.76106572151184
+  }
+}
