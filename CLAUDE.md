@@ -77,6 +77,15 @@ dataset.
 | `Si_plasmonic_slot_1550[_sharp]` | Si wire between gold walls, suspended, lossy PML basis | `w_si` | lateral stand-in for the NTT converter | **shipped** — `reports/12` |
 | `SiO2_kocabas_set2_1550` | Si wire + gold slot, SiO₂-embedded, lossy PML basis | `w_si`, `gap` | Kocabaş converter (arXiv:1801.00833), gap and length sweeps | **shipped** — `reports/13` |
 
+*What a two-axis dataset costs, measured.* `SiO2_kocabas_set2_1550` is
+471 × 347 at a 5 nm cell with 20 modes: **~10 min per cross section**, so the
+52-point design path took 15 034 s cold. Every one of the eight taper lengths
+in report 13 §4 then cost **0 s** — a different longitudinal path over the
+same grid points solves nothing new, which is the method's entire argument.
+A *new* `w_gap`, by contrast, walks a different part of the gap axis and pays
+for the points it has not seen (10 119 s at 25 nm, 5 318 s at 125 nm). Plan
+sweeps so the expensive axis is the one held fixed.
+
 Naming: `<material/stack>_<geometry>_<λ in nm>`, e.g. `Si_fulletch_220nm_1310`.
 
 ### Cost control for the multi-dimensional datasets
@@ -456,6 +465,7 @@ at 1550 nm.
 | 2. polarization rotator | ✗ needed | ✗ needed (§5.11) | ✗ needed | – | after §5.11 + §5.12 + §5.14 |
 | 3. rapid adiabatic coupler | ✗ needed | – | ✗ needed (§5.14, §5.15) | – | after §5.12 + §5.14 |
 | 4. plasmonic converter | metal | – | – | ✓ `PMLBackend` (§5.9, §5.16a/b done) | **2-D lateral model shipped** — `reports/12`; the 3-D taper still needs a second geometric axis |
+| 4b. Si-to-slot converter, SiO₂-embedded | metal, 2 axes | – | – | ✓ `PMLBackend` | **shipped** — `reports/13`; 72.3 % modal vs Kocabaş's ~95 % total, and the first plasmonic device here that is adiabatic (T rises with `L`) |
 
 Build order: **5.12 (coupled pair) → demo 1 → 5.14/5.15 (λ + dispersion) →
 demo 3 → 5.11 (bi-level) → demo 2 → new backend → demo 4.**

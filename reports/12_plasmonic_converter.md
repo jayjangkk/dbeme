@@ -400,8 +400,8 @@ Same grid, same axis, same algebra:
 
 | | sharp corners, r = 0 | rounded, r = 20 nm |
 |---|---|---|
-| slot mode at 0 nm | 1.1447 + 0.0362j, **1.27 dB/µm** | **1.3513 + 0.0246j, 0.87 dB/µm** |
-| Si-end mode at 400 nm | 2.3459 + 0.0026j, 0.093 dB/µm | 2.3538 + 0.0024j, 0.085 dB/µm |
+| slot mode at 0 nm | 1.1447 + 0.0362j, **1.27 dB/µm**, confinement 0.505, TE 0.58 | **1.3513 + 0.0246j, 0.87 dB/µm**, 0.497, TE 0.77 |
+| Si-end mode at 400 nm | 2.3459 + 0.0026j, 0.093 dB/µm, 0.947, TE 0.83 | 2.3538 + 0.0024j, 0.085 dB/µm, 0.943, TE 0.93 |
 | single-mode step `|t|²`, first / last interface | 0.99808 / 0.98228 | 0.99819 / 0.98237 |
 | staircase product `A = Π|t_m|²` | 0.7014 (−1.54 dB) | 0.7233 (−1.41 dB) |
 | propagation factor, 600 nm | 0.9454 | 0.9557 |
@@ -419,7 +419,10 @@ Both columns are on co-located fields (§10); the datasets differ only in
 rounding fixes it: the slot plasmon binds much better (0.145 → 0.351 above the
 air line) and its loss falls by a third — the missing third was absorption and
 leakage at four sharp wedges, where the mesh cannot resolve the field that a
-90° metal corner concentrates. It was **not the taper's** problem: the
+90° metal corner concentrates. The mode's *shape* barely moves (confinement
+0.505 → 0.497), but its polarisation does: the TE fraction goes 0.58 → 0.77,
+i.e. a fifth of the sharp mode's energy sat in the field component the corner
+singularity creates and the rounded wall does not. It was **not the taper's** problem: the
 per-step mismatch `1 − |t|²` is the same to three digits in both bases,
 because the field a 10 nm step displaces lives in the 20 nm gap along the
 *flat* wall face, 90 nm from the nearest corner. The 0.24 dB the device gains

@@ -345,14 +345,14 @@ delay, FSR or dispersion needs the real index model.
 **Plasmonic mode converter** (`demo_plasmonic_converter.py` → `reports/12`) —
 the first device on the lossy PML backend. The lateral model (Si width
 400 nm → 0 between 400 nm gold walls at a 20 nm air gap, suspended) has a
-bound slot plasmon at 1.145 + 0.036j — 1.3 dB/µm, the paper's "about
+bound slot plasmon at 1.145 + 0.036j — 1.27 dB/µm, the paper's "about
 1 dB/µm" — and its 41-interface cascade carries propagation loss exactly and
 is passive, but only after the interface projection was moved to the output
 side (below): upstream's form returned the mismatch field the basis cannot
 hold as *gain*, 0.2–1.9 % per 10 nm step and ×1.44 over the taper,
 independently of mode count, of the PML and of basis selection. The passive
-cascade gives −1.61 dB at 600 nm on co-located E/H fields (−1.65 with sharp
-corners on the earlier fields), of which ≈ −1.4 dB is the mismatch loss of a
+cascade gives −1.61 dB at 600 nm on co-located E/H fields (−1.85 with sharp
+corners on the same fields), of which ≈ −1.4 dB is the mismatch loss of a
 40-step staircase and the rest metal loss, monotonic in length with no optimum: the grid-snapped path visits the same 41 cross sections at every
 length, and the shed field that would have to interfere destructively for a
 taper to be adiabatic is in no basis of this kind. So the paper's −1 dB and
@@ -364,10 +364,32 @@ walls, and the projection side of the interface algebra. The shipped platform
 rounds the gold corners (20 nm; `Si_plasmonic_slot_1550_sharp` keeps the sharp
 variant): a sharp metal wedge carries a singular field that no grid resolves,
 and rounding it moves the slot plasmon from 1.145 + 0.036j to 1.351 + 0.025j -
-better bound, 0.87 instead of 1.3 dB/um - while the Si-end mode, which lives
+better bound, 0.87 instead of 1.27 dB/um - while the Si-end mode, which lives
 on the flat wall face, barely moves, and the taper's per-step mismatch does not
 move at all: the corners were the slot's problem, the flat-wall gap field is the
 taper's (report 12 section 8).
+
+---
+
+**Si-wire-to-slot converter, silica-embedded** (`demo_kocabas_converter.py` →
+`reports/13`) — the same physics on a device whose every dimension is
+published (Kocabaş, arXiv:1801.00833, Table II Set 2: Si 400 × 725 nm, gold
+250 nm, slot 250 nm, 1700 nm taper). Because both ends are embedded in SiO₂
+they are both bound, which the NTT device's air core is not, and the dataset
+is two-axis: `(w_si, gap)`, 471 × 347 at a 5 nm cell, 20 modes about a
+shift-invert target of 2.3. The cascade gives **72.3 % into the slot mode**
+where the paper reports ~95 % of total power; the deficit is 0.22 dB of
+staircase mismatch, 0.19 dB of the supermode's own metal loss, and amplitude
+scattered into the Berenger set. Two results matter more than the number.
+**The converter is adiabatic here**: transmission rises monotonically with
+taper length (65.4 → 73.9 % from 500 to 3000 nm) and the scattered amplitude
+falls as roughly 1/L — the behaviour report 12's device could not show,
+because there a 10 nm edge step sheds a field no shift-invert basis holds.
+And **basis membership is a correctness condition**: with the target at 1.9
+the wire's TE fundamental left the 16 nearest eigenvalues part-way along the
+path, the tracker linked a cutoff branch instead, and the cascade read −20 dB
+without failing. The target must sit among the physical branches, not below
+them (CLAUDE.md §5.13a).
 
 ## Two cascade routes
 
