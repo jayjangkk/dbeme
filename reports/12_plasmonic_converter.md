@@ -4,14 +4,15 @@
 > runs end to end and is passive, but only after the interface algebra was
 > changed: upstream projects tangential continuity on the modes of the section
 > being *left*, which for a field the truncated basis cannot represent returns
-> the missing part as **gain** — here 0.2–1.9 % per 10 nm step, ×1.44 over the
+> the missing part as **gain** — 0.2–1.9 % per 10 nm step, ×1.44 over the
 > taper, independent of mode count and of the PML. Projected on the section
-> being *entered* the same dataset gives a bounded cascade: **−1.65 dB at
-> 600 nm**, of which about −1.5 dB is the mismatch loss of a 40-step staircase
-> and only ~0.1 dB is metal loss. The slot loss, 1.3 dB/µm, matches the paper's
-> "about 1 dB/µm". The conversion efficiency is *not* the paper's −1 dB and
-> §5 says why it cannot be; reciprocity of the physical channel holds to 2 %,
-> not 1e-6, and that residual is quantified (§1).
+> being *entered* the same dataset gives a bounded cascade. With the gold
+> corners rounded (20 nm, §8) the converter reads **−1.44 dB at 600 nm**, of
+> which about −1.4 dB is the mismatch loss of a 40-step staircase and the rest
+> metal loss; the slot itself loses **0.87 dB/µm** (sharp corners: 1.3;
+> paper: "about 1 dB/µm"). The paper's −1 dB and its 600 nm optimum are not
+> reproduced, and §3 and §5 say why a fixed-grid staircase cannot show them.
+> Reciprocity of the physical channel holds to 2 %, not 1e-6 (§1).
 
 **Device.** Ono, Taniyama, Kuramochi, Nozaki, Notomi — *Toward Application of
 Plasmonic Waveguides to Optical Devices*, NTT Technical Review **16**(7), 2018
@@ -34,40 +35,40 @@ the slot the walls leave behind. §5 says which comparisons survive it.
 `n_eff`, the scattering-matrix cascade (`SMATRIX_METHOD = "auto"` → `direct`
 because the backend declares itself lossy), `force_unitary=False` throughout
 — projecting a lossy S-matrix onto the nearest unitary one would delete the
-metal loss it is supposed to report — and, new in this report, the interface
-continuity projected on the output side (`INTERFACE_PROJECTION = "auto"` →
-`"output"` for a lossy basis; §7.5, report 06 §11).
+metal loss it is supposed to report — and the interface continuity projected
+on the output side (`INTERFACE_PROJECTION = "auto"` → `"output"` for a lossy
+basis; §7.5, report 06 §11).
 
 ---
 
 ## 1. Sanity gate
 
-Shipped configuration (§2), 20 nm gap. `reports/output/plasmonic_converter.json`,
-`plasmonic_interface_excess.json`, `plasmonic_single_mode_estimate.json`.
+Shipped configuration (§2: rounded corners), 20 nm gap. Every number is in
+`reports/output/plasmonic_converter.json` (keys without suffix), the
+sharp-corner run of §8 under the `_sharp` keys.
 
 | check (§5.x) | criterion | measured | pass |
 |---|---|---|---|
-| constant-width walled wire, 1 µm: `T = exp(−2 k₀ Im n L)` — propagation loss carried through the cascade | `|T − expected| < 1e-3` | 0.97883 measured, 0.97883 expected (`n = 2.3459 + 0.0026j`, 0.093 dB/µm) | ✓ |
-| passivity: launched (physical) column of `|S|²` sums below 1 | `< 1.05` | **0.721** at 600 nm (mode 0); 0.384 for the TM-like input. Was **1.462** with the input-side projection | ✓ |
-| interface power change per 10 nm step, `1 − Σ_j|S_j0|²` (fig. 4) | reported | −0.14 % at 400 → 390 nm falling to −1.7 % at 10 → 0 nm — every interface loses. Was +0.21 % → +1.9 %, every interface gained | ✓ |
-| 5.1 reciprocity of the physical channel, `|T12 − T21|` for the launched mode, 600 nm | `< 1e-6` | **1.9e-2** (2.3 % of `|S00| = 0.828`); per interface `T21 = T12ᵀ` to 6e-7, but the reflection blocks are asymmetric at 6e-2 in the Berenger rows for *every* formulation tried, upstream's included, and that leaks through 82 star products | ✗ truncation |
-| 5.8 DBEME vs direct EME, 600 nm, direct sections at the 41 axis widths | `max|ΔT| < 1e-3` | −1.65 dB vs −1.64 dB, `max|ΔT|` = **1.3e-3** per branch; 2670 s direct against < 0.1 s warm | ≈ (§4) |
-| 5.4 slicing: direct at 21 sections (20 nm steps) vs 41 | `max|ΔT| < 1e-4` | **−3.23 dB vs −1.64 dB**, `max|ΔT|` = 0.21 — the staircase mismatch doubles when the step doubles | ✗ by construction (§3) |
-| 5.2 mode-count independence of the interface error, 400 → 390 / 100 → 90 nm | should fall with N | N = 16: 0.21 % / 0.65 %; N = 24: 0.20 % / 1.35 %; N = 32: 0.27 % / — (input form) | ✗ does not fall — §7.5 |
+| constant-width walled wire, 1 µm: `T = exp(−2 k₀ Im n L)` — propagation loss carried through the cascade | `|T − expected| < 1e-3` | 0.98061 measured and expected (`n = 2.3538 + 0.0024j`, 0.085 dB/µm) | ✓ |
+| passivity: launched (physical) column of `|S|²` sums below 1 | `< 1.05` | **0.741** at 600 nm; 1.009 at 150 nm, where the reflection blocks' asymmetry (below) shows as 0.9 % excess. Was **1.462** with the input-side projection (§7.5) | ✓ |
+| interface power change per 10 nm step, `1 − Σ_j|S_j0|²` (fig. 4) | reported | −0.13 % at 400 → 390 nm falling to −1.7 % at 10 → 0 nm — every interface loses. With the input-side form every interface gained the same amount | ✓ |
+| 5.1 reciprocity of the physical channel, `|T12 − T21|` for the launched mode, 600 nm | `< 1e-6` | **2.1e-2** (2.5 % of `|S00|`); per interface `T21 = T12ᵀ` to 6e-7, but the reflection blocks are asymmetric at 6e-2 in the Berenger rows for *every* formulation tried, upstream's included, and that leaks through 82 star products | ✗ truncation |
+| 5.8 DBEME vs direct EME, 600 nm, direct sections at the 41 axis widths | `max|ΔT| < 1e-3` | −1.44 dB vs −1.43 dB, `max|ΔT|` = **9.7e-4** per branch; 3574 s direct against < 0.1 s warm (sharp corners: 1.3e-3, §8) | ✓ (§4) |
+| 5.4 slicing: direct at 21 sections (20 nm steps) vs 41 | `max|ΔT| < 1e-4` | **−2.84 dB vs −1.43 dB**, `max|ΔT|` = 0.20 — the staircase mismatch doubles when the step doubles (sharp: −3.23 vs −1.64) | ✗ by construction (§3) |
+| 5.2 mode-count independence of the interface error, 400 → 390 / 100 → 90 nm (sharp corners, input form) | should fall with N | N = 16: 0.21 % / 0.65 %; N = 24: 0.20 % / 1.35 %; N = 32: 0.27 % / — | ✗ does not fall — §7.5 |
 | same junctions with the PML off (PEC box, real box modes) | | 0.24 % / 1.35 % | same — not the Berenger modes |
-| same junctions with a second shift-invert target at 1.05 and non-guided modes kept by lowest loss | | 0.195 % / 1.35 %; launched mode couples to `Σ_j|O_0j|² = 1e-5` | same — not basis selection |
-| power-normalisation factors `r = P_phys/|P_unconj|` of the end modes | reported | `r_in` 1.0000, `r_out` 0.9973 | — |
-| 5.7 cell convergence, Si end / slot, 8 / 6 / 5 / 4 nm | reported, not graded | Si end 2.4033 / 2.4548 / **2.3459** / 2.3416; slot 1.3402 / 1.4007 / **1.1447** / 1.1795. Only 5 and 4 nm put the 20 nm gap on cell boundaries: between those the Si-end mode moves 0.2 %, the corner-concentrated slot mode 3 %. The unaligned 8 / 6 / 4 nm series had read 2.602 / 2.471 / 2.400 — partial metal cells, not the pitch (§7.3) | — |
-| grid alignment (§7.3): `n_eff` smooth in width, every edge on a cell boundary | | 400 / 390 / 380 nm: 2.3459 / 2.3287 / 2.3057 | ✓ |
-| 5.6 gauge, 5.13 tracking, PML low-side sign (report 06 §10) | tests | `tests/test_plasmonic_slot.py`, `test_pml_solver.py`, `test_lossy_assumptions.py`, `test_smatrix_direct.py` | ✓ |
+| same junctions with a second shift-invert target at 1.05, non-guided modes kept by lowest loss | | 0.195 % / 1.35 %; launched mode couples to `Σ_j|O_0j|² = 1e-5` | same — not basis selection |
+| power-normalisation factors `r = P_phys/|P_unconj|` of the end modes | reported | `r_in` 1.0000, `r_out` 0.9968 | — |
+| 5.7 cell convergence (sharp corners), Si end / slot, 8 / 6 / 5 / 4 nm | reported, not graded | Si end 2.4033 / 2.4548 / **2.3459** / 2.3416; slot 1.3402 / 1.4007 / **1.1447** / 1.1795. Only 5 and 4 nm put the 20 nm gap on cell boundaries: between those the Si-end mode moves 0.2 %, the corner-concentrated slot mode 3 %. The unaligned 8 / 6 / 4 nm series had read 2.602 / 2.471 / 2.400 — partial metal cells, not the pitch (§7.3) | — |
+| grid alignment (§7.3): `n_eff` smooth in width, every straight edge on a cell boundary | | 400 / 390 / 380 nm: 2.3538 / 2.3364 / 2.3132 | ✓ |
+| 5.6 gauge, 5.13 tracking, PML low-side sign (report 06 §10), rounding geometry | tests | `tests/test_plasmonic_slot.py`, `test_pml_solver.py`, `test_lossy_assumptions.py`, `test_smatrix_direct.py` | ✓ |
 
 Two things a lossy basis changes about *reading* an S-matrix, both applied:
 
 * modes are normalised with the **unconjugated** power `½∫(E × H)_z`, so
   `|a_i|²` is physical power only up to `r_i`. For the two end modes `r` is
-  1.0000 and 0.9973. Berenger modes have `r` = 2–3, which is why column sums
-  over *their* inputs (max 1.19) are not a passivity statement and are not
-  graded.
+  1.0000 and 0.9968. Berenger modes have `r` = 2–3, which is why column sums
+  over *their* inputs are not a passivity statement and are not graded.
 * reciprocity is `S = Sᵀ` in the standard two-port arrangement. The lumped
   matrix is ordered `[b₂; b₁] = S [a₁; a₂]`; testing it directly reads 1.1
   and means nothing.
@@ -83,39 +84,43 @@ Two things a lossy basis changes about *reading* an S-matrix, both applied:
 | Si core | 400 × 200 nm | 400 × **220** nm | every dataset in this project is 220 nm |
 | taper | 600 nm, lateral **and vertical** | width only, 400 nm → 0 | one swept axis; the vertical taper needs a second geometric axis |
 | MIM core | 50 × 20 nm, gold above and below | the `2 × gap` slot between the walls: **40 nm wide × 400 nm tall** | vertical confinement is not representable |
-| air gap Si–metal | 20 nm designed / 40 nm fabricated | 20 nm; the 40 nm sweep was not run — its 80 nm slot is only marginally bound (`n = 1.0069`) | §7.4 |
-| gold | thickness not stated | walls **400 nm tall, centred on the Si** | wall *height* is what binds a lateral slot mode — §7.4 |
+| air gap Si–metal | 20 nm designed / 40 nm fabricated | 20 nm; the 40 nm sweep was not run — its 80 nm slot is only marginally bound (`n = 1.0069`, sharp) | §7.4 |
+| gold | thickness not stated | walls **400 nm tall, centred on the Si, corners rounded 20 nm** | wall *height* is what binds a lateral slot mode (§7.4); a sharp metal wedge carries a singular field no grid resolves (§8) |
 | stack | Si on SiO₂, air above | **suspended in air** | over oxide the lateral slot's mode sits below the substrate index and leaks — §7.4 |
-| input | plain Si wire, gold begins at the taper | walled wire (gold alongside the 400 nm section) | the dataset family has the walls everywhere; the plain → walled junction is estimated separately: **−0.46 dB** (mode-mismatch overlap, 2.0716 → 2.3459 + 0.0026j) |
+| input | plain Si wire, gold begins at the taper | walled wire (gold alongside the 400 nm section) | the dataset family has the walls everywhere; the plain → walled junction is estimated separately: **−0.48 dB** (mode-mismatch overlap, 2.0716 → 2.3538 + 0.0024j) |
 
-### Dataset `Si_plasmonic_slot_1550`
+### Dataset `Si_plasmonic_slot_1550` (and `_sharp`)
 
 * cross section `PlasmonicSlotConverter`, axis `w_si` = 0 … 400 nm in
   **10 nm** steps (41 points); gold Johnson & Christy (n = 0.524 + 10.74j at
-  1550 nm, ε = −115 + 11j); permittivity averaged in **ε**, not n.
+  1550 nm, ε = −115 + 11j); permittivity averaged in **ε**, not n; corners
+  rounded by 20 nm with the arcs sub-sampled 8 × 8 per cell (`_sharp`:
+  radius 0).
 * grid: **5 nm** cell, 369 × 301 points (window ±0.92 × ±0.75 µm), snapped so
-  that every geometric edge falls on a cell boundary at every axis point
+  that every straight edge falls on a cell boundary at every axis point
   (§7.3); PML 0.25 µm on all four edges, stretch 1 + 2j; 16 modes about a
-  shift-invert target of 2.0; the PML recipe is part of the dataset identity.
-* cost: 60–110 s per point; the cold build of the axis took **73 min**
-  (4389 s, 41 points with their neighbour overlaps). Every device on the warm
-  dataset then costs **< 0.1 s** — the 7-length sweep below, and the
-  re-evaluation of the whole sweep after the interface algebra changed, cost
-  nothing. Direct EME costs 41 solves *per device*.
+  shift-invert target of 2.0; the PML recipe and the corner radius are part
+  of the dataset identity.
+* cost: 60–110 s per point; the cold build of the axis took **75 min**
+  (4504 s, 41 points with their neighbour overlaps; 73 min for the sharp
+  variant). Every device on the warm dataset then costs **< 0.1 s** — the
+  7-length sweep below, and the re-evaluation of a whole sweep after the
+  interface algebra changed, cost nothing. Direct EME costs 41 solves *per
+  device*.
 
-### The two end modes (aligned 5 nm grid)
+### The two end modes (aligned 5 nm grid, rounded corners)
 
 | end | mode | `n_eff` | loss | confinement |
 |---|---|---|---|---|
-| Si, 400 nm | lateral hybrid plasmonic (TE-like) | 2.3459 + 0.0026j | 0.09 dB/µm | 0.95 |
-| slot, 0 nm | gap plasmon of the 40 × 400 nm slot | 1.1447 + 0.0362j | **1.3 dB/µm** | 0.51 |
+| Si, 400 nm | lateral hybrid plasmonic (TE-like) | 2.3538 + 0.0024j | 0.085 dB/µm | 0.94 |
+| slot, 0 nm | gap plasmon of the 40 × 400 nm slot | 1.3513 + 0.0246j | **0.87 dB/µm** | 0.50 |
 
-The slot loss is directly comparable with the paper's "about 1 dB/µm", and
-agrees. The Si-end mode is not the bare wire's TE0 (2.0716 suspended): with
-gold 20 nm from each sidewall it is a hybrid plasmonic mode with its field
-pulled into the gaps — which is also what the real device's input becomes once
-the gold begins. Along the taper this is the only physical branch: at 190 nm
-the basis holds it (1.8359 + 0.0101j) and fifteen Berenger modes.
+The slot loss is directly comparable with the paper's "about 1 dB/µm". The
+Si-end mode is not the bare wire's TE0 (2.0716 suspended): with gold 20 nm
+from each sidewall it is a hybrid plasmonic mode with its field pulled into
+the gaps — which is also what the real device's input becomes once the gold
+begins. Along the taper this is the only physical branch; the other fifteen
+are Berenger modes.
 
 ![branches](output/plasmonic_1_neff_path_gap20.png)
 
@@ -127,13 +132,13 @@ the basis holds it (1.8359 + 0.0101j) and fifteen Berenger modes.
 
 | L (nm) | sections | converted `|S_out,in|² r_out/r_in` | dB | reflected (physical) | absorbed + radiated |
 |---|---|---|---|---|---|
-| 150 | 42 | 0.729 | −1.37 | 0.0089 | 0.134 |
-| 300 | 42 | 0.718 | −1.44 | 0.0101 | 0.188 |
-| 450 | 42 | 0.702 | −1.54 | 0.0120 | 0.240 |
-| 600 | 42 | **0.684** | **−1.65** | 0.0126 | 0.279 |
-| 800 | 42 | 0.664 | −1.78 | 0.0089 | 0.315 |
-| 1000 | 42 | 0.648 | −1.88 | 0.0041 | 0.337 |
-| 1500 | 42 | 0.618 | −2.09 | 0.0011 | 0.372 |
+| 150 | 42 | 0.805 | −0.94 | 0.0657 | −0.009 |
+| 300 | 42 | 0.771 | −1.13 | 0.0205 | 0.125 |
+| 450 | 42 | 0.741 | −1.30 | 0.0090 | 0.217 |
+| 600 | 42 | **0.718** | **−1.44** | 0.0124 | 0.259 |
+| 800 | 42 | 0.697 | −1.57 | 0.0099 | 0.287 |
+| 1000 | 42 | 0.685 | −1.64 | 0.0061 | 0.301 |
+| 1500 | 42 | 0.656 | −1.83 | 0.0024 | 0.338 |
 
 Monotonic in length, with no optimum. That is what the model must say, and
 it is the report's most useful negative result about DBEME on this device:
@@ -141,13 +146,14 @@ it is the report's most useful negative result about DBEME on this device:
 * the grid-snapped path visits the **same 41 cross sections at every
   length**. The mismatch loss of the 40 steps is therefore length-independent
   — from the stored overlaps the single-mode staircase product is
-  `A = Π|t_m|² = 0.702` (−1.54 dB), and the cascade at 150 nm, where metal
-  loss is negligible, sits at 0.729;
-* what grows with length is the metal loss along the taper (0.09 →
-  1.3 dB/µm across the width range): 0.986 at 150 nm, 0.945 at 600 nm, 0.869
-  at 1500 nm as a propagation factor. `A × propagation` is 0.663 at 600 nm
-  against the cascade's 0.684 — the multi-mode cascade recovers a little of
-  the staircase through coherent multiple scattering, not more;
+  `A = Π|t_m|² = 0.724` (−1.40 dB); the cascade at 150 nm, where metal loss is
+  negligible and the steps are 3.7 nm apart, sits at 0.805 with 6.6 % coming
+  back as reflection — the one place the coherent multi-step physics is
+  visible;
+* what grows with length is the metal loss along the taper (0.085 →
+  0.87 dB/µm across the width range): 0.989 at 150 nm, 0.956 at 600 nm, 0.893
+  at 1500 nm as a propagation factor. `A × propagation` is 0.692 at 600 nm
+  against the cascade's 0.718;
 * the physics that makes a real taper *better* when longer — the
   destructive interference of the field shed at successive steps, which is
   what "adiabatic" means — needs that shed field to be in the basis. Here
@@ -156,24 +162,29 @@ it is the report's most useful negative result about DBEME on this device:
   a metal edge displaces is in neither. The output-side projection loses it,
   correctly, instead of returning it as gain; it cannot make it interfere.
 
-So the −1.65 dB decomposes as **≈ −1.5 dB of staircase mismatch** (a
+So the −1.44 dB decomposes as **≈ −1.4 dB of staircase mismatch** (a
 discretisation artefact that scales with the width step — per-step loss ∝
-Δw², steps ∝ 1/Δw, so the total ∝ Δw) **and ≈ −0.1 dB of metal loss**; the
-plain-wire junction adds −0.46 dB in front of it. The lateral model's
-converged answer at 600 nm, extrapolating the staircase to Δw → 0, is
-therefore of order −0.6 dB — metal loss plus junction — *if* the taper is
-adiabatic, which this basis cannot test.
+Δw², steps ∝ 1/Δw, so the total ∝ Δw — confirmed by the 21-section direct run
+of §4) **and ≈ −0.2 dB of metal loss**; the plain-wire junction adds −0.48 dB
+in front of it. The lateral model's converged answer at 600 nm, extrapolating
+the staircase to Δw → 0, is therefore of order −0.7 dB — metal loss plus
+junction — *if* the taper is adiabatic, which this basis cannot test.
 
 ### Where the power goes, interface by interface
 
 ![excess](output/plasmonic_4_interface_excess.png)
 
 The direct route stores an interface and a propagation matrix per section.
-Every propagation matrix removes the branch's metal loss (red, 0.02 → 0.36 %
+Every propagation matrix removes the branch's metal loss (red, 0.02 → 0.25 %
 per section); with the output-side projection every interface matrix
-removes its unrepresented mismatch (blue, 0.14 → 1.7 %). With upstream's
-input-side projection the blue curve had the same magnitude and the opposite
-sign, and the cascade ended at 1.439 instead of 0.721.
+removes its unrepresented mismatch (blue, 0.13 → 1.7 %). The right panel
+follows the launched branch's own `|T00|²` and, separately, the sum over all
+2N outputs; the latter includes Berenger amplitudes, which are not power
+(`r` = 2–3) and drop out in a 4 % step near 195 nm when the mode set changes
+across a grid point — the launched branch is smooth through it. With
+upstream's input-side projection the blue curve had the same magnitude and
+the opposite sign, and the sharp-corner cascade ended at 1.439 instead of
+0.721 (§8).
 
 ---
 
@@ -181,28 +192,27 @@ sign, and the cascade ended at 1.439 instead of 0.721.
 
 ![direct](output/plasmonic_3_direct_vs_dataset_gap20.png)
 
-| 600 nm taper | sections | converted | `max|ΔT|` per branch | time |
+| 600 nm taper, rounded corners | sections | converted | `max|ΔT|` per branch | time |
 |---|---|---|---|---|
-| dataset (grid-snapped path) | 42 | −1.65 dB | — | **< 0.1 s** warm (73 min cold, once) |
-| direct, sections at the 41 axis widths | 41 | −1.64 dB | **1.3e-3** | 2670 s |
-| direct, every other axis width | 21 | −3.23 dB | 0.21 | 225 s (widths already cached in-process) |
+| dataset (grid-snapped path) | 42 | −1.44 dB | — | **< 0.1 s** warm (75 min cold, once) |
+| direct, sections at the 41 axis widths | 41 | −1.43 dB | **9.7e-4** | 3574 s |
+| direct, every other axis width | 21 | −2.84 dB | 0.20 | 238 s (widths already cached in-process) |
 
-At matched slicing the two routes agree to 1.3e-3 per branch — the residual
-is section placement: the dataset path puts its interfaces where the width
-crosses a grid mid-point, the direct path at uniform `z`, so the first and
-last sections differ by half a step. The direct sections were placed *at* the
-axis widths deliberately; any other width puts a metal edge inside a cell
-(§7.3) and compares a different discretisation, not a different method.
+The sharp-corner run of §8 reads the same way: −1.65 vs −1.64 dB at 1.3e-3,
+and −3.23 dB at 21 sections.
 
-The half-slicing row is not an agreement check, and it is the more
-informative one: with 20 nm steps the mismatch loss doubles, exactly the
-∝ Δw behaviour of §3. Direct EME at 41 sections reproduces the dataset, and
-both reproduce the discretisation.
+At matched slicing the residual is section placement: the dataset path puts
+its interfaces where the width crosses a grid mid-point, the direct path at
+uniform `z`, so the first and last sections differ by half a step. The direct
+sections are placed *at* the axis widths deliberately; any other width puts a
+metal edge inside a cell (§7.3) and compares a different discretisation, not
+a different method. The half-slicing row is not an agreement check: with
+20 nm steps the mismatch loss doubles, the ∝ Δw behaviour of §3.
 
 Timing is the method's claim: the 7-length sweep of §3 cost one cold build
-(4389 s) and then nothing measurable per device; the same sweep by direct
-EME would have cost seven times 2670 s. Re-evaluating the entire sweep after
-the interface algebra changed (§7.5) cost 0 s of mode solving.
+and then nothing measurable per device; the same sweep by direct EME would
+cost seven times 2670 s. Re-evaluating an entire sweep after the interface
+algebra changed (§7.5) cost 0 s of mode solving.
 
 ---
 
@@ -212,18 +222,18 @@ the interface algebra changed (§7.5) cost 0 s of mode solving.
 
 | quantity | comparable? | why |
 |---|---|---|
-| slot propagation loss | **yes** | a property of the plasmon itself: **1.3 dB/µm** here, "about 1 dB/µm" in the paper |
-| plain-wire → walled-wire junction | as an order of magnitude | −0.46 dB here is mode mismatch only; in the device it is part of the −1 dB |
-| conversion efficiency at 600 nm | **no** | −1.65 dB is ≈ −1.5 dB of staircase artefact; and lateral vs vertical confinement, suspended vs on oxide, 220 vs 200 nm Si, no vertical taper |
+| slot propagation loss | **yes** | a property of the plasmon itself: **0.87 dB/µm** here (1.3 with sharp corners), "about 1 dB/µm" in the paper |
+| plain-wire → walled-wire junction | as an order of magnitude | −0.48 dB here is mode mismatch only; in the device it is part of the −1 dB |
+| conversion efficiency at 600 nm | **no** | −1.44 dB is ≈ −1.4 dB of staircase artefact; and lateral vs vertical confinement, suspended vs on oxide, 220 vs 200 nm Si, no vertical taper |
 | optimum taper length | **no** | the model has none, for the reason in §3 |
-| 20 nm vs 40 nm gap | **no** | in the device the gap is a taper parameter and the MIM core stays 50 × 20 nm; here the gap sets the output slot, and the 80 nm slot barely binds (1.0069) |
+| 20 nm vs 40 nm gap | **no** | in the device the gap is a taper parameter and the MIM core stays 50 × 20 nm; here the gap sets the output slot, and the 80 nm slot barely binds |
 
 ### Discrepancy table
 
 | quantity | paper | this model | cause |
 |---|---|---|---|
-| slot loss | ~1 dB/µm (50 × 20 nm vertical core) | 1.3 dB/µm (40 × 400 nm lateral slot) | different slot geometry; both deep-subwavelength gap plasmons in gold |
-| coupling at 600 nm, 20 nm gap | −1 dB | −1.65 dB cascade; ≈ −0.6 dB with the staircase extrapolated away | staircase mismatch of a 10 nm-step basis (§3); lateral model; junction counted separately |
+| slot loss | ~1 dB/µm (50 × 20 nm vertical core) | 0.87 dB/µm (40 × 400 nm lateral slot, rounded); 1.3 sharp | different slot geometry; both deep-subwavelength gap plasmons in gold; sharp corners add corner absorption and leakage (§8) |
+| coupling at 600 nm, 20 nm gap | −1 dB | −1.44 dB cascade; ≈ −0.7 dB with the staircase extrapolated away | staircase mismatch of a 10 nm-step basis (§3); lateral model; junction counted separately |
 | coupling at 600 nm, 40 nm gap | −1.4 / −1.7 dB | not computed | the lateral 80 nm slot is not a bound port |
 | optimum length ≈ 600 nm | yes | none | shed field not in the basis (§3, §7.5) |
 
@@ -233,23 +243,27 @@ the interface algebra changed (§7.5) cost 0 s of mode solving.
 
 **Established.**
 1. The lossy chain works end to end: `PMLBackend` behind `DataUpdater`,
-   complex `n_eff` in the pickles, the PML recipe in the dataset identity,
-   Hungarian tracking through 41 interfaces, the scattering route chosen by
-   `auto`, propagation loss carried exactly, and a passive cascade once the
-   interface is projected on the output side. Warm devices cost < 0.1 s, and
-   a change of interface algebra re-evaluates a whole sweep for free.
-2. The lateral slot plasmon of a 40 nm gold slot is at 1.145 + 0.036j —
-   1.3 dB/µm, the paper's regime — *once* the walls are tall enough and the
-   structure is suspended (§7.4).
+   complex `n_eff` in the pickles, the PML recipe and geometry in the dataset
+   identity, Hungarian tracking through 41 interfaces, the scattering route
+   chosen by `auto`, propagation loss carried exactly, and a passive cascade
+   once the interface is projected on the output side. Warm devices cost
+   < 0.1 s, and a change of interface algebra re-evaluates a whole sweep for
+   free.
+2. The lateral slot plasmon of a 40 nm gold slot is at 1.351 + 0.025j —
+   0.87 dB/µm, the paper's regime — once the walls are tall enough, the
+   structure is suspended (§7.4) and the corners are rounded (§8).
 3. The interface projection side is a real choice with a real consequence
    in a truncated basis (§7.5, report 06 §11): upstream's form is unbounded
-   there. `INTERFACE_PROJECTION = "auto"` now takes the bounded form for a
-   lossy basis and leaves the lossless datasets, whose transfer route needs
-   the other form invertible, exactly as validated.
+   there. `INTERFACE_PROJECTION = "auto"` takes the bounded form for a lossy
+   basis and leaves the lossless datasets, whose transfer route needs the
+   other form invertible, exactly as validated.
 4. DBEME's fixed grid cannot show an adiabatic optimum for a device whose
    step-to-step mismatch field is outside its basis: the mismatch loss is
    length-independent and only the metal loss varies. This is CLAUDE.md
    §5.9 item 5 and §7 demo-4 blocker 4 measured, not argued.
+5. Rounding the metal corners changes the slot mode (binding and loss) and
+   not the taper's step mismatch: the singular corner field was the slot's
+   problem, the flat-wall gap field is the taper's (§8).
 
 **Not established.** The paper's efficiency or optimum length, or any gap
 sensitivity. Reciprocity of the physical channel is 2 %, not 1e-6.
@@ -266,8 +280,9 @@ sensitivity. Reciprocity of the physical channel is 2 %, not 1e-6.
    protocol asks for, and nothing here replaces it.
 
 **Limits carried regardless.** Between the two exact grids (5 and 4 nm) the
-Si-end index moves 0.2 % and the corner-concentrated slot index 3 % (§1);
-the model is lateral; the 40 nm gap has no bound lateral counterpart.
+Si-end index moves 0.2 % and the corner-concentrated slot index 3 % (sharp
+corners; §1); the model is lateral; the 40 nm gap has no bound lateral
+counterpart.
 
 ---
 
@@ -290,7 +305,7 @@ mode. `stretched_grid` now applies the stretch itself. `tests/test_pml_solver.py
 
 `radiation_mode_mask` rejected any mode above 100 dB/cm — a lossless-model
 heuristic. A Si wire 20 nm from gold sits at 0.09 dB/µm and the slot at
-1.3 dB/µm, so the launch basis was empty. The rule now applies only when the
+~1 dB/µm, so the launch basis was empty. The rule now applies only when the
 dataset says it is lossless. `tests/test_lossy_assumptions.py`.
 
 ### 7.3 Sub-cell aliasing of a metal edge
@@ -301,8 +316,10 @@ index with it: at a 6 nm cell, 400 / 395 / 375 nm read 2.471 / 2.371 / 2.429
 — a 0.1 jump per 5 nm where the physical slope is 0.002 per nm. Every
 interface then carried a spurious geometric step. The cure is alignment: a
 pitch exactly equal to the cell with the origin on a node, and an axis in
-steps of `2 × cell`, so every edge sits on a cell boundary at every axis point
-and every cross section is discretised identically.
+steps of `2 × cell`, so every straight edge sits on a cell boundary at every
+axis point and every cross section is discretised identically; the rounded
+arcs are sub-sampled and translate by whole cells along the axis, so they are
+discretised identically too.
 `tests/test_plasmonic_slot.py::test_platform_grid_is_aligned_with_the_geometry`.
 
 The alignment also removed a comfortable illusion: with partial-metal cells
@@ -312,7 +329,7 @@ line. Which is how §7.4 was found.
 
 ### 7.4 What binds a lateral slot mode is the wall height
 
-| walls | slot 20 nm | slot 40 nm | slot 80 nm |
+| walls (sharp corners) | slot 20 nm | slot 40 nm | slot 80 nm |
 |---|---|---|---|
 | 220 nm (Si height) | 1.037 + 0.084j | 0.869 (leaky) | — |
 | 400 nm, centred | — | **1.145 + 0.036j** | 1.007 + 0.027j (marginal) |
@@ -353,14 +370,56 @@ basis runs the direct route, where no inverse of `T` is ever formed.
 
 ---
 
+## 8. Sharp against rounded gold corners
+
+Sections 1–7 were first measured with sharp plates; Jae's reading of the
+−1.65 dB was that a sharp plasmonic edge carries a very dense, singular field
+that the grid cannot resolve and that radiates and absorbs, and that the
+demonstration should round it. The platform now does (radius 20 nm, four
+cells; arcs sub-sampled 8 × 8 so the fill fraction never lands on the
+ε-near-zero mix), and the sharp basis is kept as `Si_plasmonic_slot_1550_sharp`.
+Same grid, same axis, same algebra:
+
+| | sharp corners | rounded, r = 20 nm |
+|---|---|---|
+| slot mode at 0 nm | 1.1447 + 0.0362j, **1.3 dB/µm**, confinement 0.51 | **1.3513 + 0.0246j, 0.87 dB/µm**, 0.50 |
+| Si-end mode at 400 nm | 2.3459 + 0.0026j, 0.093 dB/µm | 2.3538 + 0.0024j, 0.085 dB/µm |
+| single-mode step `|t|²`, first / last interface | 0.99810 / 0.98228 | 0.99821 / 0.98237 |
+| staircase product `A = Π|t_m|²` | 0.702 (−1.54 dB) | 0.724 (−1.40 dB) |
+| propagation factor, 600 nm | 0.945 | 0.956 |
+| converted, 600 nm | 0.684 (**−1.65 dB**) | 0.718 (**−1.44 dB**) |
+| sweep 150 → 1500 nm | −1.37 → −2.09 dB | −0.94 → −1.83 dB |
+| reflected at 150 nm | 0.9 % | 6.6 % |
+| launched column total, 600 nm | 0.721 | 0.741 |
+| physical-channel reciprocity | 1.9e-2 | 2.1e-2 |
+| direct EME, 600 nm, 41 / 21 sections | −1.64 / −3.23 dB, `max|ΔT|` 1.3e-3 | −1.43 / −2.84 dB, `max|ΔT|` 9.7e-4 |
+
+The reading. The corner singularity was the **slot mode's** problem, and
+rounding fixes it: the slot plasmon binds much better (0.145 → 0.351 above
+the air line), its confinement is unchanged, and its loss falls by a third —
+the missing third was absorption and leakage at four sharp wedges. It was
+**not the taper's** problem: the per-step mismatch `1 − |t|²` is the same to
+three digits, because the field a 10 nm step displaces lives in the 20 nm gap
+along the *flat* wall face, 90 nm from the nearest corner. The 0.2 dB gained
+at 600 nm is half less staircase loss (`A`) and half less metal loss along the
+taper; the shortest taper gains most (−1.37 → −0.94 dB) because it has almost
+no metal loss to begin with. What remains between −1.44 dB and the paper's
+−1 dB is the staircase discretisation, ∝ Δw, and the lateral geometry — not
+the corners.
+
+---
+
 ### Reproducing
 
 ```bash
 cd examples
-python demo_plasmonic_converter.py --gaps 20 --direct-lengths 600 --cell-check   # ~2.5 h cold
+python demo_plasmonic_converter.py --gaps 20 --direct-lengths 600                    # rounded, ~2.5 h cold
+python demo_plasmonic_converter.py --gaps 20 --direct-lengths 600 --variant sharp --cell-check
 ```
 
-Results are cached stage by stage in `reports/output/plasmonic_converter.json`;
-a second run is warm. The interface profile and the staircase estimate are
-scratch analyses whose outputs are `plasmonic_interface_excess.json`,
-`plasmonic_single_mode_estimate.json` and `plasmonic_4_interface_excess.png`.
+Results are cached stage by stage in `reports/output/plasmonic_converter.json`
+(sharp-corner keys carry the `_sharp` suffix); a second run is warm. The
+interface profile and the staircase estimate are scratch analyses whose
+outputs are `plasmonic_interface_excess[_sharp].json`,
+`plasmonic_single_mode_estimate[_sharp].json` and
+`plasmonic_4_interface_excess[_sharp].png`.

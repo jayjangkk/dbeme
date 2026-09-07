@@ -75,6 +75,9 @@ from em_simulation.reference.plasmonic import attenuation_db_per_um  # noqa: E40
 TAG = "plasmonic"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATASETS = {20: "Si_plasmonic_slot_1550", 40: "Si_plasmonic_slot_1550_gap40"}
+#: Dataset-name and result-key suffix: "" for the shipped (rounded-corner)
+#: platform, "_sharp" for the sharp-corner variant of report 12 sections 1-7.
+VARIANT = ""
 OUT_JSON = os.path.join(ROOT, "reports", "output", f"{TAG}_converter.json")
 
 WAVELENGTH = 1.55e-6
@@ -206,7 +209,7 @@ def power_ratio(backend, w, index=0):
 
 def end_ratios(payload, gap):
     """``r`` of the input mode at 400 nm and of the slot mode at 0, cached."""
-    key = f"power_ratio_gap{gap}"
+    key = f"power_ratio_gap{gap}{VARIANT}"
     if key not in payload:
         backend = plasmonic_converter_dataset_info(WAVELENGTH, gap=gap * 1e-9)().get_fde_backend()
         t0 = time.time()
@@ -355,10 +358,10 @@ def path_record(res, r_in, r_out):
 
 
 def sweep(payload, gap, lengths_nm):
-    du = DataUpdater(os.path.join(ROOT, "datasets", DATASETS[gap]))
-    key = f"sweep_gap{gap}"
+    du = DataUpdater(os.path.join(ROOT, "datasets", (DATASETS[gap] + VARIANT)))
+    key = f"sweep_gap{gap}{VARIANT}"
     store = payload.setdefault(key, {})
-    print(f"\n[{gap} nm gap] taper-length sweep on {DATASETS[gap]}")
+    print(f"\n[{gap} nm gap] taper-length sweep on {(DATASETS[gap] + VARIANT)}")
     r_in, r_out = end_ratios(payload, gap)
     for L_nm in lengths_nm:
         if str(L_nm) in store:
@@ -384,7 +387,7 @@ def sweep(payload, gap, lengths_nm):
 
 
 def gate(payload, du, gap):
-    key = f"gate_gap{gap}"
+    key = f"gate_gap{gap}{VARIANT}"
     if key in payload:
         print(f"\n[{gap} nm gap] sanity gate cached")
         return
@@ -403,11 +406,11 @@ def gate(payload, du, gap):
 
 
 def direct(payload, gap, lengths_nm):
-    key = f"direct_gap{gap}"
+    key = f"direct_gap{gap}{VARIANT}"
     store = payload.setdefault(key, {})
-    sweep_store = payload[f"sweep_gap{gap}"]
+    sweep_store = payload[f"sweep_gap{gap}{VARIANT}"]
     r_in, r_out = end_ratios(payload, gap)
-    de = DataExtractor(os.path.join(ROOT, "datasets", DATASETS[gap]))
+    de = DataExtractor(os.path.join(ROOT, "datasets", (DATASETS[gap] + VARIANT)))
     # Sections at the axis widths themselves (400, 390, ... 0 nm), so the
     # direct route sees the same grid-aligned cross sections as the dataset;
     # "half" takes every other one.  A width off the axis puts a metal edge
@@ -471,7 +474,7 @@ def cell_check(payload):
 
 
 def figure_path(payload, gap):
-    rec = payload[f"sweep_gap{gap}"]["600"]
+    rec = payload[f"sweep_gap{gap}{VARIANT}"]["600"]
     w = np.array(rec["w_si_nm"])
     re, im = np.array(rec["neff_re"]), np.array(rec["neff_im"])
     phys = np.array(rec["physical"])
@@ -502,7 +505,7 @@ def figure_path(payload, gap):
     ax2.set_title("metal + radiation loss of each branch", fontsize=9)
     ax2.invert_xaxis()
     ax2.legend(fontsize=7)
-    save(fig, f"{TAG}_1_neff_path_gap{gap}.png")
+    save(fig, f"{TAG}_1_neff_path_gap{gap}{VARIANT}.png")
     plt.close(fig)
 
 
@@ -510,7 +513,7 @@ def figure_sweep(payload, gaps):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.6, 3.4))
     fig.subplots_adjust(wspace=0.3)
     for gap, color in zip(gaps, ("C0", "C3")):
-        store = payload[f"sweep_gap{gap}"]
+        store = payload[f"sweep_gap{gap}{VARIANT}"]
         Ls = sorted(int(k) for k in store if k.isdigit())
         eff = [store[str(L)]["converted_dB"] for L in Ls]
         ax1.plot(Ls, eff, "o-", color=color, label=f"DBEME, {gap} nm gap (lateral model)")
@@ -533,15 +536,15 @@ def figure_sweep(payload, gaps):
     ax2.set_ylabel("fraction of launched |a|^2")
     ax2.set_title("where the rest goes", fontsize=9)
     ax2.legend(fontsize=6.5)
-    save(fig, f"{TAG}_2_length_sweep.png")
+    save(fig, f"{TAG}_2_length_sweep{VARIANT}.png")
     plt.close(fig)
 
 
 def figure_direct(payload, gap):
-    key = f"direct_gap{gap}"
+    key = f"direct_gap{gap}{VARIANT}"
     if key not in payload or not payload[key]:
         return
-    store, sweep_store = payload[key], payload[f"sweep_gap{gap}"]
+    store, sweep_store = payload[key], payload[f"sweep_gap{gap}{VARIANT}"]
     fig, axes = plt.subplots(1, len(store), figsize=(3.4 * len(store), 3.2), squeeze=False)
     for ax, (k, rec) in zip(axes[0], sorted(store.items())):
         L_nm = k.split("_")[0]
@@ -556,7 +559,7 @@ def figure_direct(payload, gap):
         ax.set_ylabel("forward |a|^2")
         ax.set_title(f"L = {L_nm} nm, {rec['slicing']} slicing\nmax|dT| = {rec['max_dT']:.1e}", fontsize=8)
         ax.legend(fontsize=6.5)
-    save(fig, f"{TAG}_3_direct_vs_dataset_gap{gap}.png")
+    save(fig, f"{TAG}_3_direct_vs_dataset_gap{gap}{VARIANT}.png")
     plt.close(fig)
 
 
@@ -570,10 +573,14 @@ def main():
     parser.add_argument("--direct-lengths", type=int, nargs="+", default=list(DIRECT_NM))
     parser.add_argument("--skip-direct", action="store_true")
     parser.add_argument("--cell-check", action="store_true")
+    parser.add_argument("--variant", choices=["rounded", "sharp"], default="rounded",
+                        help="rounded (shipped) or sharp gold corners")
     args = parser.parse_args()
+    global VARIANT
+    VARIANT = "" if args.variant == "rounded" else "_sharp"
 
     print("Demo 4 - Si wire to plasmonic slot, lateral 2-D model (Ono et al. 2016)")
-    print("lossy PML basis, scattering route, force_unitary=False")
+    print(f"lossy PML basis, scattering route, force_unitary=False, {args.variant} corners")
     print("=" * 78)
     payload = load()
     t_all = time.time()

@@ -16,7 +16,7 @@
     "target_neff": 2.0
   },
   "basis_convention": 2,
-  "cross_section": "PlasmonicSlotConverter|t_si=2.2e-07|t_m=4e-07|gap=2e-08|reach=2.5e-07|m_bottom=-2e-07|corner=2e-08|pyoptik:main/Si/Li-293K|pyoptik:main/Au/Johnson|const:1+0j|const:1+0j",
+  "cross_section": "PlasmonicSlotConverter|t_si=2.2e-07|t_m=4e-07|gap=2e-08|reach=2.5e-07|m_bottom=-2e-07|pyoptik:main/Si/Li-293K|pyoptik:main/Au/Johnson|const:1+0j|const:1+0j",
   "mesh": [
     369,
     301

@@ -64,6 +64,18 @@ understates what sits underneath.
 
 ---
 
+## Status (2026-09-07): closed
+
+Phases 0–3 done (report 06); first real use done on the plasmonic converter
+(report 12) with a lossy dataset, DBEME vs direct EME and DBEME vs literature.
+What the backend is: `PMLModeSolver` / `PMLBackend` (`em_simulation/fde/pml.py`),
+complex `n_eff`, PML recipe in the dataset identity, scattering cascade by
+`SMATRIX_METHOD = "auto"`, output-side interface projection by
+`INTERFACE_PROJECTION = "auto"`. What it is not: a basis that holds the near
+field a metal edge sheds (report 12 §3, §7.5) — a fixed-grid staircase cannot
+show an adiabatic optimum for a plasmonic taper, and the fixes are listed in
+order of cost in report 12 §6. The pulley bus of Phase 4 remains open.
+
 ## Phase 0 — remove the lossless assumptions (safe to do now)
 
 Four places hard-code "the medium is real". All are no-ops on a real-index
@@ -142,6 +154,8 @@ the problem is in the formulation, and a 2-D solver will only hide it.
 
 ## Phase 2 — the backend itself
 
+> **Status:** done — `em_simulation/fde/pml.py` (`PMLModeSolver`, `PMLBackend`), report 06 §5–6, §10.
+
 Two routes. They **coexist** with `EmepyFDE` rather than replacing it:
 `get_fde_backend()` is per dataset, so lossless datasets keep the fast uniform
 grid. Backends must **never** be mixed *within* one dataset — the overlaps
@@ -179,6 +193,8 @@ one leaves no cross-validation without a Lumerical seat.
 ---
 
 ## Phase 3 — the DBEME-specific cost, and the decision point
+
+> **Status:** done — answered by the scattering cascade rather than by a mode count: report 06 §7–8, §11; `SMATRIX_METHOD = "auto"`, `INTERFACE_PROJECTION = "auto"`.
 
 This is the part to think hardest about, and it is not a solver problem.
 

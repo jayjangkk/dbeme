@@ -283,3 +283,50 @@ def test_backend_is_deterministic_across_solves(backend):
     b = backend.solve((0.0,))
     assert a.neff == pytest.approx(b.neff, rel=1e-6)
     assert np.abs(a.E[0] - b.E[0]).max() < 1e-4 * np.abs(a.E[0]).max()
+
+
+# ------------------------------------------------------------ rounding
+
+
+def test_sharp_plates_are_unchanged_by_the_rounding_code(grid):
+    x, y = grid
+    a = PlasmonicSlotConverter(gap=20e-9, metal_thickness=400e-9, metal_bottom=-200e-9)
+    b = PlasmonicSlotConverter(gap=20e-9, metal_thickness=400e-9, metal_bottom=-200e-9,
+                               corner_radius=0.0)
+    assert np.array_equal(a.index(x, y, {"w_si": 0.0}), b.index(x, y, {"w_si": 0.0}))
+    assert a.fingerprint() == b.fingerprint()
+
+
+def test_rounded_corners_remove_metal_only_at_the_corners():
+    """1 nm grid: the corner cell of a 20 nm-rounded plate is air, a cell on
+    the straight face is gold, and the removed area is the 4 (1 - pi/4) r^2 of
+    four quarter-circle notches."""
+    x = np.linspace(-0.5e-6, 0.5e-6, 1001)
+    y = np.linspace(-0.3e-6, 0.3e-6, 601)
+    r = 20e-9
+    sharp = PlasmonicSlotConverter(gap=20e-9, metal_thickness=400e-9, metal_bottom=-200e-9)
+    rounded = PlasmonicSlotConverter(gap=20e-9, metal_thickness=400e-9, metal_bottom=-200e-9,
+                                     corner_radius=r)
+    ns, nr = sharp.index(x, y, {"w_si": 0.0}), rounded.index(x, y, {"w_si": 0.0})
+    inner, top = 20e-9, 200e-9
+    assert _at(nr, x, y, inner + 2e-9, top - 2e-9).real == pytest.approx(1.0, abs=1e-6)  # notch
+    assert _at(nr, x, y, inner + 2e-9, top - 40e-9).imag > 9                              # face
+    assert _at(nr, x, y, inner + 40e-9, top - 2e-9).imag > 9                              # top
+    metal_s = (np.imag(ns) > 5).sum()
+    metal_r = (np.imag(nr) > 5).sum()
+    removed = (metal_s - metal_r) * 1e-9 * 1e-9                      # 1 nm cells
+    expected = 2 * 4 * (1 - np.pi / 4) * r * r                        # two plates, four notches each
+    assert removed == pytest.approx(expected, rel=0.15)
+    assert rounded.fingerprint() != sharp.fingerprint()
+
+
+def test_rounded_fill_is_quantised_away_from_epsilon_near_zero():
+    from em_simulation.fde.slot_converter import _rounded_rect_fill
+
+    x = np.arange(-100, 101, 5) * 1e-9
+    y = np.arange(-100, 101, 5) * 1e-9
+    f = _rounded_rect_fill(x, y, -50e-9, 50e-9, -50e-9, 50e-9, 20e-9)
+    partial = f[(f > 0) & (f < 1)]
+    assert partial.size > 0
+    assert np.allclose(partial * 64, np.round(partial * 64))
+    assert partial.min() >= 1 / 64 - 1e-12

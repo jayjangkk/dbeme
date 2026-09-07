@@ -396,6 +396,7 @@ def plasmonic_converter_dataset_info(
     target_neff=2.0,
     pml_thickness=0.25e-6,
     substrate="air",
+    corner_radius=20e-9,
 ):
     """Region of the Si-wire-to-plasmonic-slot converter: the lateral taper.
 
@@ -437,6 +438,11 @@ def plasmonic_converter_dataset_info(
         then the slot binds only between tall walls - ``metal_thickness`` -
         and the 80 nm slot of the fabricated 40 nm gap is marginal
         (n = 1.008 between 400 nm walls).
+    :param corner_radius: Rounding of the gold plates' corners, metres
+        (20 nm = 4 cells at the shipped pitch).  Sharp metal wedges carry
+        a singular, unresolvable field that every taper step sheds; the
+        sharp variant is kept as ``Si_plasmonic_slot_1550_sharp`` for the
+        comparison in report 12 section 8.
     """
     from .fde.pml import PMLBackend
     from .fde.slot_converter import PlasmonicSlotConverter
@@ -445,6 +451,7 @@ def plasmonic_converter_dataset_info(
         si_thickness=PLASMONIC_SI_THICKNESS,
         metal_thickness=metal_thickness,
         metal_bottom=-0.5 * metal_thickness,      # centred on the Si
+        corner_radius=corner_radius,
         gap=gap,
         core=silicon(out_of_range="raise"),
         metal=None,                      # Johnson & Christy gold
@@ -489,7 +496,8 @@ def plasmonic_converter_dataset_info(
     return _make_dataset_info(
         name=(
             f"Ono plasmonic converter (lateral, {substrate}-suspended): Si wire in a "
-            f"Au/air slot, gap {gap*1e9:.0f} nm, Au {metal_thickness*1e9:.0f} nm tall"
+            f"Au/air slot, gap {gap*1e9:.0f} nm, Au {metal_thickness*1e9:.0f} nm tall, "
+            f"corners r = {corner_radius*1e9:.0f} nm"
         ),
         description="complex neff, TE_pol and overlaps for the lateral Si-to-slot taper",
         wavelength=wavelength,

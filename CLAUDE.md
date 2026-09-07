@@ -520,7 +520,10 @@ datasets `Si_plasmonic_slot_1550[_gap40|_c4]`. Of the four blockers below,
 the shed field of a 10 nm edge step is in no shift-invert basis, so the
 staircase mismatch is length-independent and the model has no adiabatic
 optimum — and with upstream's interface projection that unrepresented field
-came back as gain (§5.2, report 06 §11).
+came back as gain (§5.2, report 06 §11). Gold corners are rounded (20 nm)
+on the shipped platform — Jae's point that a sharp plasmonic edge carries a
+singular, unresolvable field; the sharp variant is `Si_plasmonic_slot_1550_sharp`
+(report 12 §8).
 What the lateral model *cannot* do, and why its numbers are not the paper's:
 the device binds its plasmon vertically (the 20 nm), so the lateral slot must be
 suspended in air and walled by full-height gold to have a bound output mode at

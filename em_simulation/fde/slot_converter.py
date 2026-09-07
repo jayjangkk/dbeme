@@ -46,6 +46,34 @@ from .materials import air, as_material, gold, silica, silicon
 __all__ = ["PlasmonicSlotConverter"]
 
 
+def _rounded_rect_fill(x, y, x0, x1, y0, y1, radius, sub=8):
+    """Fill fraction of each ``(x, y)`` cell inside a rounded rectangle.
+
+    ``x``, ``y`` are cell centres on a uniform grid; the rectangle is
+    ``[x0, x1] x [y0, y1]`` with all four corners rounded by ``radius``
+    (clipped to half the shorter side).  Each cell is sub-sampled
+    ``sub x sub``; the result is exact for straight faces on cell
+    boundaries and quantised in ``1/sub^2`` along the arcs.
+    """
+    x = np.asarray(np.real(x), dtype=float)
+    y = np.asarray(np.real(y), dtype=float)
+    dx = np.gradient(x) if x.size > 1 else np.ones(1)
+    dy = np.gradient(y) if y.size > 1 else np.ones(1)
+    offsets = (np.arange(sub) + 0.5) / sub - 0.5
+    xs = x[:, None] + dx[:, None] * offsets[None, :]        # (nx, sub)
+    ys = y[:, None] + dy[:, None] * offsets[None, :]        # (ny, sub)
+    xc, yc = 0.5 * (x0 + x1), 0.5 * (y0 + y1)
+    hw, hh = 0.5 * abs(x1 - x0), 0.5 * abs(y1 - y0)
+    r = min(float(radius), hw, hh)
+    u = np.abs(xs - xc)[:, :, None, None]                  # (nx, sub, 1, 1)
+    v = np.abs(ys - yc)[None, None, :, :]                  # (1, 1, ny, sub)
+    inside = (u <= hw) & (v <= hh)
+    in_corner_zone = (u > hw - r) & (v > hh - r)
+    in_arc = (u - (hw - r)) ** 2 + (v - (hh - r)) ** 2 <= r * r
+    inside = inside & (~in_corner_zone | in_arc)
+    return inside.mean(axis=(1, 3))
+
+
 class PlasmonicSlotConverter(CrossSection):
     """A Si core between two gold plates, with an air gap either side.
 
@@ -68,6 +96,16 @@ class PlasmonicSlotConverter(CrossSection):
         because the *height* of the walls is what binds a lateral slot mode:
         on the 5 nm grid a 40 nm slot reads 0.869 (leaky) between 220 nm
         walls and 1.146 + 0.036j between 400 nm ones.
+    :param corner_radius: Radius rounding the four corners of each gold
+        plate, metres; 0 keeps them sharp.  A sharp metal wedge carries a
+        singular field (``E ~ rho^(nu-1)``, ``nu < 1``) that no grid
+        resolves and every step of a taper sheds; rounding removes the
+        singularity and is also what a fabricated edge looks like.  The
+        arcs are sub-sampled 8 x 8 per cell, so the fill fraction is
+        quantised in 1/64 and never lands on the epsilon-near-zero mix
+        (``f ~ 0.0086`` for gold in air) where a cell's ``E_x`` would blow
+        up.  Straight faces still fall on cell boundaries, so the
+        discretisation is identical at every axis point.
     :param core, metal, cladding, substrate: Materials; default Si, Au
         (Johnson & Christy), air, SiO2.
     """
@@ -81,6 +119,7 @@ class PlasmonicSlotConverter(CrossSection):
         gap=20e-9,
         plate_reach=0.25e-6,
         metal_bottom=None,
+        corner_radius=0.0,
         core=None,
         metal=None,
         cladding=None,
@@ -96,6 +135,7 @@ class PlasmonicSlotConverter(CrossSection):
         self.metal_bottom = (
             float(metal_bottom) if metal_bottom is not None else -0.5 * self.si_thickness
         )
+        self.corner_radius = float(corner_radius)
         self.reference_wavelength = float(reference_wavelength)
         self.core = as_material(core) if core is not None else silicon()
         self.metal = as_material(metal) if metal is not None else gold()
@@ -158,9 +198,13 @@ class PlasmonicSlotConverter(CrossSection):
             eps = f * eps_si + (1.0 - f) * eps
 
         # gold plates
-        fy_m = _fill_fraction(y, self.metal_bottom, self.metal_bottom + self.metal_thickness)
+        y_m0, y_m1 = self.metal_bottom, self.metal_bottom + self.metal_thickness
+        fy_m = _fill_fraction(y, y_m0, y_m1)
         for lo, hi in ((-outer, -inner), (inner, outer)):
-            f = np.outer(_fill_fraction(x, lo, hi), fy_m)
+            if self.corner_radius > 0:
+                f = _rounded_rect_fill(x, y, lo, hi, y_m0, y_m1, self.corner_radius)
+            else:
+                f = np.outer(_fill_fraction(x, lo, hi), fy_m)
             eps = f * eps_au + (1.0 - f) * eps
 
         n = np.sqrt(eps)
@@ -197,6 +241,8 @@ class PlasmonicSlotConverter(CrossSection):
             f"reach={self.plate_reach:.6g}",
             f"m_bottom={self.metal_bottom:.6g}",
         ]
+        if self.corner_radius > 0:
+            parts.append(f"corner={self.corner_radius:.6g}")
         parts += [m.fingerprint() for m in self.materials()]
         return "|".join(parts)
 

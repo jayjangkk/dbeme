@@ -350,16 +350,23 @@ is passive, but only after the interface projection was moved to the output
 side (below): upstream's form returned the mismatch field the basis cannot
 hold as *gain*, 0.2–1.9 % per 10 nm step and ×1.44 over the taper,
 independently of mode count, of the PML and of basis selection. The passive
-cascade gives −1.65 dB at 600 nm, of which ≈ −1.5 dB is the mismatch loss of a
-40-step staircase and ≈ −0.1 dB is metal loss, monotonic in length with no
-optimum: the grid-snapped path visits the same 41 cross sections at every
+cascade gives −1.44 dB at 600 nm (−1.65 with sharp corners), of which ≈ −1.4 dB
+is the mismatch loss of a 40-step staircase and the rest metal loss, monotonic
+in length with no optimum: the grid-snapped path visits the same 41 cross sections at every
 length, and the shed field that would have to interfere destructively for a
 taper to be adiabatic is in no basis of this kind. So the paper's −1 dB and
 its 600 nm optimum are not reproduced, and the report says why they cannot
 be. Five things were found on the way and are now tests: the `-x`/`-y` PML
 layers were gain, the radiation mask rejected every lossy mode, a metal edge
 inside a cell aliases `n_eff` by 0.1, a lateral slot binds only between tall
-walls, and the projection side of the interface algebra.
+walls, and the projection side of the interface algebra. The shipped platform
+rounds the gold corners (20 nm; `Si_plasmonic_slot_1550_sharp` keeps the sharp
+variant): a sharp metal wedge carries a singular field that no grid resolves,
+and rounding it moves the slot plasmon from 1.145 + 0.036j to 1.351 + 0.025j -
+better bound, 0.87 instead of 1.3 dB/um - while the Si-end mode, which lives
+on the flat wall face, barely moves, and the taper's per-step mismatch does not
+move at all: the corners were the slot's problem, the flat-wall gap field is the
+taper's (report 12 section 8).
 
 ## Two cascade routes
 

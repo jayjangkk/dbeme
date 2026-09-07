@@ -5,12 +5,14 @@ Phase 2 Route A of ``tasks/02_pml_backend.md``.  ``EmepyFDE`` returns a real
 This module adds the missing piece by giving ``EMpy``'s vectorial solver a
 complex-stretched grid.
 
-It is a **solver**, not a dataset backend.  Wiring it behind
-:class:`~em_simulation.fde.base.FDEBackend` is deliberately not done here: the
-task gates that on Phase 3's mode-count study, because a PML-EME basis needs
-tens of modes rather than six and DBEME stores ``(2N x 2N)`` overlaps per
-adjacent grid-point pair.  Deciding that cost is a prerequisite, not an
-afterthought.
+:class:`PMLModeSolver` is the solver; :class:`PMLBackend` puts it behind
+:class:`~em_simulation.fde.base.FDEBackend`, so a *dataset* can be built on a
+lossy basis (``datasets/Si_plasmonic_slot_1550``, report 12).  That wiring
+waited for Phase 3's mode-count study - a PML-EME basis needs tens of modes
+rather than six and DBEME stores ``(2N x 2N)`` overlaps per adjacent
+grid-point pair - which the scattering cascade settled (report 06 sections
+7-8): usable at N = 4...40 on the direct route, and ``SMATRIX_METHOD =
+"auto"`` picks that route whenever the backend declares itself lossy.
 
 What had to be got right
 ------------------------
@@ -47,7 +49,12 @@ Validation
 ----------
 See ``reports/06_pml_phase1_gate.md``.  Against the independent Airy reference
 in :mod:`em_simulation.reference`, at matched ``n_eff``, the loss rate agrees to
-**3 %** over seven decades on a SiN guide.
+**3 %** over seven decades on a SiN guide; against Vlasov & McNab (2004) the
+bend-loss trend of a 220 nm Si wire is reproduced (report 06 section 6).  The
+first device - a Si-wire-to-gold-slot converter, report 12 - found two more
+things that had to be got right: the low-side PML layers were gain
+(:func:`stretched_grid`) and a metal edge inside a cell aliases ``n_eff``
+(``platforms.plasmonic_converter_dataset_info`` snaps the grid).
 """
 
 import numpy as np
