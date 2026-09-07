@@ -351,9 +351,9 @@ is passive, but only after the interface projection was moved to the output
 side (below): upstream's form returned the mismatch field the basis cannot
 hold as *gain*, 0.2–1.9 % per 10 nm step and ×1.44 over the taper,
 independently of mode count, of the PML and of basis selection. The passive
-cascade gives −1.44 dB at 600 nm (−1.65 with sharp corners), of which ≈ −1.4 dB
-is the mismatch loss of a 40-step staircase and the rest metal loss, monotonic
-in length with no optimum: the grid-snapped path visits the same 41 cross sections at every
+cascade gives −1.61 dB at 600 nm on co-located E/H fields (−1.65 with sharp
+corners on the earlier fields), of which ≈ −1.4 dB is the mismatch loss of a
+40-step staircase and the rest metal loss, monotonic in length with no optimum: the grid-snapped path visits the same 41 cross sections at every
 length, and the shed field that would have to interfere destructively for a
 taper to be adiabatic is in no basis of this kind. So the paper's −1 dB and
 its 600 nm optimum are not reproduced, and the report says why they cannot

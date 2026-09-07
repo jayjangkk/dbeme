@@ -1,5 +1,16 @@
 # 12 — Plasmonic mode converter (lateral 2-D model)
 
+> **Superseded in part (2026-09-07 evening).** Every number in sections 1–8
+> was computed on fields with a half-cell E/H misregistration in
+> `PMLModeSolver` (report 07 §23, found by the SIRAC session): E was
+> zero-padded from the cell centres onto H's node grid, which makes every
+> stored overlap non-symmetric — the `O_ab = 1.0001` against `O_ba = 0.9980`
+> of §7.5 is that offset. The platforms now solve with `colocate=True`, the
+> caches are rebuilt. Sections 1 and 3 below now carry the co-located
+> numbers for the rounded platform; §8's sharp column and §4's direct rows
+> are marked where they still come from the offset fields. §10 says what the
+> offset was and was not responsible for.
+
 > **Outcome in one paragraph.** The first device on the lossy PML backend
 > runs end to end and is passive, but only after the interface algebra was
 > changed: upstream projects tangential continuity on the modes of the section
@@ -50,9 +61,9 @@ sharp-corner run of §8 under the `_sharp` keys.
 | check (§5.x) | criterion | measured | pass |
 |---|---|---|---|
 | constant-width walled wire, 1 µm: `T = exp(−2 k₀ Im n L)` — propagation loss carried through the cascade | `|T − expected| < 1e-3` | 0.98061 measured and expected (`n = 2.3538 + 0.0024j`, 0.085 dB/µm) | ✓ |
-| passivity: launched (physical) column of `|S|²` sums below 1 | `< 1.05` | **0.741** at 600 nm; 1.009 at 150 nm, where the reflection blocks' asymmetry (below) shows as 0.9 % excess. Was **1.462** with the input-side projection (§7.5) | ✓ |
+| passivity: launched (physical) column of `|S|²` sums below 1 | `< 1.05` | **0.704** at 600 nm (co-located; 0.741 on the offset fields, 1.009 at 150 nm there). Was **1.462** with the input-side projection (§7.5) | ✓ |
 | interface power change per 10 nm step, `1 − Σ_j|S_j0|²` (fig. 4) | reported | −0.13 % at 400 → 390 nm falling to −1.7 % at 10 → 0 nm — every interface loses. With the input-side form every interface gained the same amount | ✓ |
-| 5.1 reciprocity of the physical channel, `|T12 − T21|` for the launched mode, 600 nm | `< 1e-6` | **2.1e-2** (2.5 % of `|S00|`); per interface `T21 = T12ᵀ` to 6e-7, but the reflection blocks are asymmetric at 6e-2 in the Berenger rows for *every* formulation tried, upstream's included, and that leaks through 82 star products | ✗ truncation |
+| 5.1 reciprocity of the physical channel, `|T12 − T21|` for the launched mode, 600 nm | `< 1e-6` | **1.0e-3** on co-located fields (was 2.1e-2 on the offset fields: the half-cell E/H offset was most of it, §10); per interface `T21 = T12ᵀ` to 6e-7 | ✗ residual truncation |
 | 5.8 DBEME vs direct EME, 600 nm, direct sections at the 41 axis widths | `max|ΔT| < 1e-3` | −1.44 dB vs −1.43 dB, `max|ΔT|` = **9.7e-4** per branch; 3574 s direct against < 0.1 s warm (sharp corners: 1.3e-3, §8) | ✓ (§4) |
 | 5.4 slicing: direct at 21 sections (20 nm steps) vs 41 | `max|ΔT| < 1e-4` | **−2.84 dB vs −1.43 dB**, `max|ΔT|` = 0.20 — the staircase mismatch doubles when the step doubles (sharp: −3.23 vs −1.64) | ✗ by construction (§3) |
 | 5.2 mode-count independence of the interface error, 400 → 390 / 100 → 90 nm (sharp corners, input form) | should fall with N | N = 16: 0.21 % / 0.65 %; N = 24: 0.20 % / 1.35 %; N = 32: 0.27 % / — | ✗ does not fall — §7.5 |
@@ -132,13 +143,16 @@ are Berenger modes.
 
 | L (nm) | sections | converted `|S_out,in|² r_out/r_in` | dB | reflected (physical) | absorbed + radiated |
 |---|---|---|---|---|---|
-| 150 | 42 | 0.805 | −0.94 | 0.0657 | −0.009 |
-| 300 | 42 | 0.771 | −1.13 | 0.0205 | 0.125 |
-| 450 | 42 | 0.741 | −1.30 | 0.0090 | 0.217 |
-| 600 | 42 | **0.718** | **−1.44** | 0.0124 | 0.259 |
-| 800 | 42 | 0.697 | −1.57 | 0.0099 | 0.287 |
-| 1000 | 42 | 0.685 | −1.64 | 0.0061 | 0.301 |
-| 1500 | 42 | 0.656 | −1.83 | 0.0024 | 0.338 |
+| 150 | 42 | 0.733 | −1.35 | 0.0398 | 0.203 |
+| 300 | 42 | 0.706 | −1.51 | 0.0139 | 0.265 |
+| 450 | 42 | 0.697 | −1.57 | 0.0082 | 0.286 |
+| 600 | 42 | **0.690** | **−1.61** | 0.0076 | 0.296 |
+| 800 | 42 | 0.678 | −1.69 | 0.0038 | 0.313 |
+| 1000 | 42 | 0.668 | −1.75 | 0.0038 | 0.323 |
+| 1500 | 42 | 0.642 | −1.92 | 0.0018 | 0.352 |
+
+(Co-located fields, §10. On the offset fields the same sweep read −0.94 →
+−1.83 dB with 6.6 % reflected at 150 nm.)
 
 Monotonic in length, with no optimum. That is what the model must say, and
 it is the report's most useful negative result about DBEME on this device:
@@ -146,14 +160,17 @@ it is the report's most useful negative result about DBEME on this device:
 * the grid-snapped path visits the **same 41 cross sections at every
   length**. The mismatch loss of the 40 steps is therefore length-independent
   — from the stored overlaps the single-mode staircase product is
-  `A = Π|t_m|² = 0.724` (−1.40 dB); the cascade at 150 nm, where metal loss is
-  negligible and the steps are 3.7 nm apart, sits at 0.805 with 6.6 % coming
+  `A = Π|t_m|² = 0.723` (−1.41 dB); the cascade at 150 nm, where metal loss is
+  negligible and the steps are 3.7 nm apart, sits at 0.733 with 4.0 % coming
   back as reflection — the one place the coherent multi-step physics is
   visible;
 * what grows with length is the metal loss along the taper (0.085 →
   0.87 dB/µm across the width range): 0.989 at 150 nm, 0.956 at 600 nm, 0.893
-  at 1500 nm as a propagation factor. `A × propagation` is 0.692 at 600 nm
-  against the cascade's 0.718;
+  at 1500 nm as a propagation factor. `A × propagation` is 0.691 at 600 nm
+  against the cascade's 0.690 — on co-located fields the multi-mode cascade
+  and the single-branch staircase agree to three digits, because the
+  spurious couplings to the Berenger branches that the offset fields carried
+  (§10) are gone;
 * the physics that makes a real taper *better* when longer — the
   destructive interference of the field shed at successive steps, which is
   what "adiabatic" means — needs that shed field to be in the basis. Here
@@ -162,7 +179,7 @@ it is the report's most useful negative result about DBEME on this device:
   a metal edge displaces is in neither. The output-side projection loses it,
   correctly, instead of returning it as gain; it cannot make it interfere.
 
-So the −1.44 dB decomposes as **≈ −1.4 dB of staircase mismatch** (a
+So the −1.61 dB decomposes as **≈ −1.4 dB of staircase mismatch** (a
 discretisation artefact that scales with the width step — per-step loss ∝
 Δw², steps ∝ 1/Δw, so the total ∝ Δw — confirmed by the 21-section direct run
 of §4) **and ≈ −0.2 dB of metal loss**; the plain-wire junction adds −0.48 dB
@@ -380,32 +397,33 @@ cells; arcs sub-sampled 8 × 8 so the fill fraction never lands on the
 ε-near-zero mix), and the sharp basis is kept as `Si_plasmonic_slot_1550_sharp`.
 Same grid, same axis, same algebra:
 
-| | sharp corners | rounded, r = 20 nm |
+| | sharp corners (offset fields, §10) | rounded, r = 20 nm (co-located) |
 |---|---|---|
 | slot mode at 0 nm | 1.1447 + 0.0362j, **1.3 dB/µm**, confinement 0.51 | **1.3513 + 0.0246j, 0.87 dB/µm**, 0.50 |
 | Si-end mode at 400 nm | 2.3459 + 0.0026j, 0.093 dB/µm | 2.3538 + 0.0024j, 0.085 dB/µm |
-| single-mode step `|t|²`, first / last interface | 0.99810 / 0.98228 | 0.99821 / 0.98237 |
-| staircase product `A = Π|t_m|²` | 0.702 (−1.54 dB) | 0.724 (−1.40 dB) |
+| single-mode step `|t|²`, first / last interface | 0.99810 / 0.98228 | 0.99819 / 0.98237 |
+| staircase product `A = Π|t_m|²` | 0.702 (−1.54 dB) | 0.723 (−1.41 dB) |
 | propagation factor, 600 nm | 0.945 | 0.956 |
-| converted, 600 nm | 0.684 (**−1.65 dB**) | 0.718 (**−1.44 dB**) |
-| sweep 150 → 1500 nm | −1.37 → −2.09 dB | −0.94 → −1.83 dB |
-| reflected at 150 nm | 0.9 % | 6.6 % |
-| launched column total, 600 nm | 0.721 | 0.741 |
-| physical-channel reciprocity | 1.9e-2 | 2.1e-2 |
+| converted, 600 nm | 0.684 (**−1.65 dB**) | 0.690 (**−1.61 dB**) |
+| sweep 150 → 1500 nm | −1.37 → −2.09 dB | −1.35 → −1.92 dB |
+| reflected at 150 nm | 0.9 % | 4.0 % |
+| launched column total, 600 nm | 0.721 | 0.704 |
+| physical-channel reciprocity | 1.9e-2 | 1.0e-3 |
 | direct EME, 600 nm, 41 / 21 sections | −1.64 / −3.23 dB, `max|ΔT|` 1.3e-3 | −1.43 / −2.84 dB, `max|ΔT|` 9.7e-4 |
 
-The reading. The corner singularity was the **slot mode's** problem, and
-rounding fixes it: the slot plasmon binds much better (0.145 → 0.351 above
+The sharp column still comes from the offset fields, so the two columns are
+not strictly comparable on the cascade rows; the mode rows (eigenvalues) are
+unaffected by the offset and the reading below rests on those and on the
+staircase product. The reading. The corner singularity was the **slot
+mode's** problem, and rounding fixes it: the slot plasmon binds much better (0.145 → 0.351 above
 the air line), its confinement is unchanged, and its loss falls by a third —
 the missing third was absorption and leakage at four sharp wedges. It was
 **not the taper's** problem: the per-step mismatch `1 − |t|²` is the same to
 three digits, because the field a 10 nm step displaces lives in the 20 nm gap
-along the *flat* wall face, 90 nm from the nearest corner. The 0.2 dB gained
-at 600 nm is half less staircase loss (`A`) and half less metal loss along the
-taper; the shortest taper gains most (−1.37 → −0.94 dB) because it has almost
-no metal loss to begin with. What remains between −1.44 dB and the paper's
-−1 dB is the staircase discretisation, ∝ Δw, and the lateral geometry — not
-the corners.
+along the *flat* wall face, 90 nm from the nearest corner. The gain at
+600 nm is half less staircase loss (`A`) and half less metal loss along the
+taper. What remains between −1.61 dB and the paper's −1 dB is the staircase
+discretisation, ∝ Δw, and the lateral geometry — not the corners.
 
 ## 9. The device as published has no bound lateral output on oxide
 
@@ -459,6 +477,32 @@ nanometre in the paper's Table II, bound at both ends, lateral by
 construction, with a 95 % transmission to hit - is where the sweeps go:
 `examples/demo_kocabas_converter.py`, dataset `SiO2_kocabas_set2_1550`,
 report 13.
+
+## 10. The half-cell E/H offset, and what it was responsible for
+
+Found by the SIRAC session (report 07 §23): `PMLModeSolver` zero-padded the
+cell-centred E components onto H's node grid, a half-cell misregistration in
+both axes; `colocate=True` interpolates E onto the nodes as `MSEMpy` does,
+both plasmonic platforms now set it, and it is part of the dataset identity.
+Every number in this report before this section was first measured on the
+offset fields; the rounded platform has been rebuilt and remeasured.
+
+What the offset was **not**: the launched channel's step mismatch. On the
+400 → 390 nm junction the co-located overlaps of the launched mode are the
+offset ones to four digits (`O_ab` 1.00119 vs 1.00121, `O_ba` 0.99701), the
+single-mode `|t|²` per step and the staircase product `A` (0.7233 vs 0.724)
+are unchanged, and so is the projection-side result of §7.5: the input-side
+column power is 1.0018 and the output-side 0.9982 on co-located fields.
+
+What it **was**: the spurious couplings. The launched mode's overlap with
+the other basis members drops from `Σ_j|O_0j|² ≈ 2e-4` per step to ~1e-5;
+the reflection at 150 nm halves (6.6 → 4.0 %), the physical-channel
+reciprocity residual falls twentyfold (2.1e-2 → 1.0e-3), and the cascade
+lands on the single-branch staircase to three digits (0.690 against
+`A × propagation` = 0.691) where the offset fields had it 4 % above. The
+headline moves from −1.44 to **−1.61 dB** at 600 nm: the offset had been
+handing power back into the launched channel through couplings that are not
+there.
 
 ---
 

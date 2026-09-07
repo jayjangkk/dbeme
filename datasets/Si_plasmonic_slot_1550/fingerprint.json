@@ -1,5 +1,6 @@
 {
   "backend": {
+    "colocate": true,
     "confinement_threshold": 0.05,
     "pml_edges": [
       "+x",

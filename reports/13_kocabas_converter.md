@@ -24,12 +24,16 @@ two-axis `(w_si, gap)` dataset here.
 
 **Method.** `PMLBackend` dataset `SiO2_kocabas_set2_1550` (5 nm cell, grid
 snapped so every straight edge sits on a cell boundary at every grid point;
-PML 0.25 µm on four edges; 16 modes about 1.9), scattering cascade,
+PML 0.25 µm on four edges; 20 modes about a shift-invert target of 2.3 —
+§1 records why not 16 about 1.9), scattering cascade,
 output-side interface projection, `force_unitary=False`. The transmission is
 the power in the slot mode at the end of the 200 nm lead-out, and — the
 paper's convention — back-propagated to the tip with the slot mode's own
-loss. The launched mode is the wire's TE-like branch (E along x, the slot's
-polarisation): the 725 nm-tall wire's TM-like branch sits 0.008 above it.
+loss. The launched mode is the wire's TE-like **fundamental** (E along x,
+the slot's polarisation), 2.873 on this grid; a 725 nm-tall wire also carries
+a TM-like fundamental at 3.002 and first-vertical-order TE/TM modes at
+2.443 / 2.451, which a shift-invert target of 1.9 returned *instead of* the
+fundamental (§1).
 
 ---
 
@@ -45,6 +49,7 @@ completes) and from the window study (`kocabas_window.json`):
 | passivity: physical input columns of `|S|²` | `< 1.05` | TBD | |
 | 5.8 DBEME vs direct EME on the design path | `max|ΔT| < 1e-3` | TBD | |
 | 5.7 window: the weakly bound slot modes with 0.5 / 1.5 / 2.5 µm margins | reported | 250 nm slot: 1.4498 + 0.0086j (`L_p` 14.3 µm) / 1.4475 + 0.0060j (20.7) / 1.4476 + 0.0055j (22.3); 220 nm: 14.2 → 19.3 µm; **30 nm: identical** (1.8349 + 0.0243j) | — |
+| 5.13a basis membership along the path: is the launched branch in the stored set at every width? | every physical branch present | target 1.9, 16 modes: the TE-like fundamental (2.87 at 400 nm) **absent** at 300 nm; the tracker linked the first-vertical-order branch into cutoff and the cascade read **−20 dB**. Target 2.3, 20 modes: fundamental present at 400 / 300 / 260 / 160 / 60 / 0 nm (2.873 / 2.541 / 2.326 / 1.800 / 1.534 / 1.450) | ✓ after the change |
 | 5.6 gauge, 5.13 tracking, PML sign, grid alignment, gap as a path parameter | tests | `tests/test_plasmonic_slot.py` | ✓ |
 
 The window row is the one real limit of the platform grid: a mode bound by
@@ -59,17 +64,25 @@ of interest.
 
 ## 2. Modes
 
-### The two ends and the middle (5 nm cell, 0.5 µm margins)
+### The wire, the middle and the slot (5 nm cell, 0.5 µm margins, target 2.3)
 
-| cross section | branch | `n_eff` | `L_p` | confinement |
-|---|---|---|---|---|
-| wire 400 × 725 nm, gap 75 nm | TE-like (launched) | 2.4427 + 0.0002j | 0.63 mm | 0.91 |
-| | TM-like | 2.4505 + 0.0002j | 0.75 mm | 0.98 |
-| | next TE-like | 1.8408 + 0.0019j | 64 µm | 0.89 |
-| mid-taper, Si 200 nm, gap 100 nm | TE-like | 1.9864 + 0.0027j | 46 µm | 0.92 |
-| | TM-like | 1.9327 + 0.0003j | 363 µm | 0.91 |
-| | slot-like | 1.4485 + 0.0250j | 4.9 µm | 0.45 |
-| slot 250 nm, gold 250 nm | slot mode (port) | **1.4498 + 0.0086j** | **14.3 µm** | 0.49 |
+| cross section | branch | `n_eff` | confinement |
+|---|---|---|---|
+| wire 400 × 725 nm, gap 75 nm | TM-like fundamental | 3.002 + 0.000j | 0.99 |
+| | **TE-like fundamental (launched)** | **2.873 + 0.000j** | 0.98 |
+| | first vertical order, TM / TE | 2.451 / 2.443 | 0.98 / 0.91 |
+| | second order, TE / TM | 1.841 / 1.783 | 0.89 / 0.86 |
+| | slot-like | 1.451 + 0.030j | 0.22 |
+| Si 260 nm, gap 95 nm | TM / TE fundamental | 2.748 / 2.326 | 0.98 / 0.96 |
+| Si 160 nm, gap 105 nm | TM / TE fundamental | 2.318 / 1.800 | 0.95 / 0.85 |
+| Si 90 nm, gap 115 nm | TM / TE fundamental | 1.751 / 1.592 | 0.78 / 0.71 |
+| slot 250 nm, gold 250 nm | slot mode (port) | **1.4498 + 0.0086j** (`L_p` 14.3 µm) | 0.49 |
+
+The TE-like fundamental descends continuously — 2.873, 2.541 (300 nm),
+2.326, 2.159 (230), 1.800 (160), 1.693 (130), 1.642 (110), 1.592 (90) — and
+becomes the slot mode: the wire mode and the slot mode are one supermode,
+which is what an adiabatic converter needs. The TM-like fundamental stays
+above it all the way and ends just below the silica line.
 
 The output mode is bound by only 0.006 above the silica line: the
 silica-filled 250 nm gap's MIM index is barely above 1.444 to begin with, and

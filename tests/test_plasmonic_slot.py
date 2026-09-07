@@ -387,3 +387,15 @@ def test_kocabas_grid_puts_every_edge_on_a_cell_boundary():
         for g in info.parameters["gap"][::7]:
             _, inner, _ = section.edges(w, g)
             assert np.abs(x - 0.5 * w).min() < 1e-15 and np.abs(x - inner).min() < 1e-15
+
+
+def test_both_plasmonic_platforms_colocate_e_and_h():
+    """The half-cell E/H offset (report 07 section 23) is off by default in
+    PMLModeSolver; every dataset built on these platforms must have it fixed,
+    and the identity must say so."""
+    from em_simulation.platforms import kocabas_converter_dataset_info, plasmonic_converter_dataset_info
+
+    for info in (plasmonic_converter_dataset_info(cell=20e-9)(), kocabas_converter_dataset_info(cell=25e-9)()):
+        backend = info.get_fde_backend()
+        assert backend.colocate is True
+        assert backend.fingerprint()["colocate"] is True

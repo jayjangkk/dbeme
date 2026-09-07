@@ -86,8 +86,14 @@ cross sections. Three mitigations, apply all of them:
 
 1. **Neighbour-only overlaps.** Only adjacent grid points are ever needed
    (`interp_multi_adj_pts` already inserts intermediate points), so cost is
-   `~d · N^d · M²`, not `N^{2d}`. Verify this holds before going past 2-D —
-   if `DataUpdater` ever builds a full pair table, fix that first.
+   `~d · N^d · M²`, not `N^{2d}`. *Verified and tightened 2026-09-07:* the
+   updater never built a pair table, but it linked every visited point to
+   **all** its grid neighbours — up to `2d + 1` solves per path point, three
+   on the two-axis Kocabaş dataset with two of them for points no device
+   visits. A geometry now passes its path links (`Geometry._path_links`,
+   `DataUpdater.calc_data_point_modified(..., neighbours)`), so a path costs
+   one solve per distinct point; `populate_dataframe` keeps the full
+   neighbourhood. `tests/test_dataset_links.py`.
 2. **Reparameterise to cut dimensions.** For a coupled pair the supermode
    physics depends on `Δw / κ_coupling`, so sweep `(w̄, Δw)` at a small number
    of coarse `gap` values instead of a dense 3-D `(w1, w2, gap)`.
@@ -369,6 +375,29 @@ threshold is dropped deliberately — a low best-overlap means tracking is
 
 *Regression:* `tests/test_mode_basis.py`. Found by
 `reports/07_sirac_optimization.md` §8.2.
+
+**5.13a Shift-invert target on a lossy dataset — put it among the physical
+branches.** `PMLBackend` returns the `N` eigenvalues nearest to `target²`.
+The Berenger band of a PML basis sits at `Re n ≈ 1.2–1.45`, `Im ≈ 0.2–0.35`,
+i.e. `|n²| ≈ 1.5–2`, and there are dozens of them. A target *below* the
+physical branches (1.9 on the Kocabaş converter, whose wire mode is 2.44)
+makes the Berenger modes nearer than the fundamental, which then drops out of
+the set at some widths; the tracker links what is left, and the launched
+power rode a higher-order branch into cutoff — 99 % lost. Place the target so
+that every physical branch of the path beats the Berenger band in `|n² −
+target²|` (2.3 there: wire 1.2, slot 2.7, Berenger ≈ 3.2), and check the
+stored, *unordered* sets along the path for missing members before trusting
+a cascade (`reports/13` §1).
+
+**5.13b E and H on one grid.** `compute_other_fields` returns E on the
+cell centres and H on the nodes; `PMLModeSolver` zero-padded E to the node
+shape, a half-cell misregistration that makes every unconjugated overlap
+non-symmetric and every interface matrix gain or lose `|anti(M)|²`
+(constant-width guide 1.07; report 07 §23, the SIRAC session's finding).
+`PMLModeSolver(colocate=True)` interpolates E onto the nodes as `MSEMpy`
+does; it is off by default in the solver and **on in both plasmonic
+platforms**, and it enters the dataset identity. Any PML dataset built
+before 2026-09-07 carries the defect.
 
 **5.14 Single wavelength.** The dataset is fixed at 1550 nm. Demos 2 and 3
 both make **bandwidth** claims (Fargas: 50±1 % over 200 nm, S+C+L). Add a λ

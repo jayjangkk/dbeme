@@ -397,6 +397,7 @@ def plasmonic_converter_dataset_info(
     pml_thickness=0.25e-6,
     substrate="air",
     corner_radius=20e-9,
+    colocate=True,
 ):
     """Region of the Si-wire-to-plasmonic-slot converter: the lateral taper.
 
@@ -443,6 +444,12 @@ def plasmonic_converter_dataset_info(
         a singular, unresolvable field that every taper step sheds; the
         sharp variant is kept as ``Si_plasmonic_slot_1550_sharp`` for the
         comparison in report 12 section 8.
+    :param colocate: Interpolate E onto H's node grid (``PMLModeSolver``).
+        On, always, for a dataset built after 2026-09-07: the half-cell E/H
+        offset of the zero-padded fields made every stored overlap
+        non-symmetric (report 07 section 23), which is the ``O_ab != O_ba``
+        that report 12 section 7.5 measured on this platform.  The key enters
+        the dataset identity, so a cache built without it is refused.
     """
     from .fde.pml import PMLBackend
     from .fde.slot_converter import PlasmonicSlotConverter
@@ -478,6 +485,7 @@ def plasmonic_converter_dataset_info(
             # up, and a wide slot leaks into the oxide below
             pml_edges=("+x", "-x", "+y", "-y"),
             num_modes=modes,
+            colocate=colocate,
         )
 
     step_nm = 2 * cell * 1e9
@@ -581,13 +589,14 @@ def kocabas_path(set_number=2, w_gap=None, l_taper=None, w_slot=None):
 def kocabas_converter_dataset_info(
     set_number=2,
     wavelength=1.55e-6,
-    mode_numbers=16,
+    mode_numbers=20,
     cell=5e-9,
-    target_neff=1.9,
+    target_neff=2.3,
     pml_thickness=0.25e-6,
     gap_range=(25e-9, 175e-9),
     corner_radius=0.0,
     plate_reach=0.3e-6,
+    colocate=True,
 ):
     """Kocabas's Si-wire-to-plasmonic-slot converter as a two-axis dataset.
 
@@ -596,6 +605,17 @@ def kocabas_converter_dataset_info(
     plasmonic slot between films as thin as 30 nm bind: the slot is
     silica-filled and the environment symmetric, so its index sits above the
     surroundings - unlike an air slot on oxide (report 12 section 9).
+
+    The shift-invert target sits **among the physical branches**, not below
+    them.  Everything physical on the design path lies between the wire's
+    2.44 and the slot's 1.45, while the Berenger band is at ``Re`` 1.2-1.45
+    with ``Im`` 0.2-0.35 (``|n^2|`` about 1.5-2).  About a target of 1.9 the
+    Berenger modes are *nearer* in ``n^2`` than the wire mode is, so once
+    enough of them exist the fundamental drops out of the returned set - it
+    did at 300 nm of Si - and the tracker links whatever is left: the
+    launched power then rode a higher-order branch into cutoff and 99 % was
+    lost.  About 2.3 the wire mode (distance 1.2) and the slot mode (2.7)
+    both beat the Berenger band (about 3.2), at every width.
 
     Axes: ``w_si`` in steps of ``2 cell`` and ``gap`` in steps of ``cell``, so
     both the Si edge and the metal's inner edge fall on cell boundaries at
@@ -642,7 +662,7 @@ def kocabas_converter_dataset_info(
             cross_section, target_neff=target_neff, parameter_names=names,
             wavelength=wl, window=window, mesh=mesh_points, mesh_y=mesh_y,
             pml_thickness=pml_thickness, pml_edges=("+x", "-x", "+y", "-y"),
-            num_modes=modes,
+            num_modes=modes, colocate=colocate,
         )
 
     return _make_dataset_info(

@@ -942,6 +942,23 @@ restores upstream's form. Both routes go through the one method, so the
 Stage 4 gate holds for either setting. Reciprocity is identical for both
 (1e-12 on the lossless interface). `tests/test_smatrix_direct.py`.
 
+## 12. E and H were half a cell apart (found in the SIRAC session, 2026-09-07)
+
+Report 07 §23 has the full account: `compute_other_fields` returns E on the
+cell centres and H on the nodes, `PMLModeSolver` zero-padded E to the node
+shape, and the half-cell misregistration made every unconjugated overlap
+non-symmetric (`anti(M)` 3.7e-2 on a Si pair; a constant-width guide
+transmitted 1.07). `PMLModeSolver(colocate=True)` interpolates E onto the
+nodes as `MSEMpy` does; it is off by default in the solver so that datasets
+built before it keep their identity, it enters the fingerprint when on, and
+both plasmonic platforms set it. Report 12 §10 measures what it changed on
+the plasmonic converter: the spurious couplings between the launched branch
+and the Berenger modes (2e-4 → 1e-5 per step) and the reciprocity residual
+(2.1e-2 → 1.0e-3), not the launched channel's own step mismatch. Nothing in
+sections 1–6 of this report depends on the overlaps; sections 7–8 (the
+mode-count study) were run on the offset fields and their numbers should be
+read with that in mind.
+
 ---
 
 ### Reproducing
