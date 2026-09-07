@@ -510,3 +510,152 @@ def plasmonic_converter_dataset_info(
         cladding=air(),
         backend_factory=backend,
     )
+
+
+# --------------------------------------------------------------------------
+# Kocabas: Si wire to plasmonic slot, fully embedded in SiO2
+# --------------------------------------------------------------------------
+
+#: Table II of S. E. Kocabas, arXiv:1801.00833 (2017): optimal converters for
+#: 30 and 250 nm gold, everything in nm.  ``start`` is the untapered lead-in
+#: over which the slot already exists, ``extra`` the slot after the tip.  The
+#: Si is ``w_si -> w_end`` over ``l_taper`` while the slot goes independently
+#: from ``w_si + 2 w_gap`` to ``w_slot``.
+KOCABAS_SETS = {
+    1: dict(h_au=30, h_si=300, w_si=400, w_slot=30, l_taper=600, w_end=0, w_gap=20,
+            start=200, extra=200, transmission=0.88),
+    2: dict(h_au=250, h_si=725, w_si=400, w_slot=250, l_taper=1700, w_end=0, w_gap=75,
+            start=200, extra=200, transmission=0.95),
+}
+#: Table I of the same paper at 1550 nm, in this project's e^{i beta z}
+#: convention (the paper uses e^{+i omega t}, so its Im(eps) is negative).
+KOCABAS_EPS_SI = 12.085
+KOCABAS_EPS_SIO2 = 2.0852
+KOCABAS_EPS_AU = -126.80 + 5.3664j
+
+
+def kocabas_materials():
+    """The paper's constants as ``ConstantIndex`` materials."""
+    from .fde.materials import ConstantIndex
+
+    n_au = complex(np.sqrt(KOCABAS_EPS_AU))
+    if n_au.imag < 0:
+        n_au = -n_au
+    return (
+        ConstantIndex(float(np.sqrt(KOCABAS_EPS_SI)), name="Si_Kocabas"),
+        ConstantIndex(float(np.sqrt(KOCABAS_EPS_SIO2)), name="SiO2_Kocabas"),
+        ConstantIndex(n_au, name="Au_Kocabas"),
+    )
+
+
+def kocabas_path(set_number=2, w_gap=None, l_taper=None, w_slot=None):
+    """``{"w_si": f(z), "gap": f(z)}`` and the total length of one converter.
+
+    Si width ``w_si -> w_end`` linearly over ``l_taper`` after a ``start``
+    lead-in; the slot edges go linearly from ``w_si + 2 w_gap`` to ``w_slot``
+    over the same length and stay at ``w_slot`` for ``extra``.  The gap the
+    cross section sees is half the difference.  Any of ``w_gap``, ``l_taper``,
+    ``w_slot`` may be overridden (metres) for a sweep.
+    """
+    p = dict(KOCABAS_SETS[set_number])
+    w_gap = p["w_gap"] * 1e-9 if w_gap is None else float(w_gap)
+    l_taper = p["l_taper"] * 1e-9 if l_taper is None else float(l_taper)
+    w_slot = p["w_slot"] * 1e-9 if w_slot is None else float(w_slot)
+    w_in, w_end = p["w_si"] * 1e-9, p["w_end"] * 1e-9
+    start, extra = p["start"] * 1e-9, p["extra"] * 1e-9
+    slot_in = w_in + 2 * w_gap
+
+    def frac(z):
+        return np.clip((np.asarray(z, dtype=float) - start) / l_taper, 0.0, 1.0)
+
+    def w_si(z):
+        return w_in + (w_end - w_in) * frac(z)
+
+    def gap(z):
+        slot = slot_in + (w_slot - slot_in) * frac(z)
+        return 0.5 * (slot - w_si(z))
+
+    return {"w_si": w_si, "gap": gap}, start + l_taper + extra
+
+
+def kocabas_converter_dataset_info(
+    set_number=2,
+    wavelength=1.55e-6,
+    mode_numbers=16,
+    cell=5e-9,
+    target_neff=1.9,
+    pml_thickness=0.25e-6,
+    gap_range=(25e-9, 175e-9),
+    corner_radius=0.0,
+    plate_reach=0.3e-6,
+):
+    """Kocabas's Si-wire-to-plasmonic-slot converter as a two-axis dataset.
+
+    Everything is embedded in SiO2 and the Si and the gold are centred on
+    each other vertically (the paper's Fig. 1b), which is what lets a
+    plasmonic slot between films as thin as 30 nm bind: the slot is
+    silica-filled and the environment symmetric, so its index sits above the
+    surroundings - unlike an air slot on oxide (report 12 section 9).
+
+    Axes: ``w_si`` in steps of ``2 cell`` and ``gap`` in steps of ``cell``, so
+    both the Si edge and the metal's inner edge fall on cell boundaries at
+    every grid point (report 12 section 7.3).  The slot tapers independently
+    of the Si in this layout, so the gap runs along the path and both axes
+    are visited; lazy evaluation solves only the points a device touches.
+    """
+    from .fde.pml import PMLBackend
+    from .fde.slot_converter import PlasmonicSlotConverter
+
+    p = KOCABAS_SETS[set_number]
+    si, sio2, au = kocabas_materials()
+    section = PlasmonicSlotConverter(
+        si_thickness=p["h_si"] * 1e-9,
+        metal_thickness=p["h_au"] * 1e-9,
+        metal_bottom=-0.5 * p["h_au"] * 1e-9,          # centred on the Si
+        gap=p["w_gap"] * 1e-9,
+        plate_reach=plate_reach,
+        corner_radius=corner_radius,
+        core_mask_margin=0.0,
+        sweep_gap=True,
+        core=si, metal=au, cladding=sio2, substrate=sio2,
+        reference_wavelength=wavelength,
+    )
+
+    def cross_section(core, cladding, wl, names):
+        return section
+
+    step_nm = 2 * cell * 1e9
+    g0, g1 = gap_range
+    parameters = {
+        "w_si": axis(nm(0, p["w_si"] + 0.5 * step_nm, step_nm)),
+        "gap": axis(nm(g0 * 1e9, g1 * 1e9 + 0.5 * cell * 1e9, cell * 1e9)),
+    }
+    half_width = 0.5 * p["w_si"] * 1e-9 + g1 + plate_reach + 0.5e-6
+    y_half = 0.5 * max(p["h_si"], p["h_au"]) * 1e-9 + 0.5e-6
+    half_cells = int(np.ceil(half_width / cell))
+    y_cells = int(np.ceil(y_half / cell))
+    half_width, y_half = half_cells * cell, y_cells * cell
+    mesh, mesh_y = 2 * half_cells + 1, 2 * y_cells + 1
+
+    def backend(cross_section, names, wl, window, modes, mesh_points):
+        return PMLBackend(
+            cross_section, target_neff=target_neff, parameter_names=names,
+            wavelength=wl, window=window, mesh=mesh_points, mesh_y=mesh_y,
+            pml_thickness=pml_thickness, pml_edges=("+x", "-x", "+y", "-y"),
+            num_modes=modes,
+        )
+
+    return _make_dataset_info(
+        name=(f"Kocabas set {set_number}: Si wire {p['w_si']} x {p['h_si']} nm to a "
+              f"{p['w_slot']} nm slot in {p['h_au']} nm Au, SiO2-embedded"),
+        description="complex neff, TE_pol and overlaps of the (w_si, gap) family, lossy PML basis",
+        wavelength=wavelength,
+        parameters=parameters,
+        parameter_names=("w_si", "gap"),
+        cross_section_factory=cross_section,
+        window=(half_width, -y_half, y_half),
+        mode_numbers=mode_numbers,
+        mesh=mesh,
+        cladding=sio2,
+        backend_factory=backend,
+    )

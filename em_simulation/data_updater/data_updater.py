@@ -336,20 +336,32 @@ class DataUpdater:
         # check parameters in lms files
         pass
 
-    def calc_data_point(self, parameter_point):
+    def calc_data_point(self, parameter_point, neighbours=None):
         """Deprecated alias for :meth:`calc_data_point_modified`."""
-        return self.calc_data_point_modified(parameter_point)
+        return self.calc_data_point_modified(parameter_point, neighbours)
 
-    def calc_data_point_modified(self, parameter_point):
+    def calc_data_point_modified(self, parameter_point, neighbours=None):
         """Solve a parameter point and its not-yet-linked neighbours.
 
         Adds ``neff``/``TE_pol`` for every newly seen point and the overlap
         matrices for every new (point, neighbour) pair, in both directions.
 
+        :param neighbours: The grid points this one must be linked to.  A
+            geometry passes the point's neighbours *on its path*; the cascade
+            needs overlaps only between consecutive path points, and solving
+            every grid neighbour instead costs up to ``2d + 1`` solves per
+            visited point on a ``d``-axis dataset - on the two-axis Kocabas
+            converter that was three solves per path point, two of them for
+            points no device ever visits.  ``None`` keeps the original
+            behaviour (all grid neighbours), which ``populate_dataframe`` and
+            a bare ``update_dataset`` still rely on.
         :returns: ``1`` if anything was computed, ``0`` if already complete.
         :rtype: int
         """
-        adj_points = self.get_adjacent_points(parameter_point)
+        if neighbours is None:
+            adj_points = self.get_adjacent_points(parameter_point)
+        else:
+            adj_points = [tuple(q) for q in neighbours if tuple(q) != tuple(parameter_point)]
         adj_points = self.filter_out_calculated_points(parameter_point, adj_points)
         if len(adj_points) == 0:
             return 0

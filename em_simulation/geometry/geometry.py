@@ -71,7 +71,8 @@ class Geometry():
         # grid points wherever the path moves by more than one step, and those
         # points need to be in the dataset too.
         EME_path, EME_delta_zs, multi_adj_index, index_mapping = self.interp_multi_adj_pts(simul_params, delta_zs)
-        self.update_dataset(list(dict.fromkeys(list(extended_simul_params) + list(EME_path))))
+        links = self._path_links(EME_path, simul_params, additional_param_dict)
+        self.update_dataset(list(dict.fromkeys(list(extended_simul_params) + list(EME_path))), links)
 
         # get data from dataset
         overlap_ab, overlap_ba = self._get_overlaps(EME_path)
@@ -218,14 +219,50 @@ class Geometry():
         #endregion plots
 
     #region update dataset
-    def update_dataset(self, simulation_parameters):
+    def update_dataset(self, simulation_parameters, links=None):
+        """Solve what the dataset lacks for these points.
+
+        :param links: ``{point: {neighbour, ...}}`` from :meth:`_path_links`.
+            With it, each point is linked only to its neighbours on the path;
+            without it, to every grid neighbour (the original behaviour).
+        """
         iterator = tqdm(simulation_parameters) if self._verbose else simulation_parameters
         for point in iterator:
-            is_calculated = self.calc_data_point(point)
+            neighbours = None if links is None else sorted(links.get(tuple(point), ()))
+            is_calculated = self.calc_data_point(point, neighbours)
             if is_calculated:
                 self.data.save_data()
         self.data.save_data()
         pass
+
+    @staticmethod
+    def _path_links(eme_path, simul_params=(), additional_param_dict=None):
+        """Which (point, neighbour) overlaps a path actually consumes.
+
+        Consecutive points of the expanded EME path, both directions, plus the
+        mutual-neighbour detours ``get_extended_simul_params`` records for a
+        diagonal step (``p_i -> m -> p_{i+1}``).  Nothing else: on a
+        multi-axis dataset the off-path grid neighbours would otherwise be
+        solved too, and never used.
+        """
+        links = {}
+
+        def link(a, b):
+            a, b = tuple(a), tuple(b)
+            if a == b:
+                return
+            links.setdefault(a, set()).add(b)
+            links.setdefault(b, set()).add(a)
+
+        path = [tuple(p) for p in eme_path]
+        for a, b in zip(path[:-1], path[1:]):
+            link(a, b)
+        params = [tuple(p) for p in simul_params]
+        for i, p in enumerate(params[:-1]):
+            for m in (additional_param_dict or {}).get(p, ()):
+                link(p, m)
+                link(m, params[i + 1])
+        return links
 
     def check_if_multi_adj_pt(self, pt1, pt2):
         diff_param = 0
@@ -394,9 +431,8 @@ class Geometry():
 
         return additional_overlap_dict
 
-    def calc_data_point(self, parameter_point):
-        # self.data.calc_data_point(parameter_point)
-        return self.data.calc_data_point_modified(parameter_point)
+    def calc_data_point(self, parameter_point, neighbours=None):
+        return self.data.calc_data_point_modified(parameter_point, neighbours)
 
     def check_data_point_in_dataset(self, param_point):
         return self.data.check_data_point_in_dataset(param_point)

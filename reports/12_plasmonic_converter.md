@@ -407,6 +407,59 @@ no metal loss to begin with. What remains between −1.44 dB and the paper's
 −1 dB is the staircase discretisation, ∝ Δw, and the lateral geometry — not
 the corners.
 
+## 9. The device as published has no bound lateral output on oxide
+
+Jae's request for the paper's own curves - coupling vs air gap at 600 nm and
+vs taper length at 40 nm - forced the question §2 had deferred: what does
+the 50 × 20 nm core look like, and does a lateral model of it have a port at
+all. The NTT review (`references/ntttechnical.pdf`) settles the geometry:
+gold with **air** as the insulator, on an SOI substrate, and a converter
+"tapered in both the lateral and vertical directions", coupling to an MIM
+"that differs greatly in height via the air gap". The core is an air slot
+between 20 nm-thick gold films on the buried oxide, air above, 50 nm wide.
+
+Solved as a 2-D cross section that core has no bound mode, and it is not a
+resolution or a metal-thickness effect:
+
+| air slot on SiO₂, air above, `w_si = 0` | best quasi-mode | loss |
+|---|---|---|
+| gold 20 nm, slot 50 nm, 5 nm cell | 1.34 + 0.15j | 5.2 dB/µm |
+| gold 20 nm, slot 50 nm, **2.5 nm cell** | 1.37 + 0.11j | 3.9 dB/µm |
+| gold 20 nm, slot 20 nm, 2.5 nm cell | 1.37 + 0.11j | 3.7 dB/µm |
+| gold 50 / 100 nm, slot 50 nm | 1.35 / 1.36 + 0.13 / 0.12j | 4.4 / 4.1 dB/µm |
+| Si-loaded: 50 or 100 nm Si strip between the films | 1.35 / 1.36 + 0.14 / 0.13j | ~4.8 dB/µm |
+
+Jae's Lumerical FDE on the 20 × 20 nm core found only `0.05 + 1.17i` - an
+evanescent, below-cutoff solution, not a mode - so two solvers agree. The
+picture that explains all of it is elementary: a lateral slot mode is the
+infinite-plate MIM mode confined vertically by the film height, i.e. a slab
+of index `n_MIM` and thickness `h_Au` in the surrounding dielectric. For an
+**air**-filled 50 nm gap `n_MIM` is 1.39, already below the oxide's 1.444;
+20 nm of height then leaves nothing to bind. And a Si strip narrower than
+~200 nm on oxide is below the substrate index by itself, so the narrow half
+of a lateral-only taper has no bound mode whatever the metal does. The
+published device escapes this with its vertical taper, which one swept width
+cannot represent.
+
+The same estimate says when a thin-film slot *does* bind, and Kocabas's
+converters (arXiv:1801.00833) are the test: they are fully embedded in SiO₂,
+so the slot is silica-filled (`n_MIM` = 2.28 for 30 nm) and the environment
+symmetric. Against his structure the solver reads:
+
+| SiO₂-embedded slot, his gold | solver | slab estimate | paper |
+|---|---|---|---|
+| 250 nm gold, 30 nm slot | 1.835 + 0.024j, confinement 0.96 | 1.74 | → 2.28 as the height grows |
+| 100 nm gold, 30 nm slot | 1.453 + 0.052j | 1.52 | — |
+| 30 nm gold, 30 nm slot | 1.467 + 0.038j, `L_p` 3.2 µm | 1.455 | `L_p` 6.1 µm |
+
+Bound in every row, on the slab-estimate curve, with the barely bound 30 nm
+case within a factor two of the paper's propagation length (a 1 µm
+evanescent tail on a 0.6 µm window). That geometry - specified to the
+nanometre in the paper's Table II, bound at both ends, lateral by
+construction, with a 95 % transmission to hit - is where the sweeps go:
+`examples/demo_kocabas_converter.py`, dataset `SiO2_kocabas_set2_1550`,
+report 13.
+
 ---
 
 ### Reproducing

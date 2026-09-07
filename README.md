@@ -58,7 +58,7 @@ upstream's. The solver boundary and the Python-3.13 compatibility work are new.
 | `assemble.py` | field normalisation, the backward-mode basis, and the overlap matrices |
 | `_compat.py` | shims that let emepy/EMpy import and run on NumPy 2 / SciPy 1.18 / Python 3.13 |
 | `pml.py` | `PMLModeSolver` / `PMLBackend`: EMpy's vectorial solver on a complex-stretched grid, shift-invert mode selection and a core-confinement filter, so `n_eff` is complex and radiation and metal loss exist (reports 06, 12) |
-| `slot_converter.py` | `PlasmonicSlotConverter`: a Si core between two gold walls with an air gap, complex permittivity averaged in ε, a `core_mask` for the confinement filter |
+| `slot_converter.py` | `PlasmonicSlotConverter`: a Si core between two gold walls with a gap, complex permittivity averaged in ε, rounded corners, a `core_mask` for the confinement filter; the gap can be a second path parameter (`sweep_gap`) for slots that taper independently of the Si |
 
 **New — `em_simulation/reference/`**
 
@@ -254,6 +254,7 @@ python sweep_wavelength.py             # -> reports/03  (O band, ~45 min)
 python demo_sidewall_angle.py          # -> reports/04  (~80 min)
 python demo_rapid_adiabatic_coupler.py # -> reports/05  (~90 min)
 python demo_plasmonic_converter.py     # -> reports/12  (lossy PML dataset, ~2 h cold)
+python demo_kocabas_converter.py       # -> reports/13  (SiO2-embedded Si-to-slot converter, two-axis lossy dataset, hours cold)
 python study_rac_bandwidth.py air      # RAC splitting vs wavelength and length
 python study_rac_air_basis.py          # the air-clad bound-mode basis
 python study_bend_loss_reference.py    # -> reports/06  (PML phase 1 gate, ~2 s)
@@ -594,7 +595,8 @@ em_simulation/          ported DBEME core
 datasets/
   Si_fulletch_220nm/    220 nm full-etch Si strip, SiO2 clad
   Si_pair_*, Si_bilevel_*, Si_rac_*   coupled pairs, rib, RAC (reports 01-05)
-  Si_plasmonic_slot_1550[_gap40|_c4]  lossy PML basis: Si wire in a gold slot
+  Si_plasmonic_slot_1550[_sharp|_gap40|_c4]  lossy PML basis: Si wire in a gold slot (report 12)
+  SiO2_kocabas_set2_1550               two-axis (w_si, gap) lossy basis: Kocabas's embedded converter (report 13)
 backups/                timestamped snapshots of em_simulation/ (backup.py,
                         restore.py) taken before each change to the algebra
 examples/               demo scripts and studies, figures in output/

@@ -309,3 +309,141 @@ def test_mode_zero_is_the_best_confined_mode(solver):
         {"top_width": 1.0e-6, "curvature": 0.0}, 1.70
     )
     assert confinement[0] == pytest.approx(confinement.max(), abs=1e-9)
+
+
+# ------------------------------------------ E/H co-location (reports/07 section 23)
+#
+# `compute_other_fields` returns E on the cell centres and H on the nodes.
+# Zero-padding E to the node shape put the two half a cell apart, which broke
+# reciprocity of the unconjugated overlap and made every interface matrix gain
+# or lose |anti(M)|^2.  `colocate=True` interpolates E onto the nodes as
+# `MSEMpy.get_mode` does.  It is off by default so existing datasets keep
+# their identity - the first test pins that.
+
+_COARSE = dict(window=(5.0e-6, -1.6e-6, 1.6e-6), pml_thickness=2.0e-6)
+_STRAIGHT = {"top_width": 1.0e-6, "curvature": 0.0}
+
+
+def _reciprocity_blocks(solver_, params, target, modes):
+    """``max|anti(M)|`` of the biorthogonalised basis, split by mode class.
+
+    Returns ``(guided x guided, guided x continuum)``.  The continuum x
+    continuum block is deliberately left out: a coarse PML window returns
+    exactly degenerate Berenger pairs, and inside a degenerate pair the
+    antisymmetric part is an arbitrary ARPACK rotation (CLAUDE.md 5.6), not a
+    field-placement error.  That is a separate, open item.
+    """
+    import em_simulation.data_updater.overlap_calculation_tool as oct
+    from em_simulation.fde.assemble import biorthogonalise, overlap_matrix
+
+    data, _ = solver_.mode_data(params, target, num_modes=modes)
+    E = data.E.astype(np.complex128)[None].copy()
+    H = data.H.astype(np.complex128)[None].copy()
+    E, H = oct.normalize_field(E, H, data.x, data.y, 2)
+    E, H = biorthogonalise(E, H, data.x, data.y)
+    M = overlap_matrix(E[0], H[0], data.x, data.y)
+    a = np.abs(0.5 * (M - M.T))
+    guided = np.flatnonzero(np.abs(data.neff.imag) < 1e-6)
+    cont = np.flatnonzero(np.abs(data.neff.imag) >= 1e-6)
+    assert len(guided) >= 2 and len(cont) >= 1, (data.neff, "fixture changed")
+    return a[np.ix_(guided, guided)].max(), a[np.ix_(guided, cont)].max()
+
+
+def test_colocate_is_off_by_default_and_the_fingerprint_does_not_change():
+    from em_simulation.fde.pml import PMLBackend
+
+    off = PMLBackend(_sin_cross_section(), target_neff=1.70, mesh=60,
+                     num_modes=4, **_COARSE)
+    on = PMLBackend(_sin_cross_section(), target_neff=1.70, mesh=60,
+                    num_modes=4, colocate=True, **_COARSE)
+    assert off.colocate is False
+    # Every PML dataset built before the flag existed must keep its identity.
+    assert "colocate" not in off.fingerprint()
+    assert on.fingerprint()["colocate"] is True
+    assert {k: v for k, v in on.fingerprint().items() if k != "colocate"} == off.fingerprint()
+
+
+def test_colocation_moves_the_electric_field_only_and_keeps_the_grid():
+    off = PMLModeSolver(_sin_cross_section(), mesh=90, num_modes=4, **_COARSE)
+    on = PMLModeSolver(_sin_cross_section(), mesh=90, num_modes=4, colocate=True,
+                       **_COARSE)
+    d_off, _ = off.mode_data(_STRAIGHT, 1.70)
+    d_on, _ = on.mode_data(_STRAIGHT, 1.70)
+    assert np.array_equal(d_on.x, d_off.x) and np.array_equal(d_on.y, d_off.y)
+    assert np.allclose(d_on.neff, d_off.neff, rtol=1e-6)
+    # H was already on the nodes: unchanged up to the gauge.
+    assert np.allclose(np.abs(d_on.H[0]), np.abs(d_off.H[0]), rtol=1e-3, atol=1e-6)
+    # E moved by half a cell, which is visible where the field has a gradient.
+    scale = np.abs(d_off.E[0, 0]).max()
+    assert np.abs(np.abs(d_on.E[0, 0]) - np.abs(d_off.E[0, 0])).max() > 1e-3 * scale
+
+
+def test_colocated_fields_restore_reciprocity():
+    """The half-cell E/H offset, measured on the fixture at its own mesh.
+
+    Si pair (reports/07 section 23): 3.7e-2 -> 1.6e-3.  Here, SiN strip,
+    mesh 180, N = 4: guided x guided 3.9e-5 -> 3e-15, guided x continuum
+    3.4e-2 -> 1.8e-6.  The thresholds below are two orders looser than that.
+    """
+    crop_gg, crop_gc = _reciprocity_blocks(
+        PMLModeSolver(_sin_cross_section(), mesh=180, num_modes=4, **_COARSE),
+        _STRAIGHT, 1.70, 4)
+    node_gg, node_gc = _reciprocity_blocks(
+        PMLModeSolver(_sin_cross_section(), mesh=180, num_modes=4, colocate=True,
+                      **_COARSE),
+        _STRAIGHT, 1.70, 4)
+    print(f"\n  anti(M) guided x guided: crop {crop_gg:.3e} -> {node_gg:.3e};"
+          f"  guided x continuum: crop {crop_gc:.3e} -> {node_gc:.3e}")
+    assert crop_gc > 1e-3                      # the defect is really there to fix
+    assert node_gc < 1e-2 * crop_gc            # and co-location removes it
+    assert node_gc < 1e-4
+    assert node_gg < 1e-10
+
+
+def test_colocated_constant_guide_transmits_unity():
+    """The invariant that caught the half-cell offset (reports/07 section 23).
+
+    Twenty identical sections: every interface is a section against itself,
+    so the guided modes must transmit exactly 1 whatever the basis contains.
+    On the Si *pair* the crop gave 1.03-1.07 and co-location 1.0001.
+
+    This fixture is a single symmetric strip whose two guided modes have
+    negligible mutual ``anti(M)`` (3.9e-5), so here the crop *also* passes at
+    1.0000 - on this geometry the defect lives in the guided x continuum
+    block, which ``test_colocated_fields_restore_reciprocity`` measures.  The
+    test is kept as the end-to-end guard on the co-located cascade: any change
+    to ``mode_data`` or ``assemble`` that breaks passivity of a PML basis
+    breaks this.
+    """
+    from em_simulation import DataExtractor, DirectParametricPath
+    from em_simulation.fde.pml import PMLBackend
+    from studies.sirac.device import lumped_smatrix
+
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    length = 20e-6
+    const = {
+        "top_width": lambda z: np.full_like(np.atleast_1d(z).astype(float), 1.0e-6),
+        "curvature": lambda z: np.zeros_like(np.atleast_1d(z).astype(float)),
+    }
+
+    def guided_transmission(colocate):
+        backend = PMLBackend(_sin_cross_section(), target_neff=1.70, mesh=90,
+                             num_modes=4, colocate=colocate, **_COARSE)
+        extractor = DataExtractor(os.path.join(root, "datasets", "Si_fulletch_220nm"),
+                                  backend=backend)
+        extractor.mode_numbers = 4
+        extractor.wavelength = WL
+        path = DirectParametricPath(extractor, const, total_length=length, resolution=20)
+        path._verbose = False
+        path.calc_output_data()
+        S = lumped_smatrix(path, length)
+        n = S.shape[0] // 2
+        neff = np.asarray(path.output_data["neff"][0][:n])
+        guided = np.flatnonzero(np.abs(neff.imag) < 1e-6)
+        assert len(guided) >= 2, neff
+        return np.array([np.sum(np.abs((S @ np.eye(2 * n)[:, j])[:n]) ** 2)
+                         for j in guided])
+
+    node = guided_transmission(True)
+    print(f"\n  constant guide T, co-located: {np.round(node, 5)}")
+    assert np.abs(node - 1.0).max() < 2e-3

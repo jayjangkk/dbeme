@@ -106,6 +106,14 @@ class PlasmonicSlotConverter(CrossSection):
         (``f ~ 0.0086`` for gold in air) where a cell's ``E_x`` would blow
         up.  Straight faces still fall on cell boundaries, so the
         discretisation is identical at every axis point.
+    :param sweep_gap: Make ``gap`` a second dataset parameter (``"w_si",
+        "gap"``), for converters whose slot tapers independently of the
+        Si - Kocabas's, where the gap runs 75 -> 125 nm along the taper.
+        The constructor ``gap`` is then the default when a point omits it.
+    :param core_mask_margin: How far beyond the slot and the Si the
+        confinement mask reaches, metres.  A gap plasmon between *thin* films
+        keeps its field at the film edges and just outside them, so a mask
+        that stops at the metal face under-counts it; 0 for tall walls.
     :param core, metal, cladding, substrate: Materials; default Si, Au
         (Johnson & Christy), air, SiO2.
     """
@@ -120,6 +128,8 @@ class PlasmonicSlotConverter(CrossSection):
         plate_reach=0.25e-6,
         metal_bottom=None,
         corner_radius=0.0,
+        core_mask_margin=0.0,
+        sweep_gap=False,
         core=None,
         metal=None,
         cladding=None,
@@ -136,6 +146,11 @@ class PlasmonicSlotConverter(CrossSection):
             float(metal_bottom) if metal_bottom is not None else -0.5 * self.si_thickness
         )
         self.corner_radius = float(corner_radius)
+        self.core_mask_margin = float(core_mask_margin)
+        if sweep_gap:
+            # the gap becomes a second path parameter; the constructor value is
+            # then only the default for callers that do not pass one
+            self.parameter_names = ("w_si", "gap")
         self.reference_wavelength = float(reference_wavelength)
         self.core = as_material(core) if core is not None else silicon()
         self.metal = as_material(metal) if metal is not None else gold()
@@ -163,11 +178,14 @@ class PlasmonicSlotConverter(CrossSection):
 
     # ------------------------------------------------------------ geometry
 
-    def edges(self, w_si):
+    def edges(self, w_si, gap=None):
         """``(si_half, metal_inner, metal_outer)`` in metres."""
         si_half = 0.5 * float(w_si)
-        inner = si_half + self.gap
+        inner = si_half + (self.gap if gap is None else float(gap))
         return si_half, inner, inner + self.plate_reach
+
+    def _gap_of(self, params):
+        return float(params.get("gap", self.gap))
 
     def index(self, x, y, params):
         w_si = float(params["w_si"])
@@ -188,7 +206,7 @@ class PlasmonicSlotConverter(CrossSection):
             (x.size, y.size),
         ).astype(complex).copy()
 
-        si_half, inner, outer = self.edges(w_si)
+        si_half, inner, outer = self.edges(w_si, self._gap_of(params))
 
         # silicon core
         if w_si > 0:
@@ -224,10 +242,11 @@ class PlasmonicSlotConverter(CrossSection):
         w_si = float(params["w_si"])
         x = np.asarray(np.real(x), dtype=float)
         y = np.asarray(np.real(y), dtype=float)
-        y_lo = min(-0.5 * self.si_thickness, self.metal_bottom)
-        top = max(0.5 * self.si_thickness, self.metal_bottom + self.metal_thickness)
-        si_half, inner, _ = self.edges(w_si)
-        between_plates = (np.abs(x) <= inner)[:, None] & ((y >= y_lo) & (y <= top))[None, :]
+        m = self.core_mask_margin
+        y_lo = min(-0.5 * self.si_thickness, self.metal_bottom) - m
+        top = max(0.5 * self.si_thickness, self.metal_bottom + self.metal_thickness) + m
+        si_half, inner, _ = self.edges(w_si, self._gap_of(params))
+        between_plates = (np.abs(x) <= inner + m)[:, None] & ((y >= y_lo) & (y <= top))[None, :]
         return between_plates
 
     # ------------------------------------------------------------ identity
@@ -250,7 +269,7 @@ class PlasmonicSlotConverter(CrossSection):
         """Wide enough for the widest Si and both plates, plus a PML margin."""
         # The gap plasmon decays into gold over the ~23 nm skin depth, so the
         # plates need little reach; the Si TE0 needs ~0.4 um of cladding.
-        _, _, outer = self.edges(float(max_params["w_si"]))
+        _, _, outer = self.edges(float(max_params["w_si"]), self._gap_of(max_params))
         half_width = outer + 0.45e-6
         # Symmetric, and tall enough that the weakly bound slot mode's tail
         # (n ~ 1.15 in air: 1/e over ~0.4 um) keeps ~0.3 um between the wall

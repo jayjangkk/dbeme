@@ -45,6 +45,22 @@ returned nothing but gain/loss corner modes until it was found.  See
 evanescent and there is nothing to absorb.  For a bend the conformal transform
 puts the turning point at ``u_t = R ln(n_eff / n_clad)``.
 
+**E and H are not on the same grid.**  ``compute_other_fields`` returns the
+electric components on the **cell centres**, one point short in each axis,
+while the magnetic components sit on the nodes - ``FDMode.get_field`` calls
+this ``centered``.  Zero-padding E to the node shape (``_crop``) and treating
+the two as co-located is a half-cell misregistration, and it breaks
+reciprocity: the biorthogonalised forward basis of a coupled Si pair had
+``max|anti(M)| = 3.7e-2`` against 1.6e-3 from ``MSEMpy.get_mode``, which
+interpolates E onto the nodes first.  That antisymmetric part enters every
+interface matrix quadratically - ``I - a^T a`` under the input projection,
+``I + a^T a`` under the output one - so a constant-width guide transmitted
+0.94 or 1.07 instead of 1.  It is independent of the stretch: the same 3.7e-2
+appears with no PML layers at all.  ``colocate=True`` applies the same
+interpolation as ``MSEMpy``; it is **off by default** so every dataset built
+before it keeps its meaning, and it enters the fingerprint only when on.
+See ``reports/07_sirac_optimization.md`` section 23.
+
 Validation
 ----------
 See ``reports/06_pml_phase1_gate.md``.  Against the independent Airy reference
@@ -75,6 +91,23 @@ def _crop(field, nx, ny):
     rows, cols = min(nx, field.shape[0]), min(ny, field.shape[1])
     out[:rows, :cols] = field[:rows, :cols]
     return out
+
+
+def _to_nodes(field, x, y):
+    """Move a cell-centred component onto the node grid.
+
+    Exactly what ``MSEMpy.get_mode`` does: extend the grid by one point,
+    interpolate with ``centered=True`` (so the source abscissae are the cell
+    midpoints), and trim the padding.  The real part of the grid is used
+    because the complex stretch is purely imaginary and leaves the node
+    spacing uniform, so this is a half-index shift and nothing more.
+    """
+    from emepy.tools import interp
+
+    x0, y0 = np.real(np.asarray(x)), np.real(np.asarray(y))
+    x1 = np.r_[x0, x0[-1] + (x0[-1] - x0[-2])]
+    y1 = np.r_[y0, y0[-1] + (y0[-1] - y0[-2])]
+    return interp(x1, y1, x0, y0, field, True)[:-1, :-1]
 
 
 def turning_point(neff, clad_index, radius):
@@ -170,6 +203,9 @@ class PMLModeSolver:
     :param num_modes: Eigenpairs to request around the target.
     :param confinement_threshold: Minimum core power fraction for a mode to
         count as guided.
+    :param colocate: Interpolate the electric components from the cell centres
+        onto the node grid the magnetic ones live on, as ``MSEMpy`` does.  Off
+        by default to keep existing PML datasets valid; see the module notes.
     """
 
     def __init__(
@@ -186,8 +222,10 @@ class PMLModeSolver:
         confinement_threshold=0.05,
         accuracy=1e-8,
         boundary="0000",
+        colocate=False,
     ):
         self.cross_section = cross_section
+        self.colocate = bool(colocate)
         self._wavelength = float(wavelength)
         self.window = tuple(float(v) for v in window)
         self.pml_thickness = float(pml_thickness)
@@ -422,7 +460,8 @@ class PMLModeSolver:
         te_fraction = np.zeros(wanted)
         for i in range(wanted):
             E[i, 0], E[i, 1], E[i, 2] = (
-                _crop(ex[i], nx, ny), _crop(ey[i], nx, ny), _crop(ez[i], nx, ny)
+                self._place(ex[i], nx, ny), self._place(ey[i], nx, ny),
+                self._place(ez[i], nx, ny)
             )
             H[i, 0], H[i, 1], H[i, 2] = (
                 _crop(hx[i], nx, ny), _crop(hy[i], nx, ny), _crop(hz[i], nx, ny)
@@ -446,6 +485,12 @@ class PMLModeSolver:
         ), confinement[order]
 
     # -------------------------------------------------------------- internals
+
+    def _place(self, field, nx, ny):
+        """An electric component on the ``(nx, ny)`` node grid."""
+        if self.colocate:
+            return _to_nodes(field, self.x, self.y)
+        return _crop(field, nx, ny)
 
     def _confinement(self, solver, vectors, params):
         """Fraction of transverse magnetic power inside the core.
@@ -500,6 +545,14 @@ class PMLBackend(PMLModeSolver, FDEBackend):
         indices of the modes the device converts between.  For the Si-to-slot
         converter that is ~2.0, below Si TE0 (~2.3) and above the gap plasmon
         (~1.5-1.9), so shift-invert returns both.
+
+        ``num_modes`` has to be large enough for the window around that target
+        to *reach* the highest mode the device uses, because shift-invert
+        returns the N eigenvalues nearest the target and nothing else.  On the
+        SIRAC coupled pair (input spectrum 3.12 -> 1.38, target 2.5) N = 8 came
+        back as 2.905 ... 1.919: the fundamental at 3.119 was silently dropped
+        and "TE0" meant TE1; N >= 10 included it (reports/07 section 23.8).
+        Check ``max(Re n_eff)`` of the first point against a plain solve.
     """
 
     #: Bumped when stored PML modes change meaning with no parameter changing.
@@ -522,7 +575,7 @@ class PMLBackend(PMLModeSolver, FDEBackend):
         with a different stretch, edge set or target is a different mode
         problem, and stored overlaps from one are meaningless in the other.
         """
-        return {
+        fingerprint = {
             "stretch_convention": self.STRETCH_CONVENTION,
             "pml_edges": sorted(self.pml_edges),
             "pml_thickness_m": float(self.pml_thickness),
@@ -530,6 +583,11 @@ class PMLBackend(PMLModeSolver, FDEBackend):
             "target_neff": float(self.target_neff),
             "confinement_threshold": float(self.confinement_threshold),
         }
+        # Added only when on, so every PML dataset built before this flag
+        # existed keeps a byte-identical identity.
+        if self.colocate:
+            fingerprint["colocate"] = True
+        return fingerprint
 
     def solve(self, parameter_point):
         """One parameter point as :class:`ModeData`, gauge pinned."""

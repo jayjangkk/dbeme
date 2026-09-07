@@ -74,7 +74,8 @@ dataset.
 | `Si_fulletch_220nm` | 1 strip core | `top_width`, `curvature` | tapers, Bezier/Euler bends, S-bends, ring waveguide | **shipped** |
 | `Si_fulletch_220nm_pair` | 2 strip cores | `w1`, `w2`, `gap`, `curvature` | adiabatic coupler, RAC, ADC, curvy/pulley ring coupler | **needed — demos 1, 3** |
 | `Si_bilevel_<t1>_<t2>` | 2 cores, vertically asymmetric | `w1`, `w2`, `gap`, `slab`/etch | polarization rotator-splitter | **needed — demo 2** |
-| `Au_MIM_<...>` | metal + Si, complex ε | `w`, `h`, `gap` | plasmonic mode converter | **needs a different backend — §5.2** |
+| `Si_plasmonic_slot_1550[_sharp]` | Si wire between gold walls, suspended, lossy PML basis | `w_si` | lateral stand-in for the NTT converter | **shipped** — `reports/12` |
+| `SiO2_kocabas_set2_1550` | Si wire + gold slot, SiO₂-embedded, lossy PML basis | `w_si`, `gap` | Kocabaş converter (arXiv:1801.00833), gap and length sweeps | **shipped** — `reports/13` |
 
 Naming: `<material/stack>_<geometry>_<λ in nm>`, e.g. `Si_fulletch_220nm_1310`.
 

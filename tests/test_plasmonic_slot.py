@@ -330,3 +330,60 @@ def test_rounded_fill_is_quantised_away_from_epsilon_near_zero():
     assert partial.size > 0
     assert np.allclose(partial * 64, np.round(partial * 64))
     assert partial.min() >= 1 / 64 - 1e-12
+
+
+# ------------------------------------------------------------ gap as a path parameter
+
+
+def test_gap_can_be_a_path_parameter(grid):
+    x, y = grid
+    section = PlasmonicSlotConverter(gap=20e-9, metal_thickness=100e-9, sweep_gap=True)
+    assert section.parameter_names == ("w_si", "gap")
+    n = section.index(x, y, {"w_si": 0.2e-6, "gap": 60e-9})
+    assert _at(n, x, y, 0.15e-6, -0.05e-6).real == pytest.approx(1.0, abs=1e-6)   # inside the wider gap
+    assert _at(n, x, y, 0.17e-6, -0.05e-6).imag > 9                              # metal from 160 nm
+    mask = section.core_mask(x, y, {"w_si": 0.2e-6, "gap": 60e-9})
+    assert x[np.flatnonzero(mask.any(axis=1))].max() == pytest.approx(0.16e-6, abs=3e-9)
+    # the constructor gap is the default when a point omits it
+    assert np.array_equal(section.index(x, y, {"w_si": 0.2e-6}),
+                          PlasmonicSlotConverter(gap=20e-9, metal_thickness=100e-9).index(x, y, {"w_si": 0.2e-6}))
+
+
+def test_kocabas_platform_matches_table_ii():
+    from em_simulation.platforms import (
+        KOCABAS_SETS, kocabas_converter_dataset_info, kocabas_path,
+    )
+
+    info = kocabas_converter_dataset_info(set_number=2, cell=25e-9)()
+    section = info.get_cross_section()
+    assert section.si_thickness == pytest.approx(725e-9)
+    assert section.metal_thickness == pytest.approx(250e-9)
+    assert section.metal_bottom == pytest.approx(-125e-9)
+    assert info.parameter_names == ["w_si", "gap"]
+    assert info.cladding_index == pytest.approx(np.sqrt(2.0852), abs=1e-4)
+    assert [m.name for m in section.materials()] == ["Si_Kocabas", "Au_Kocabas", "SiO2_Kocabas", "SiO2_Kocabas"]
+    # the paper's gold, absorbing in this project's convention
+    n_au = complex(section.metal.index(1.55e-6))
+    assert n_au.imag > 0 and (n_au ** 2).real == pytest.approx(-126.80, abs=0.01)
+    # the path: 200 nm lead-in, Si 400 -> 0 over 1700 nm, slot 550 -> 250, then 200 nm of slot
+    funcs, length = kocabas_path(2)
+    p = KOCABAS_SETS[2]
+    assert length == pytest.approx((p["start"] + p["l_taper"] + p["extra"]) * 1e-9)
+    z = np.array([0.0, 200e-9, 200e-9 + 850e-9, 1900e-9, 2100e-9])
+    assert np.allclose(funcs["w_si"](z), [400e-9, 400e-9, 200e-9, 0.0, 0.0])
+    assert np.allclose(funcs["gap"](z), [75e-9, 75e-9, 100e-9, 125e-9, 125e-9])
+
+
+def test_kocabas_grid_puts_every_edge_on_a_cell_boundary():
+    from em_simulation.platforms import kocabas_converter_dataset_info
+
+    cell = 25e-9
+    info = kocabas_converter_dataset_info(set_number=2, cell=cell)()
+    backend = info.get_fde_backend()
+    x = np.real(backend.x)
+    assert np.allclose(np.diff(x), cell) and np.abs(x).min() < 1e-15
+    section = info.get_cross_section()
+    for w in info.parameters["w_si"]:
+        for g in info.parameters["gap"][::7]:
+            _, inner, _ = section.edges(w, g)
+            assert np.abs(x - 0.5 * w).min() < 1e-15 and np.abs(x - inner).min() < 1e-15

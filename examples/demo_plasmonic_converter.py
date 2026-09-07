@@ -146,16 +146,27 @@ def physical(od, section):
 
 
 def ports(od):
-    """Input mode and output port: the highest-index physical branch at either end."""
-    neff = od["neff"]
+    """Input mode and output port: the highest-index physical branch at either end.
 
-    def best(section):
+    At the input the TE-like branches (E along x, the slot's own polarisation)
+    are preferred when the polarisation is known: a tall Si wire carries a
+    TM-like mode a few 1e-3 above its TE-like one (Kocabas's 400 x 725 nm
+    wire: 2.4505 against 2.4427), and it is the TE-like one that couples.
+    """
+    neff = od["neff"]
+    te = od.get("TE_pol")
+
+    def best(section, prefer_te=False):
         keep = np.flatnonzero(physical(od, section))
         if not keep.size:
             raise RuntimeError("no physical mode at section %d" % section)
+        if prefer_te and te is not None:
+            te_like = keep[np.real(te[section, keep]) >= 0.5]
+            if te_like.size:
+                keep = te_like
         return int(keep[np.argmax(np.real(neff[section, keep]))])
 
-    return best(0), best(-1)
+    return best(0, prefer_te=True), best(-1)
 
 
 def budget(S, od, r_in=1.0, r_out=1.0):
