@@ -222,7 +222,13 @@ def end_ratios(payload, gap):
     """``r`` of the input mode at 400 nm and of the slot mode at 0, cached."""
     key = f"power_ratio_gap{gap}{VARIANT}"
     if key not in payload:
-        backend = plasmonic_converter_dataset_info(WAVELENGTH, gap=gap * 1e-9)().get_fde_backend()
+        # the variant's own cross section: with corner_radius left at the
+        # platform default the sharp run would take r (and the neff it prints)
+        # from the rounded plates, which are a different waveguide.
+        info = plasmonic_converter_dataset_info(
+            WAVELENGTH, gap=gap * 1e-9,
+            **({} if not VARIANT else {"corner_radius": 0.0}))
+        backend = info().get_fde_backend()
         t0 = time.time()
         r_in, n_in = power_ratio(backend, W_IN)
         r_out, n_out = power_ratio(backend, 0.0)

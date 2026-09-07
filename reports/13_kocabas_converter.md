@@ -39,15 +39,15 @@ fundamental (§1).
 
 ## 1. Sanity gate
 
-Rows from `reports/output/kocabas_converter.json` (TBD until the run
-completes) and from the window study (`kocabas_window.json`):
+Rows from `reports/output/kocabas_converter.json` (co-located fields,
+target 2.3, 20 modes) and from the window study (`kocabas_window.json`):
 
 | check (§5.x) | criterion | measured | pass |
 |---|---|---|---|
-| constant 250 nm slot, 1 µm: `T = exp(−2 k₀ Im n L)` | `|T − expected| < 1e-3` | TBD | |
-| 5.1 reciprocity of the physical channel, design path | `< 1e-6` | TBD | |
-| passivity: physical input columns of `|S|²` | `< 1.05` | TBD | |
-| 5.8 DBEME vs direct EME on the design path | `max|ΔT| < 1e-3` | TBD | |
+| constant 250 nm slot, 1 µm: `T = exp(−2 k₀ Im n L)` | `|T − expected| < 1e-3` | 0.93244 vs 0.93244 | ✓ |
+| 5.1 reciprocity of the physical channel, design path | `< 1e-6` | 1.1e-3 | ✗ — the same magnitude as report 12 §10 on co-located fields (1.0e-3); the residual of the unconjugated overlap on a 5 nm staircase, not a convention error (§5.1 there) |
+| passivity: physical input columns of `|S|²` | `< 1.05` | 0.81 | ✓ |
+| 5.8 DBEME vs direct EME on the design path | `max|ΔT| < 1e-3` | pending (§5) | |
 | 5.7 window: the weakly bound slot modes with 0.5 / 1.5 / 2.5 µm margins | reported | 250 nm slot: 1.4498 + 0.0086j (`L_p` 14.3 µm) / 1.4475 + 0.0060j (20.7) / 1.4476 + 0.0055j (22.3); 220 nm: 14.2 → 19.3 µm; **30 nm: identical** (1.8349 + 0.0243j) | — |
 | 5.13a basis membership along the path: is the launched branch in the stored set at every width? | every physical branch present | target 1.9, 16 modes: the TE-like fundamental (2.87 at 400 nm) **absent** at 300 nm; the tracker linked the first-vertical-order branch into cutoff and the cascade read **−20 dB**. Target 2.3, 20 modes: fundamental present at 400 / 300 / 260 / 160 / 60 / 0 nm (2.873 / 2.541 / 2.326 / 1.800 / 1.534 / 1.450) | ✓ after the change |
 | 5.6 gauge, 5.13 tracking, PML sign, grid alignment, gap as a path parameter | tests | `tests/test_plasmonic_slot.py` | ✓ |
@@ -78,6 +78,15 @@ of interest.
 | Si 90 nm, gap 115 nm | TM / TE fundamental | 1.751 / 1.592 | 0.78 / 0.71 |
 | slot 250 nm, gold 250 nm | slot mode (port) | **1.4498 + 0.0086j** (`L_p` 14.3 µm) | 0.49 |
 
+![branches](output/kocabas_1_neff_path.png)
+
+Left: the physical branches the tracker follows along the path, from the
+400 nm wire to the 250 nm slot. Right: their loss. The launched branch
+(orange) starts at 2.873 with essentially no loss and ends at 1.450 with
+0.3 dB/µm; the branches that reach a dead end part-way (red, purple, brown)
+are guided modes going into cutoff as the Si narrows, where their loss rises
+and they leave the physical set.
+
 The TE-like fundamental descends continuously — 2.873, 2.541 (300 nm),
 2.326, 2.159 (230), 1.800 (160), 1.693 (130), 1.642 (110), 1.592 (90) — and
 becomes the slot mode: the wire mode and the slot mode are one supermode,
@@ -107,19 +116,158 @@ how much of the loss is the window's.
 
 ## 3. The design point
 
-TBD — transmission at the lead-out end and at the tip, against ~95 %.
+**72.3 % (−1.41 dB) into the slot mode at the tip**; 71.3 % (−1.47 dB) at
+the end of the 200 nm lead-out. Reflection 1.3e-4 into the physical modes
+and 1.7e-3 into the Berenger set; nothing in the other physical forward
+branch (the TM-like family is decoupled by the `y` mirror symmetry, as in
+the paper's PMC plane); 0.094 of the launched `|a|²` leaves the lead-out as
+non-physical forward amplitude, the scattered field the PML modes
+represent. The paper's Set 2 number is ~95 %.
+
+**What the paper's number is.** Kocabaş integrates the *total* Poynting
+flux through a cut 1100 nm after the tip and back-propagates it to the tip
+with the slot mode's own `L_p` (his §II and Fig. 7); the modal power,
+obtained with the unconjugated inner product this project also uses, lies
+below the total — for Set 1 he reports the total at "slightly less than
+88 %" and the bound-mode fit under it. So 95 % is an upper bound on the
+modal conversion, and the quantity computed here is the modal power. The
+comparison is 72 % against something between ~90 and 95 %.
+
+**Where the 28 % goes** (the design path matrix by matrix, same construction
+as report 12 §3):
+
+![interface profile](output/kocabas_3_interface_profile.png)
+
+| factor | product along the path | reading |
+|---|---|---|
+| interface matrices (unrepresented mismatch) | 0.951 (−0.22 dB) | 51 steps of 10 nm in `w_si` and 5 nm in the gap; 0.1–0.9 % each, largest at the narrow end |
+| propagation matrices | 0.850 (−0.71 dB) | the supermode's own metal loss integrates to 0.957 over the taper and 0.986 over lead-in and lead-out; the other ~11 % is the decay of amplitude the interfaces scattered into the Berenger set — the model's radiation |
+| end of the cascade | 0.808 total, 0.713 in the slot branch | the difference is non-physical forward amplitude |
+
+Two of the three loss channels are discretisation, not device: a smooth
+1700 nm taper between these two modes has no 10 nm staircase to scatter
+from, and a 20-mode basis cannot let scattered field re-couple further
+along, as a 3-D FEM with PML does implicitly. The candidates for the gap
+to the paper, in the order they should be tested: (i) the step size — a
+2.5 nm cell halves every step, but on this 471 × 347 grid it costs ~4× per
+solve and ~100 h for a path, so §7 does a spot check instead; (ii) the
+basis size, 20 modes against the 40–50 PML-EME normally needs; (iii) the
+window, which inflates the slot-like branch's `Im n_eff` by about a third
+over the last 300 nm (§1) — worth about 1 % of power, not 20.
 
 ## 4. Transmission against the Si–gold gap and against taper length
 
-TBD — `kocabas_2_sweeps.png`.
+![sweeps](output/kocabas_2_sweeps.png)
+
+### Taper length (gap 75 nm, slot 250 nm, warm cache — every length is a new path over the same grid points)
+
+| `L_taper` | slot mode at the tip | scattered (Berenger) amplitude at the lead-out | reflected |
+|---|---|---|---|
+| 500 nm | 65.4 % (−1.85 dB) | 0.193 | 6.7e-3 |
+| 800 nm | 67.2 % (−1.72 dB) | 0.156 | 1.5e-3 |
+| 1100 nm | 69.3 % (−1.59 dB) | 0.129 | 2.5e-4 |
+| 1400 nm | 71.0 % (−1.49 dB) | 0.109 | 2.0e-4 |
+| **1700 nm (paper)** | **72.3 % (−1.41 dB)** | 0.094 | 1.3e-4 |
+| 2100 nm | 73.2 % (−1.35 dB) | | 1e-4 |
+| 2500 nm | 73.6 % (−1.33 dB) | | 1e-4 |
+| 3000 nm | 73.9 % (−1.31 dB) | | 1e-4 |
+
+The curve rises monotonically and flattens beyond ~2 µm, with the
+scattered amplitude falling roughly as `1/L` and the reflection as its
+square — the adiabatic behaviour report 12's device could not show, because
+there the 40-step staircase was the whole loss. The paper's 1700 nm sits at
+the knee. The plateau near 74–75 % is not the device's limit: the
+length-independent part is the staircase and basis loss of §3, and the
+supermode's metal loss grows with `L` (0.957 at 1700 nm) and takes over
+beyond it.
+
+### Si–gold gap at the taper start (`w_gap`; slot end fixed at 250 nm, `L` = 1700 nm)
+
+`w_gap` sets the Si–gold clearance where the taper *starts*; the clearance at
+the tip is fixed by the slot at 125 nm. So the parameter really chooses how
+the gold wall moves relative to the Si edge, and 125 nm is the special case
+where it does not move at all.
+
+| `w_gap` | clearance along the taper | path points | slot mode at the tip |
+|---|---|---|---|
+| 25 nm | 25 → 125 nm | 62 | 68.5 % (−1.65 dB) |
+| **75 nm (paper)** | 75 → 125 nm | 52 | **72.3 % (−1.41 dB)** |
+| 125 nm | 125 nm, constant | 42 | 73.4 % (−1.34 dB) |
+
+Monotonic, and **the model cannot separate the physics from its own
+discretisation here**: the dataset's gap axis has a 5 nm step, so a path that
+opens the clearance by 100 nm visits exactly 20 grid points more than one that
+holds it constant, and 42 + (125 − `w_gap`)/5 reproduces the third column
+exactly. The 4.9 points of transmission between the ends of the sweep divided
+by those 20 extra sections is 0.25 % each — the same size as the per-interface
+mismatch of §3. A wall that stays put costs nothing to step past; that is true
+of the physics *and* of the staircase, and this dataset cannot say in what
+proportion.
+
+What can be said: nothing in the range 25–125 nm reaches the paper's
+efficiency, the ordering does not contradict it, and the paper's own choice of
+75 nm is not reproduced as an optimum — this model has no interior optimum in
+`w_gap`, exactly as report 12's device had none in length. Testing it properly
+needs the gap axis refined to 2.5 nm and the comparison made at fixed section
+count, which is the same convergence question as §3(i).
 
 ## 5. DBEME vs direct EME
 
-TBD.
+Running: the design path re-solved section by section, no cache, sections
+placed at the dataset's own grid points so no metal edge lands inside a cell
+(`demo_kocabas_converter.py --direct`). 52 cold solves at ~10 min each on
+the shared machine. The number to report is `max|ΔT|` per output branch
+against the cached cascade, and the cold-vs-warm timing.
+
+The warm-cache claim the two sweeps above already support: the design point
+cost 15 034 s cold; every one of the eight taper lengths in §4 then cost
+**0 s**, because a different longitudinal path over the same
+`(w_si, gap)` grid points solves nothing new. That is the method's whole
+economic argument, and it is what a direct EME cannot do — each length there
+is a fresh set of mode solves.
 
 ## 6. Conclusions and limits
 
-TBD.
+**What this report establishes.**
+
+1. The lossy PML backend runs a two-axis dataset end to end on a device with
+   a published geometry, and lands at **72 % modal conversion** where the
+   paper reports ~95 % total power. The gap is understood in kind if not in
+   full: about 5 % is the interface staircase, about 11 % is amplitude
+   scattered into the Berenger set and then absorbed, and the paper's number
+   is a *total*-power figure that includes the scattered field this model
+   discards (his §II, and the Set 1 example where the bound-mode fit sits
+   below the total).
+2. **The converter is adiabatic in this model and the report-12 device was
+   not.** Transmission rises monotonically with taper length and flattens
+   near 2 µm, and the scattered amplitude falls as roughly `1/L`. That is the
+   qualitative behaviour a mode converter must have, and it is the first time
+   this simulator has shown it on a plasmonic device — report 12's air-slot
+   taper had a length-*independent* mismatch because a 10 nm edge step sheds a
+   field no shift-invert basis holds. The difference is the device: here both
+   ends are bound and silica-embedded, the supermode is continuous from
+   `n_eff` 2.87 to 1.45, and the wall moves 5 nm at a time against a 250 nm
+   slot.
+3. **Basis membership is a first-class correctness condition for a
+   shift-invert lossy solver.** With the target at 1.9 the wire's TE
+   fundamental left the 16 nearest eigenvalues part-way along the path, the
+   tracker linked a first-vertical-order branch instead, and the cascade read
+   −20 dB — a plausible-looking wrong answer, not a crash. CLAUDE.md §5.13a
+   now states the rule; §1 records the evidence.
+
+**Limits.**
+
+* The slot mode is bound by 0.006 above silica and its tail is four times the
+  window margin, so its loss carries about a third of PML absorption (§1).
+  Everything back-propagated over the 200 nm lead-out inherits that, which is
+  1.4 % against a true 0.9 %.
+* 20 modes, not the 40–50 a PML-EME basis usually wants; the Berenger set is
+  the only representation of radiation here and it cannot re-couple.
+* One wavelength, one metal thickness. The paper's Fig. 7 sweep over
+  `h_Au` = 30–250 nm is a dataset per thickness, since `h_Au` changes the
+  cross-section topology and therefore the mode problem.
+* Modal power, not total power: comparable to the paper's cyan curve, not its
+  blue one.
 
 ---
 
@@ -127,5 +275,11 @@ TBD.
 
 ```bash
 cd examples
-python demo_kocabas_converter.py --gaps 25 50 75 100 125 150 --direct
+python demo_kocabas_converter.py --gaps 25 75 125 --direct
 ```
+
+Stages are cached in `reports/output/kocabas_converter.json`, so a second run
+is warm. The interface profile of §3 is a scratch analysis over the same
+dataset; its numbers are in `reports/output/kocabas_interface_profile.json`.
+The mode listings of §2 come from `kocabas_ends.py` and the window study from
+`kocabas_window.json`.
