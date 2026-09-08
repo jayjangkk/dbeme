@@ -52,8 +52,24 @@ from em_simulation.platforms import KOCABAS_SETS, kocabas_converter_dataset_info
 
 TAG = "kocabas"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#: Grid pitch in nm.  It sets the dataset *and* both parameter axes: ``w_si``
+#: steps ``2 cell`` and ``gap`` steps ``cell``, so that the Si edge and the
+#: metal's inner edge land on cell boundaries at every grid point.  Refining
+#: an axis therefore means refining the cell - see report 13 section 7.
+CELL_NM = 5.0
+SUFFIX = ""
 DATASET = os.path.join(ROOT, "datasets", "SiO2_kocabas_set2_1550")
 OUT_JSON = os.path.join(ROOT, "reports", "output", f"{TAG}_converter.json")
+
+
+def use_cell(cell_nm):
+    """Point the demo at the dataset for this pitch (5.0 or 2.5 nm)."""
+    global CELL_NM, SUFFIX, DATASET, OUT_JSON
+    CELL_NM = float(cell_nm)
+    SUFFIX = "" if abs(CELL_NM - 5.0) < 1e-9 else "_c25"
+    DATASET = os.path.join(ROOT, "datasets", "SiO2_kocabas_set2_1550" + SUFFIX)
+    OUT_JSON = os.path.join(ROOT, "reports", "output",
+                            f"{TAG}_converter{SUFFIX}.json")
 SET = 2
 WAVELENGTH = 1.55e-6
 K0 = 2 * np.pi / WAVELENGTH
@@ -282,7 +298,7 @@ def figures(payload):
         ax1.axhline(np.sqrt(2.0852), color="k", lw=0.6, ls=":"); ax1.set_xlabel("section (lead-in, taper, lead-out)"); ax1.set_ylabel("Re n_eff")
         ax1.set_title("physical branches along the Set 2 path", fontsize=9); ax1.legend(fontsize=7)
         ax2.set_xlabel("section"); ax2.set_ylabel("loss (dB/um)"); ax2.set_title("metal + radiation loss", fontsize=9)
-        save(fig, f"{TAG}_1_neff_path.png"); plt.close(fig)
+        save(fig, f"{TAG}_1_neff_path{SUFFIX}.png"); plt.close(fig)
     gs, ls = payload.get("gap_sweep", {}), payload.get("length_sweep", {})
     if gs or ls:
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.6, 3.4)); fig.subplots_adjust(wspace=0.3)
@@ -298,7 +314,7 @@ def figures(payload):
             ax2.axhline(10 * np.log10(DESIGN["transmission"]), color="C3", ls=":", label="Kocabas Set 2, ~95 % (L 1700)")
             ax2.set_xlabel("taper length (nm)"); ax2.set_ylabel("power in the slot mode (dB)"); ax2.legend(fontsize=7)
             ax2.set_title("vs taper length, gap 75 -> 125 nm", fontsize=9)
-        save(fig, f"{TAG}_2_sweeps.png"); plt.close(fig)
+        save(fig, f"{TAG}_2_sweeps{SUFFIX}.png"); plt.close(fig)
     import shutil
     report_dir = os.path.dirname(OUT_JSON)
     for name in sorted(os.listdir(OUTPUT_DIR)):
@@ -314,8 +330,13 @@ def main():
     parser.add_argument("--gaps", type=int, nargs="*", default=list(GAPS_NM))
     parser.add_argument("--lengths", type=int, nargs="*", default=list(LENGTHS_NM))
     parser.add_argument("--direct", action="store_true")
+    parser.add_argument("--cell", type=float, default=5.0, choices=[5.0, 2.5],
+                        help="grid pitch in nm; 2.5 halves both parameter axes")
     args = parser.parse_args()
+    use_cell(args.cell)
     print("Demo 4b - Kocabas Set 2 converter, SiO2-embedded, lossy PML basis")
+    print(f"{CELL_NM:g} nm cell -> w_si axis {2*CELL_NM:g} nm, gap axis "
+          f"{CELL_NM:g} nm; dataset {os.path.basename(DATASET)}")
     payload = load(); t0 = time.time()
     du = DataUpdater(DATASET)
     design(payload, du)

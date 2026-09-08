@@ -151,18 +151,24 @@ from, and a 20-mode basis cannot let scattered field re-couple further
 along, as a 3-D FEM with PML does implicitly. The candidates for the gap to
 the paper, in the order they should be tested:
 
-1. **The parameter axes, and the gap axis first.** §5 runs the same device
+1. **The parameter axes — which means the cell.** §5 runs the same device
    with its sections placed continuously instead of on the grid, and it
    reaches 84.1 %. Some of that is a sub-cell artefact and some is real, but
    it bounds the axis-snapping cost at about 12 points — half the deficit.
    The gap axis is the suspect: it steps 5 nm, so the gold wall stands still
    for several sections and then jumps, and per-step scattering is convex in
-   the step. Refining it to 2.5 nm adds points to the *same* grid and is
-   cheap.
-2. **The cell.** A 2.5 nm cell halves every geometric step too, but on this
-   471 × 347 grid it costs ~4× per solve and ~100 h for one path.
-3. **The basis size**, 20 modes against the 40–50 a PML-EME normally wants.
-4. **The window**, which inflates the slot-like branch's `Im n_eff` by about
+   the step.
+
+   *The axis cannot be refined on its own.* `w_si` steps `2 cell` and `gap`
+   steps `cell` precisely so that the Si edge (at `w_si/2`) and the metal's
+   inner edge (at `w_si/2 + gap`) both land on cell boundaries at every grid
+   point. A 2.5 nm gap axis on a 5 nm cell would put every second metal edge
+   in the middle of a cell, alternating aligned and misaligned points along
+   the path — which *adds* a spurious per-step mismatch rather than removing
+   one. Halving the gap axis means halving the cell, which is
+   `SiO2_kocabas_set2_1550_c25`: §7.
+2. **The basis size**, 20 modes against the 40–50 a PML-EME normally wants.
+3. **The window**, which inflates the slot-like branch's `Im n_eff` by about
    a third over the last 300 nm (§1) — worth about 1 % of power, not 20.
 
 ## 4. Transmission against the Si–gold gap and against taper length
@@ -247,10 +253,10 @@ difference between the two direct rows is what snapping a continuous taper
 onto this grid costs.
 
 That number matters for §3: **about half the deficit against the paper may be
-the gap axis, not the method.** A continuous-section EME of the same device
-loses 16 %, the grid-snapped one 28 %. Refining the gap axis to 2.5 nm is
-therefore the first thing to buy, ahead of the 2.5 nm *cell* — the axis is
-cheap (more points on the same grid), the cell is not (4× per solve).
+the axis discretisation, not the method.** A continuous-section EME of the
+same device loses 16 %, the grid-snapped one 28 %. §7 measures what refining
+the axes buys — and, since the axis steps are tied to the cell to keep metal
+edges on cell boundaries, what it costs.
 
 **The warm-cache claim**, which the two sweeps already support: the design
 point cost 15 034 s cold; every one of the eight taper lengths in §4 then cost
@@ -304,6 +310,42 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
   cross-section topology and therefore the mode problem.
 * Modal power, not total power: comparable to the paper's cyan curve, not its
   blue one.
+
+---
+
+## 7. Halving the axes: the 2.5 nm cell
+
+§5 bounds the cost of snapping this device onto the grid at about 12 points
+of transmission, and §3 names the gap axis as the suspect. This section
+measures it.
+
+**Why the cell and not just the axis.** `w_si` steps `2 cell` and `gap` steps
+`cell` so that the Si edge (`w_si/2`) and the metal's inner edge
+(`w_si/2 + gap`) both land on cell boundaries at every grid point. Put a
+2.5 nm gap axis on a 5 nm cell and every second point has its metal edge in
+the middle of a cell; report 12 §7.3 measured that misalignment as an `n_eff`
+error of up to 0.1 on a plasmonic slot, and here it would *alternate* along
+the path, adding a spurious per-step mismatch instead of removing one. So the
+refinement is a new grid: `SiO2_kocabas_set2_1550_c25`, 941 × 693 at 2.5 nm,
+`w_si` in 5 nm steps and `gap` in 2.5 nm, the design path's 40-step staircase
+becoming an 80-step one.
+
+**The cheap version of the question first.** Per-step scattering should go as
+the square of the step, so two half-steps ought to cost about half of one
+whole step. One triple of solves on the fine grid settles that without running
+a cascade: `|t|²` for a 5 nm gap step at `w_si` = 200 nm, against the product
+of the two 2.5 nm steps that span it.
+
+| quantity | measured |
+|---|---|
+| `|t|²`, one 5 nm gap step, 5 nm cell | pending |
+| `|t|²`, one 5 nm gap step, 2.5 nm cell | pending |
+| `|t|²`, two 2.5 nm gap steps, 2.5 nm cell | pending |
+| cost per solve, 2.5 nm against 5 nm | pending |
+
+**The cascade.** Running: the design point on the fine dataset
+(`demo_kocabas_converter.py --cell 2.5 --lengths 1700 --gaps 75`), which is
+about 100 cross sections against the 5 nm run's 52.
 
 ---
 
