@@ -336,16 +336,53 @@ whole step. One triple of solves on the fine grid settles that without running
 a cascade: `|t|²` for a 5 nm gap step at `w_si` = 200 nm, against the product
 of the two 2.5 nm steps that span it.
 
-| quantity | measured |
+At `w_si` = 200 nm, gap 100 → 105 nm (`kocabas_cell_check.json`):
+
+| quantity | 5 nm cell | 2.5 nm cell |
+|---|---|---|
+| `n_eff` of the launched branch at gap 100 | 2.53165 + 0.00076j | 2.53357 + 0.00073j |
+| `|t|²`, one 5 nm gap step | 0.999842 | 0.999764 |
+| `|t|²`, two 2.5 nm gap steps spanning the same 5 nm | — | 0.999942 × 0.999945 = **0.999886** |
+| loss, one 5 nm step → two 2.5 nm steps | — | 2.36e−4 → **1.14e−4**, ratio **0.482** |
+| seconds per solve | 128 | 625–685 (**4.9×**) |
+
+**The scaling is exactly the expected one.** Halving the step quarters the
+scattering per step and doubles the number of steps, so the total goes as
+Δ¹: measured 0.482 against the predicted 0.5. This is the same law report 12
+§3 argued for its width staircase, here measured directly on the axis that
+matters.
+
+**But the per-step loss itself is not converged, and the eigenvalue hides
+that.** The same 5 nm step costs 1.58e−4 on the 5 nm grid and 2.36e−4 on the
+2.5 nm one — 50 % apart — while `n_eff` between the two grids moves 0.076 %.
+That is CLAUDE.md §5.7 in one line: overlaps converge more slowly than
+eigenvalues, and it is the overlap the method rests on. The *ratio* above is
+measured within one grid and is therefore the trustworthy number; the
+absolute per-step loss is good to about a factor 1.5.
+
+**What it predicts for the cascade.** Take the 5 nm result apart: 72.3 % at
+the tip, of which the supermode's own metal loss accounts for 0.957, leaving
+0.755 — a 24.4 % discretisation loss. If that halves with the step:
+
+| grid | predicted at the tip |
 |---|---|
-| `|t|²`, one 5 nm gap step, 5 nm cell | pending |
-| `|t|²`, one 5 nm gap step, 2.5 nm cell | pending |
-| `|t|²`, two 2.5 nm gap steps, 2.5 nm cell | pending |
-| cost per solve, 2.5 nm against 5 nm | pending |
+| 5 nm cell (measured) | 72.3 % |
+| 2.5 nm cell | ≈ 84 % |
+| Δ → 0, extrapolated linearly | ≈ **95.7 %** |
+
+The middle row is close to the off-grid direct run's 84.1 % (§5), which had
+1.25 nm gap steps, and **the extrapolated row is the paper's ~95 %**. If the
+cascade confirms it, the whole deficit in §3 is the staircase and this model
+agrees with Kocabaş in the continuum limit.
 
 **The cascade.** Running: the design point on the fine dataset
-(`demo_kocabas_converter.py --cell 2.5 --lengths 1700 --gaps 75`), which is
-about 100 cross sections against the 5 nm run's 52.
+(`demo_kocabas_converter.py --cell 2.5 --lengths 1700 --gaps 75`), about 100
+cross sections against the 5 nm run's 52, at 4.9× per solve.
+
+| route | at the tip | staircase | measured |
+|---|---|---|---|
+| 5 nm cell, 52 sections | 72.3 % | 40 width steps, 10 gap steps | ✓ |
+| 2.5 nm cell, ~100 sections | pending | 80 width steps, 20 gap steps | running |
 
 ---
 
