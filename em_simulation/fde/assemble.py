@@ -184,8 +184,14 @@ def overlap_matrix(E_a, H_b, x, y, prop_axis=2):
     :param H_b: Normalised ``H`` of point ``b``, same shape.
     :returns: ``(2N, 2N)`` complex matrix, element ``[i, j]`` being
         :math:`\\tfrac12 \\int (E_{a,i} \\times H_{b,j})_z \\, dA`.
+
+    Only the ``prop_axis`` component of the cross product survives the area
+    integral, and the integral itself is a contraction over the grid, so the
+    whole thing is two matrix products.  Forming the full
+    ``(2N, 2N, 3, nx, ny)`` cross product first and summing it away instead
+    costs 12.5 GB per call on the 5 nm Kocabas grid and 46.5 GiB on the
+    2.5 nm one, which is where it stops being a performance question.
     """
-    cross = np.cross(E_a[:, np.newaxis], H_b[np.newaxis, :], axis=2)
     # Do not cast to float.  Under a PML the transverse coordinates are
     # complex-stretched, and the integration measure has to be stretched with
     # them or biorthogonality breaks and O(a, a) stops being the identity.
@@ -193,8 +199,20 @@ def overlap_matrix(E_a, H_b, x, y, prop_axis=2):
     # looks exactly like truncation error.
     dx = oct.compute_differences(np.asarray(x))
     dy = oct.compute_differences(np.asarray(y))
-    weight = np.outer(dx, dy)[np.newaxis, np.newaxis, np.newaxis, :, :]
-    return (weight * cross).sum(axis=(3, 4))[:, :, prop_axis] / 2
+    weight = np.outer(dx, dy).reshape(-1)
+
+    # (A x B)_p = A_{p+1} B_{p+2} - A_{p+2} B_{p+1}, indices modulo 3.
+    i1, i2 = (prop_axis + 1) % 3, (prop_axis + 2) % 3
+    n_a, n_b = E_a.shape[0], H_b.shape[0]
+
+    def flat(field, component):
+        return field[:, component].reshape(field.shape[0], -1)
+
+    ea1 = flat(E_a, i1) * weight
+    ea2 = flat(E_a, i2) * weight
+    out = ea1 @ flat(H_b, i2).T
+    out -= ea2 @ flat(H_b, i1).T
+    return out.reshape(n_a, n_b) / 2
 
 
 def prop_axis_index(crosssection_x, crosssection_y):
