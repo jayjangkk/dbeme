@@ -195,27 +195,74 @@ def gate(payload, du):
     dump(payload)
 
 
+class _FixedPointPath(DirectParametricPath):
+    """A direct (uncached) run over an explicit list of cross sections.
+
+    ``DirectParametricPath`` samples the parameter functions at uniform ``z``.
+    On a single-axis linear taper that happens to land on the dataset's own
+    axis values; on a two-axis one it does not.  Here ``w_si`` steps 10 nm and
+    ``gap`` 5 nm, the taper has 200 nm of lead-in in front of it, and uniform
+    sampling puts every metal edge somewhere inside a cell - a different, and
+    per report 12 section 7.3 a worse, discretisation.  This subclass takes the
+    dataset path's points and its section lengths, so the only difference left
+    between the two routes is where the modes came from.
+    """
+
+    def __init__(self, data_extractor, parameter_functions, points, delta_zs, **kwargs):
+        delta_zs = np.asarray(delta_zs, dtype=float)
+        super().__init__(data_extractor, parameter_functions,
+                         total_length=float(delta_zs.sum()),
+                         resolution=len(points), **kwargs)
+        self._points = [tuple(float(v) for v in p) for p in points]
+        self._delta_zs = delta_zs
+
+    def calc_simulation_parameters(self):
+        return list(self._points), self._delta_zs
+
+
 def direct(payload):
-    if "direct" in payload:
-        print("direct cached"); return
-    print("\n[direct EME] the design path solved section by section, no cache")
+    """Both directions of the section-placement question.
+
+    ``aligned`` re-solves the dataset's own cross sections: that is the
+    section 5.8 check, does the cache reproduce a fresh solve.  ``offgrid``
+    samples the continuous device at uniform ``z``, which is what an EME with
+    no dataset would naturally do, and so measures what snapping a continuous
+    taper onto a 10 nm / 5 nm grid costs.
+    """
+    store = payload.setdefault("direct", {})
+    if "converted" in store:                      # pre-2026-09-08 flat record
+        payload["direct"] = store = {"offgrid": store}
+        dump(payload)
     de = DataExtractor(DATASET)
     ref = payload["design"]
-    # the dataset path's own grid points, so no metal edge lands inside a cell
-    pts = list(zip(np.array(ref["w_si_nm"]) * 1e-9, np.array(ref["gap_nm"]) * 1e-9))
     funcs, length = kocabas_path(SET)
-    n = len(pts)
-    geometry = DirectParametricPath(de, funcs, total_length=length, resolution=n)
-    geometry._verbose = False
-    res = lumped(geometry)
-    rec = record(res, DESIGN["extra"] * 1e-9)
-    fwd_d, fwd_g = np.array(rec["forward_out"]), np.array(ref["forward_out"])
-    m = min(fwd_d.size, fwd_g.size)
-    rec["max_dT"] = float(np.abs(fwd_d[:m] - fwd_g[:m]).max())
-    payload["direct"] = rec
+    print("\n[direct EME] the design path solved section by section, no cache")
+
+    if "offgrid" not in store:
+        geometry = DirectParametricPath(de, funcs, total_length=length,
+                                        resolution=len(ref["w_si_nm"]))
+        geometry._verbose = False
+        store["offgrid"] = record(lumped(geometry), DESIGN["extra"] * 1e-9)
+        dump(payload)
+
+    if "aligned" not in store:
+        du = DataUpdater(DATASET)
+        od = ParametricPath(du, funcs, total_length=length).calc_output_data()
+        geometry = _FixedPointPath(de, funcs, od["EME_path"], od["EME_delta_zs"])
+        geometry._verbose = False
+        store["aligned"] = record(lumped(geometry), DESIGN["extra"] * 1e-9)
+        dump(payload)
+
+    fwd_g = np.array(ref["forward_out"])
+    for label in ("aligned", "offgrid"):
+        rec = store[label]
+        fwd_d = np.array(rec["forward_out"])
+        m = min(fwd_d.size, fwd_g.size)
+        rec["max_dT"] = float(np.abs(fwd_d[:m] - fwd_g[:m]).max())
+        line(f"direct, {label}, {rec['sections']} sections", rec)
+        print(f"    max|dT| vs dataset {rec['max_dT']:.2e}; "
+              f"{rec['seconds']:.0f} s against {ref['seconds']:.0f} s cold")
     dump(payload)
-    line(f"direct, {rec['sections']} sections", rec)
-    print(f"  max|dT| vs dataset {rec['max_dT']:.2e}; {rec['seconds']:.0f} s against {ref['seconds']:.0f} s cold")
 
 
 # ----------------------------------------------------------------- figures

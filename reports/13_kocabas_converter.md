@@ -47,7 +47,8 @@ target 2.3, 20 modes) and from the window study (`kocabas_window.json`):
 | constant 250 nm slot, 1 µm: `T = exp(−2 k₀ Im n L)` | `|T − expected| < 1e-3` | 0.93244 vs 0.93244 | ✓ |
 | 5.1 reciprocity of the physical channel, design path | `< 1e-6` | 1.1e-3 | ✗ — the same magnitude as report 12 §10 on co-located fields (1.0e-3); the residual of the unconjugated overlap on a 5 nm staircase, not a convention error (§5.1 there) |
 | passivity: physical input columns of `|S|²` | `< 1.05` | 0.81 | ✓ |
-| 5.8 DBEME vs direct EME on the design path | `max|ΔT| < 1e-3` | pending (§5) | |
+| 5.8 DBEME vs direct EME, sections at the dataset's own points | `max|ΔT| < 1e-3` | pending (§5) | |
+| 5.4 slicing: the same device with sections at uniform `z` instead | reported | 84.1 % against 72.3 %, `max|ΔT|` = 1.2e-1 — off-grid sections put every metal edge inside a cell *and* let the gap move 1.25 nm at a time instead of 5 (§5) | — |
 | 5.7 window: the weakly bound slot modes with 0.5 / 1.5 / 2.5 µm margins | reported | 250 nm slot: 1.4498 + 0.0086j (`L_p` 14.3 µm) / 1.4475 + 0.0060j (20.7) / 1.4476 + 0.0055j (22.3); 220 nm: 14.2 → 19.3 µm; **30 nm: identical** (1.8349 + 0.0243j) | — |
 | 5.13a basis membership along the path: is the launched branch in the stored set at every width? | every physical branch present | target 1.9, 16 modes: the TE-like fundamental (2.87 at 400 nm) **absent** at 300 nm; the tracker linked the first-vertical-order branch into cutoff and the cascade read **−20 dB**. Target 2.3, 20 modes: fundamental present at 400 / 300 / 260 / 160 / 60 / 0 nm (2.873 / 2.541 / 2.326 / 1.800 / 1.534 / 1.450) | ✓ after the change |
 | 5.6 gauge, 5.13 tracking, PML sign, grid alignment, gap as a path parameter | tests | `tests/test_plasmonic_slot.py` | ✓ |
@@ -147,13 +148,22 @@ as report 12 §3):
 Two of the three loss channels are discretisation, not device: a smooth
 1700 nm taper between these two modes has no 10 nm staircase to scatter
 from, and a 20-mode basis cannot let scattered field re-couple further
-along, as a 3-D FEM with PML does implicitly. The candidates for the gap
-to the paper, in the order they should be tested: (i) the step size — a
-2.5 nm cell halves every step, but on this 471 × 347 grid it costs ~4× per
-solve and ~100 h for a path, so §7 does a spot check instead; (ii) the
-basis size, 20 modes against the 40–50 PML-EME normally needs; (iii) the
-window, which inflates the slot-like branch's `Im n_eff` by about a third
-over the last 300 nm (§1) — worth about 1 % of power, not 20.
+along, as a 3-D FEM with PML does implicitly. The candidates for the gap to
+the paper, in the order they should be tested:
+
+1. **The parameter axes, and the gap axis first.** §5 runs the same device
+   with its sections placed continuously instead of on the grid, and it
+   reaches 84.1 %. Some of that is a sub-cell artefact and some is real, but
+   it bounds the axis-snapping cost at about 12 points — half the deficit.
+   The gap axis is the suspect: it steps 5 nm, so the gold wall stands still
+   for several sections and then jumps, and per-step scattering is convex in
+   the step. Refining it to 2.5 nm adds points to the *same* grid and is
+   cheap.
+2. **The cell.** A 2.5 nm cell halves every geometric step too, but on this
+   471 × 347 grid it costs ~4× per solve and ~100 h for one path.
+3. **The basis size**, 20 modes against the 40–50 a PML-EME normally wants.
+4. **The window**, which inflates the slot-like branch's `Im n_eff` by about
+   a third over the last 300 nm (§1) — worth about 1 % of power, not 20.
 
 ## 4. Transmission against the Si–gold gap and against taper length
 
@@ -213,18 +223,39 @@ count, which is the same convergence question as §3(i).
 
 ## 5. DBEME vs direct EME
 
-Running: the design path re-solved section by section, no cache, sections
-placed at the dataset's own grid points so no metal edge lands inside a cell
-(`demo_kocabas_converter.py --direct`). 52 cold solves at ~10 min each on
-the shared machine. The number to report is `max|ΔT|` per output branch
-against the cached cascade, and the cold-vs-warm timing.
+Two direct runs, because on a two-axis dataset *where the sections are placed*
+turns out to matter more than whether the modes came from a cache.
 
-The warm-cache claim the two sweeps above already support: the design point
-cost 15 034 s cold; every one of the eight taper lengths in §4 then cost
-**0 s**, because a different longitudinal path over the same
-`(w_si, gap)` grid points solves nothing new. That is the method's whole
-economic argument, and it is what a direct EME cannot do — each length there
-is a fresh set of mode solves.
+| route | sections | at the tip | `max|ΔT|` vs the dataset | cost |
+|---|---|---|---|---|
+| dataset (grid-snapped path) | 52 | 72.3 % (−1.41 dB) | — | **0 s** warm, 15 034 s cold once |
+| direct, sections at the dataset's own points | 52 | pending | pending | ~9 900 s |
+| direct, sections at uniform `z` (off grid) | 52 | **84.1 % (−0.75 dB)** | **1.2e-1** | 9 879 s |
+
+**The off-grid row is not a failure of the cache; it is a different device.**
+`DirectParametricPath` samples the parameter functions at uniform `z`, which
+on report 12's single-axis linear taper lands exactly on the axis widths and
+here does not: the taper carries 200 nm of lead-in, `w_si` steps 10 nm and
+`gap` steps 5 nm, so uniform sampling gives widths like 398.6 and 388.9 nm and
+gaps moving 1.25 nm at a time. Every metal edge then sits inside a cell, which
+report 12 §7.3 measured as an `n_eff` alias of up to 0.1, and every interface
+sees a smaller perturbation than the dataset's, whose gap can only move in
+5 nm jumps. Both differences push the same way, and together they are worth
+12 points of transmission. The demo now runs the aligned placement as well
+(`_FixedPointPath`); the row above is the §5.8 check proper, and the
+difference between the two direct rows is what snapping a continuous taper
+onto this grid costs.
+
+That number matters for §3: **about half the deficit against the paper may be
+the gap axis, not the method.** A continuous-section EME of the same device
+loses 16 %, the grid-snapped one 28 %. Refining the gap axis to 2.5 nm is
+therefore the first thing to buy, ahead of the 2.5 nm *cell* — the axis is
+cheap (more points on the same grid), the cell is not (4× per solve).
+
+**The warm-cache claim**, which the two sweeps already support: the design
+point cost 15 034 s cold; every one of the eight taper lengths in §4 then cost
+**0 s**, because a different longitudinal path over the same `(w_si, gap)`
+grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
 
 ## 6. Conclusions and limits
 
@@ -263,6 +294,11 @@ is a fresh set of mode solves.
   1.4 % against a true 0.9 %.
 * 20 modes, not the 40–50 a PML-EME basis usually wants; the Berenger set is
   the only representation of radiation here and it cannot re-couple.
+* The gap axis is coarse against the physics it carries: 5 nm steps of the
+  gold wall on a device whose whole taper moves that wall 50 nm. §5 bounds
+  what that costs at ~12 points of transmission, which is the single largest
+  identified term between this model and the paper, and the cheapest to
+  remove.
 * One wavelength, one metal thickness. The paper's Fig. 7 sweep over
   `h_Au` = 30–250 nm is a dataset per thickness, since `h_Au` changes the
   cross-section topology and therefore the mode problem.
