@@ -86,6 +86,15 @@ A *new* `w_gap`, by contrast, walks a different part of the gap axis and pays
 for the points it has not seen (10 119 s at 25 nm, 5 318 s at 125 nm). Plan
 sweeps so the expensive axis is the one held fixed.
 
+*And watch the overlap, not only the solve.* Until 2026-09-08
+`overlap_matrix` formed the full `(2N, 2N, 3, nx, ny)` cross product before
+summing it away — 11.7 GiB and 23.6 s per call at 471 × 347 with 20 modes,
+four calls per point, about 40 % of a build. At 941 × 693 it wanted 46.5 GiB
+and the run died. It is now a contraction (`tests/test_overlap_contraction.py`).
+The general point: cost here scales as `N_modes² × grid`, so a finer grid and
+a larger basis multiply, and anything that materialises that product is a
+wall rather than a slowdown.
+
 Naming: `<material/stack>_<geometry>_<λ in nm>`, e.g. `Si_fulletch_220nm_1310`.
 
 ### Cost control for the multi-dimensional datasets

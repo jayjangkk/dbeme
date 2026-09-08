@@ -47,7 +47,7 @@ target 2.3, 20 modes) and from the window study (`kocabas_window.json`):
 | constant 250 nm slot, 1 µm: `T = exp(−2 k₀ Im n L)` | `|T − expected| < 1e-3` | 0.93244 vs 0.93244 | ✓ |
 | 5.1 reciprocity of the physical channel, design path | `< 1e-6` | 1.1e-3 | ✗ — the same magnitude as report 12 §10 on co-located fields (1.0e-3); the residual of the unconjugated overlap on a 5 nm staircase, not a convention error (§5.1 there) |
 | passivity: physical input columns of `|S|²` | `< 1.05` | 0.81 | ✓ |
-| 5.8 DBEME vs direct EME, sections at the dataset's own points | `max|ΔT| < 1e-3` | pending (§5) | |
+| 5.8 DBEME vs direct EME, sections at the dataset's own points | `max|ΔT| < 1e-3` | **3.4e−5** — the cached cascade and a fresh section-by-section solve of the same cross sections agree to five digits (§5) | ✓ |
 | 5.4 slicing: the same device with sections at uniform `z` instead | reported | 84.1 % against 72.3 %, `max|ΔT|` = 1.2e-1 — off-grid sections put every metal edge inside a cell *and* let the gap move 1.25 nm at a time instead of 5 (§5) | — |
 | 5.7 window: the weakly bound slot modes with 0.5 / 1.5 / 2.5 µm margins | reported | 250 nm slot: 1.4498 + 0.0086j (`L_p` 14.3 µm) / 1.4475 + 0.0060j (20.7) / 1.4476 + 0.0055j (22.3); 220 nm: 14.2 → 19.3 µm; **30 nm: identical** (1.8349 + 0.0243j) | — |
 | 5.13a basis membership along the path: is the launched branch in the stored set at every width? | every physical branch present | target 1.9, 16 modes: the TE-like fundamental (2.87 at 400 nm) **absent** at 300 nm; the tracker linked the first-vertical-order branch into cutoff and the cascade read **−20 dB**. Target 2.3, 20 modes: fundamental present at 400 / 300 / 260 / 160 / 60 / 0 nm (2.873 / 2.541 / 2.326 / 1.800 / 1.534 / 1.450) | ✓ after the change |
@@ -235,10 +235,16 @@ turns out to matter more than whether the modes came from a cache.
 | route | sections | at the tip | `max|ΔT|` vs the dataset | cost |
 |---|---|---|---|---|
 | dataset (grid-snapped path) | 52 | 72.3 % (−1.41 dB) | — | **0 s** warm, 15 034 s cold once |
-| direct, sections at the dataset's own points | 52 | pending | pending | ~9 900 s |
-| direct, sections at uniform `z` (off grid) | 52 | **84.1 % (−0.75 dB)** | **1.2e-1** | 9 879 s |
+| direct, sections at the dataset's own points | 52 | 72.3 % (−1.41 dB) | **3.4e−5** ✓ | 10 445 s |
+| direct, sections at uniform `z` (off grid) | 52 | **84.1 % (−0.75 dB)** | **1.2e−1** | 9 879 s |
 
-**The off-grid row is not a failure of the cache; it is a different device.**
+**The cache is faithful.** Solving the dataset's own 52 cross sections from
+scratch and cascading them gives the same transmission to five digits, at
+10 445 s against 0 s warm. Whatever separates this model from the paper, it is
+not the caching.
+
+**The off-grid row is not a failure of the cache either; it is a different
+device.**
 `DirectParametricPath` samples the parameter functions at uniform `z`, which
 on report 12's single-axis linear taper lands exactly on the axis widths and
 here does not: the taper carries 200 nm of lead-in, `w_si` steps 10 nm and
@@ -378,6 +384,14 @@ agrees with Kocabaş in the continuum limit.
 **The cascade.** Running: the design point on the fine dataset
 (`demo_kocabas_converter.py --cell 2.5 --lengths 1700 --gaps 75`), about 100
 cross sections against the 5 nm run's 52, at 4.9× per solve.
+
+*It did not run the first time.* `overlap_matrix` built the pairwise cross
+product `(2N, 2N, 3, nx, ny)` and then summed it away: 11.7 GiB per call on
+the 5 nm grid, 46.5 GiB on the fine one, where the run died. Only one
+component survives the area integral and the integral is a contraction, so it
+is two matrix products — 0.19 s and 0.2 GiB instead of 23.6 s and 11.7 GiB,
+reproducing the cached overlaps to 8e−9. The 5 nm dataset had been spending
+about 40 % of its build time there.
 
 | route | at the tip | staircase | measured |
 |---|---|---|---|
