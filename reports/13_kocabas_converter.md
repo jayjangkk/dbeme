@@ -370,16 +370,58 @@ absolute per-step loss is good to about a factor 1.5.
 the tip, of which the supermode's own metal loss accounts for 0.957, leaving
 0.755 — a 24.4 % discretisation loss. If that halves with the step:
 
-| grid | predicted at the tip |
-|---|---|
-| 5 nm cell (measured) | 72.3 % |
-| 2.5 nm cell | ≈ 84 % |
-| Δ → 0, extrapolated linearly | ≈ **95.7 %** |
+| grid | predicted at the tip | **measured** |
+|---|---|---|
+| 5 nm cell | — | 72.3 % |
+| 2.5 nm cell | ≈ 84 % | **78.9 % (−1.03 dB)** |
+| Δ → 0 | ≈ 95.7 % | **≈ 85 %** |
 
-The middle row is close to the off-grid direct run's 84.1 % (§5), which had
-1.25 nm gap steps, and **the extrapolated row is the paper's ~95 %**. If the
-cascade confirms it, the whole deficit in §3 is the staircase and this model
-agrees with Kocabaş in the continuum limit.
+**The prediction was too optimistic, and the way it failed is the result.**
+It assumed the whole deficit scales with the step. It does not. Writing the
+discretisation loss as `A·Δ + B`, with each grid's own metal factor taken from
+its own path (0.9605 and 0.9664 to the tip):
+
+| | 5 nm | 2.5 nm |
+|---|---|---|
+| at the tip | 72.3 % | 78.9 % |
+| metal factor of the launched branch | 0.9605 | 0.9664 |
+| discretisation loss | 24.8 % | 18.4 % |
+| forward amplitude in the Berenger branches | 0.0941 | **0.0923** |
+
+The loss ratio is 0.743, not the 0.5 a pure `Δ` law gives, and the fit splits
+it into `A` = 2.5 % per nm of step and **`B` = 12 % that the step does not
+touch**. The fourth row says what `B` is: the amplitude scattered into the
+PML branches is ~9 % on *both* grids. Halving the staircase halves what the
+staircase sheds; it does nothing about field the 20-mode basis can only
+represent as Berenger modes, which is then absorbed rather than re-coupled.
+
+So the continuum limit of *this model* is about **85 %** modal conversion, not
+95 %. The single-interface measurement that opened this section is still
+right — that junction's own loss does halve — it simply is not the whole
+deficit.
+
+**Where the paper's 95 % then sits.** Kocabaş integrates *total* Poynting
+flux and back-propagates it (§3), so the forward-travelling scattered field is
+inside his number and outside ours. Adding the ~9 % Berenger forward amplitude
+to the extrapolated 85 % gives ~94 %, which is his figure. Treat that as
+indicative rather than a like-for-like: those amplitudes carry `r` = 2–3 under
+the unconjugated normalisation and so are not power, and they are measured at
+the lead-out end rather than at his `z` = 1100 nm cut.
+
+**Two caveats on the scaling fit.** It is two points, and the `--cell` switch
+moves the *cell* as well as the axis, so Δ is not varied alone: the slot mode
+itself moves with it, 1.4498 + 0.0086j to 1.4941 + 0.0062j, i.e. `L_p` 14.3 to
+19.8 µm, toward the wide-window value of §1. Separating axis from cell needs a
+dataset with a 2.5 nm axis on a 5 nm grid, which the platform does not build
+today. And the fine grid's gate is worse, not better: reciprocity of the
+physical channel 1.1e−3 → 4.0e−3 and reflection 0.0018 → 0.0142, while
+passivity stays sound at 0.887 and the constant-slot check passes.
+
+**Cost, for the record.** 101 cross sections, 37 165 s of solving across
+several restarts, against 15 034 s for the 52-section coarse path — and it
+needed `overlap_matrix` fixed first (below) plus a retry wrapper, because a
+single fine solve holds ~1.5 GiB for ARPACK's Ritz basis alone and the run
+died twice on allocation.
 
 **The cascade.** Running: the design point on the fine dataset
 (`demo_kocabas_converter.py --cell 2.5 --lengths 1700 --gaps 75`), about 100
