@@ -47,6 +47,7 @@ target 2.3, 20 modes) and from the window study (`kocabas_window.json`):
 | constant 250 nm slot, 1 µm: `T = exp(−2 k₀ Im n L)` | `|T − expected| < 1e-3` | 0.93244 vs 0.93244 | ✓ |
 | 5.1 reciprocity of the physical channel, design path | `< 1e-6` | 1.1e-3 | ✗ — the same magnitude as report 12 §10 on co-located fields (1.0e-3); the residual of the unconjugated overlap on a 5 nm staircase, not a convention error (§5.1 there) |
 | passivity: physical input columns of `|S|²` | `< 1.05` | 0.81 | ✓ |
+| 5.3/5.7 grid convergence: the whole device at a 2.5 nm cell (`SiO2_kocabas_set2_1550_c25`) | reported | 78.9 % against 72.3 %; discretisation loss 24.8 → 18.4 %, fitting `2.5 %/nm × Δ + 12 %`; the slot mode moves to 1.4941 + 0.0062j, so cell and axis move together by construction (§7). Reciprocity 1.1e−3 → 4.0e−3, passivity 0.887 | — |
 | 5.8 DBEME vs direct EME, sections at the dataset's own points | `max|ΔT| < 1e-3` | **3.4e−5** — the cached cascade and a fresh section-by-section solve of the same cross sections agree to five digits (§5) | ✓ |
 | 5.4 slicing: the same device with sections at uniform `z` instead | reported | 84.1 % against 72.3 %, `max|ΔT|` = 1.2e-1 — off-grid sections put every metal edge inside a cell *and* let the gap move 1.25 nm at a time instead of 5 (§5) | — |
 | 5.7 window: the weakly bound slot modes with 0.5 / 1.5 / 2.5 µm margins | reported | 250 nm slot: 1.4498 + 0.0086j (`L_p` 14.3 µm) / 1.4475 + 0.0060j (20.7) / 1.4476 + 0.0055j (22.3); 220 nm: 14.2 → 19.3 µm; **30 nm: identical** (1.8349 + 0.0243j) | — |
@@ -165,9 +166,18 @@ the paper, in the order they should be tested:
    point. A 2.5 nm gap axis on a 5 nm cell would put every second metal edge
    in the middle of a cell, alternating aligned and misaligned points along
    the path — which *adds* a spurious per-step mismatch rather than removing
-   one. Halving the gap axis means halving the cell, which is
+   Halving the gap axis means halving the cell, which is
    `SiO2_kocabas_set2_1550_c25`: §7.
+
+   **Tested, and it is about half the story.** 72.3 % → 78.9 %, the two grids
+   fitting `loss = 2.5 %/nm × Δ + 12 %`. The staircase part is real and
+   extrapolates away; the 12 % does not.
 2. **The basis size**, 20 modes against the 40–50 a PML-EME normally wants.
+   **Now the leading suspect**, because that 12 % floor has a signature: the
+   forward amplitude in the Berenger branches is ~9 % on *both* grids. It is
+   field the basis can only hold as PML modes, which are absorbed instead of
+   re-coupling — and a 3-D FEM with PML lets it propagate, which is where
+   Kocabaş's *total*-power measure picks it up (§7).
 3. **The window**, which inflates the slot-like branch's `Im n_eff` by about
    a third over the last 300 nm (§1) — worth about 1 % of power, not 20.
 
@@ -274,13 +284,16 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
 **What this report establishes.**
 
 1. The lossy PML backend runs a two-axis dataset end to end on a device with
-   a published geometry, and lands at **72 % modal conversion** where the
-   paper reports ~95 % total power. The gap is understood in kind if not in
-   full: about 5 % is the interface staircase, about 11 % is amplitude
-   scattered into the Berenger set and then absorbed, and the paper's number
-   is a *total*-power figure that includes the scattered field this model
-   discards (his §II, and the Set 1 example where the bound-mode fit sits
-   below the total).
+   a published geometry, and lands at **72.3 % modal conversion** on the 5 nm
+   grid and **78.9 %** on the 2.5 nm one, where the paper reports ~95 % total
+   power. §7 turns the gap from a guess into a decomposition: the
+   discretisation part is `2.5 %/nm × Δ` and extrapolates away, leaving about
+   **85 %** in the continuum limit, and the remaining ~12 % is a
+   step-independent floor whose signature is the ~9 % forward amplitude
+   sitting in the Berenger branches on both grids. The paper's number is a
+   *total*-power figure (his §II, and the Set 1 example where his bound-mode
+   fit sits below his total) that counts that scattered field, which this
+   model discards.
 2. **The converter is adiabatic in this model and the report-12 device was
    not.** Transmission rises monotonically with taper length and flattens
    near 2 µm, and the scattered amplitude falls as roughly `1/L`. That is the
@@ -305,7 +318,9 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
   Everything back-propagated over the 200 nm lead-out inherits that, which is
   1.4 % against a true 0.9 %.
 * 20 modes, not the 40–50 a PML-EME basis usually wants; the Berenger set is
-  the only representation of radiation here and it cannot re-couple.
+  the only representation of radiation here and it cannot re-couple. §7 puts
+  a number on that — a ~12 % floor refining the grid does not touch — which
+  makes basis size, not step size, the next thing to buy.
 * The gap axis is coarse against the physics it carries: 5 nm steps of the
   gold wall on a device whose whole taper moves that wall 50 nm. §5 bounds
   what that costs at ~12 points of transmission, which is the single largest
@@ -408,12 +423,15 @@ indicative rather than a like-for-like: those amplitudes carry `r` = 2–3 under
 the unconjugated normalisation and so are not power, and they are measured at
 the lead-out end rather than at his `z` = 1100 nm cut.
 
-**Two caveats on the scaling fit.** It is two points, and the `--cell` switch
-moves the *cell* as well as the axis, so Δ is not varied alone: the slot mode
-itself moves with it, 1.4498 + 0.0086j to 1.4941 + 0.0062j, i.e. `L_p` 14.3 to
-19.8 µm, toward the wide-window value of §1. Separating axis from cell needs a
-dataset with a 2.5 nm axis on a 5 nm grid, which the platform does not build
-today. And the fine grid's gate is worse, not better: reciprocity of the
+**Two caveats on the scaling fit.** It is two points, and Δ is not varied
+alone: the axis is tied to the cell by construction (§3 — a 2.5 nm gap axis on
+a 5 nm cell would put every second metal edge mid-cell and *add* a spurious
+alternating mismatch), so refining the step necessarily refines the mode too.
+It does move: the slot mode goes 1.4498 + 0.0086j to 1.4941 + 0.0062j, `L_p`
+14.3 to 19.8 µm, toward the wide-window value of §1. `A` and `B` are therefore
+a fit over a compound variable, and the honest reading of `B` is "what did not
+improve when both were halved", not "the basis-truncation term" — though the
+Berenger row argues for the latter. And the fine grid's gate is worse, not better: reciprocity of the
 physical channel 1.1e−3 → 4.0e−3 and reflection 0.0018 → 0.0142, while
 passivity stays sound at 0.887 and the constant-slot check passes.
 
