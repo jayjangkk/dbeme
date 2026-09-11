@@ -166,7 +166,7 @@ the paper, in the order they should be tested:
    point. A 2.5 nm gap axis on a 5 nm cell would put every second metal edge
    in the middle of a cell, alternating aligned and misaligned points along
    the path — which *adds* a spurious per-step mismatch rather than removing
-   Halving the gap axis means halving the cell, which is
+   one. Halving the gap axis means halving the cell, which is
    `SiO2_kocabas_set2_1550_c25`: §7.
 
    **Tested, and it is about half the story.** 72.3 % → 78.9 %, the two grids
