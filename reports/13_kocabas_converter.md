@@ -456,7 +456,7 @@ about 40 % of its build time there.
 | route | at the tip | staircase | measured |
 |---|---|---|---|
 | 5 nm cell, 52 sections | 72.3 % | 40 width steps, 10 gap steps | ✓ |
-| 2.5 nm cell, ~100 sections | pending | 80 width steps, 20 gap steps | running |
+| 2.5 nm cell, 102 sections | **78.9 %** | 80 width steps, 20 gap steps | ✓ |
 
 ---
 
