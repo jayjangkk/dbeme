@@ -30,6 +30,7 @@ PyOptik interprets a bare number as metres too, so the two agree.
 """
 
 import abc
+import hashlib
 import functools
 import pathlib
 import warnings
@@ -106,6 +107,60 @@ class ConstantIndex(Material):
 
     def fingerprint(self):
         return f"const:{self.value.real:.9g}{self.value.imag:+.9g}j"
+
+
+class TabulatedIndex(Material):
+    """A measured ``(wavelength, n)`` table, interpolated linearly.
+
+    For index data that exists as *numbers from the process owner* rather than
+    as a published fit: the platform document §5 gives Si (Palik, as
+    sampled in the owner's Lumerical database) and SiO2 (SF_SIO2, measured
+    in-house) exactly this way, and says of the silicon table that it "exists to
+    match the reference solver, not to be smooth" - a one-term Sellmeier through
+    those nine points misses one of them by 0.005, which is larger than the
+    discrepancy the material was corrected to explain.
+
+    Linear interpolation, not a spline, for the same reason: the table is the
+    specification.
+
+    :param out_of_range: ``"raise"`` (default) or ``"clip"``.  Raising is the
+        right default - the platform doc's range guard says the interpolator
+        "must still **raise** outside the measured span, never silently
+        extrapolate", because a bandwidth plot built on extrapolated index data
+        fails quietly.
+    """
+
+    def __init__(self, page, wavelengths, indices, name=None, out_of_range="raise"):
+        self._page = str(page)
+        self._name = name or self._page
+        order = np.argsort(np.asarray(wavelengths, dtype=float))
+        self.wavelengths = np.asarray(wavelengths, dtype=float)[order]
+        self.indices = np.asarray(indices, dtype=float)[order]
+        if out_of_range not in ("raise", "clip"):
+            raise ValueError("out_of_range must be 'raise' or 'clip'")
+        self.out_of_range = out_of_range
+
+    def index(self, wavelength):
+        value = np.asarray(wavelength, dtype=float)
+        lo, hi = self.wavelengths[0], self.wavelengths[-1]
+        if self.out_of_range == "raise" and (value.min() < lo or value.max() > hi):
+            raise ValueError(
+                f"{self._name}: {value.min()*1e9:.1f}-{value.max()*1e9:.1f} nm is "
+                f"outside the measured span {lo*1e9:.2f}-{hi*1e9:.2f} nm"
+            )
+        return np.interp(value, self.wavelengths, self.indices).astype(complex)
+
+    @property
+    def name(self):
+        return self._name
+
+    def fingerprint(self):
+        # The table itself, not just its name: two revisions of "Palik" that
+        # disagree must not share a dataset or a cached path.
+        digest = hashlib.sha256(
+            np.concatenate([self.wavelengths, self.indices]).tobytes()
+        ).hexdigest()[:12]
+        return f"tab:{self._page}:{digest}"
 
 
 class SellmeierMaterial(Material):
