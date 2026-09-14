@@ -125,6 +125,64 @@ def turning_point(neff, clad_index, radius):
     return float(radius) * np.log(np.real(neff) / float(clad_index))
 
 
+def refined_axis(base, regions):
+    """Subdivide a uniform axis inside each ``(lo, hi, cell)`` region.
+
+    The interior stays the caller's uniform grid; inside a region the base
+    cells are cut into an integer number of finer ones, so every base node
+    survives and a feature edge that was on a node stays on one.  The rules,
+    each enforced:
+
+    * ``lo`` and ``hi`` must be base nodes - a region boundary between nodes
+      would create one odd-sized cell, and the cross section's edge
+      reconstruction (``_cell_edges``) assumes cells are only ever split, not
+      shifted;
+    * the base cell must be an integer multiple of ``cell``;
+    * a region must leave at least two base cells untouched at each end of
+      the axis - one for the edge reconstruction's starting width, and so
+      that the PML, which is counted in outer cells, is never inside a
+      refined region;
+    * regions must not overlap.
+
+    Why this and not an arbitrary point list: the dataset's *parameter*
+    axes step in whole cells so that material edges land on nodes at every
+    grid point (report 12 section 7.3), and a piecewise-uniform grid keeps
+    that rule expressible - a width axis steps ``2 cell_fine`` while the
+    edge is inside the fine region and ``2 cell`` outside it.
+
+    :param base: Ascending, uniformly spaced nodes.
+    :param regions: Iterable of ``(lo, hi, cell)`` in the axis' units.
+    :returns: Ascending nodes, ``base`` itself when ``regions`` is empty.
+    """
+    z = np.asarray(base, dtype=float)
+    regions = [tuple(float(v) for v in r) for r in regions]
+    if not regions:
+        return z
+    if z.size < 5:
+        raise ValueError("a refined axis needs at least five base nodes")
+    step = z[1] - z[0]
+    pieces, cursor = [], 0
+    for lo, hi, cell in sorted(regions):
+        i_lo, i_hi = int(np.argmin(np.abs(z - lo))), int(np.argmin(np.abs(z - hi)))
+        if abs(z[i_lo] - lo) > 1e-6 * step or abs(z[i_hi] - hi) > 1e-6 * step:
+            raise ValueError(f"refinement bounds ({lo}, {hi}) must be base-grid nodes")
+        if i_hi <= i_lo:
+            raise ValueError(f"empty refinement region ({lo}, {hi})")
+        if i_lo < 2 or i_hi > z.size - 3:
+            raise ValueError("a refinement must leave two base cells at each end of the axis")
+        if i_lo < cursor:
+            raise ValueError("refinement regions overlap")
+        ratio = step / cell
+        if cell <= 0 or abs(ratio - round(ratio)) > 1e-6 or round(ratio) < 1:
+            raise ValueError(f"base cell {step:g} is not an integer multiple of {cell:g}")
+        k = int(round(ratio))
+        pieces.append(z[cursor:i_lo])
+        pieces.append(np.linspace(z[i_lo], z[i_hi], (i_hi - i_lo) * k + 1)[:-1])
+        cursor = i_hi
+    pieces.append(z[cursor:])
+    return np.concatenate(pieces)
+
+
 def stretched_grid(x, y, layers_plus_x=0, layers_minus_x=0,
                    layers_plus_y=0, layers_minus_y=0, factor=1 + 2j):
     r"""Complex-stretched grid, with the axis convention spelled out.
@@ -206,6 +264,17 @@ class PMLModeSolver:
     :param colocate: Interpolate the electric components from the cell centres
         onto the node grid the magnetic ones live on, as ``MSEMpy`` does.  Off
         by default to keep existing PML datasets valid; see the module notes.
+    :param refine_x, refine_y: Regions ``(lo, hi, cell)`` in metres inside
+        which the uniform ``mesh`` grid is cut into finer cells; see
+        :func:`refined_axis` for the rules.  The finite-difference operator
+        takes per-cell spacings, the overlap weights are per-cell widths and
+        the cross section reconstructs its cell edges exactly, so nothing
+        else changes - but the grid does, so a refinement is part of the
+        dataset identity (``fingerprint``).  Built for the Kocabas converter,
+        whose staircase loss sits where the Si tip narrows to nothing and a
+        10 nm width step is a large relative change (report 13 section 3);
+        refining the 120 nm around the tip at 1 nm costs a fifth of the grid
+        where refining everything costs five times a solve.
     """
 
     def __init__(
@@ -223,9 +292,13 @@ class PMLModeSolver:
         accuracy=1e-8,
         boundary="0000",
         colocate=False,
+        refine_x=(),
+        refine_y=(),
     ):
         self.cross_section = cross_section
         self.colocate = bool(colocate)
+        self.refine_x = tuple(tuple(float(v) for v in r) for r in refine_x)
+        self.refine_y = tuple(tuple(float(v) for v in r) for r in refine_y)
         self._wavelength = float(wavelength)
         self.window = tuple(float(v) for v in window)
         self.pml_thickness = float(pml_thickness)
@@ -250,6 +323,8 @@ class PMLModeSolver:
         self._x = np.linspace(x_min, x_max, mesh)
         self._y = np.linspace(y_min, y_max, int(mesh_y))
 
+        # PML depth in *outer* cells, from the base pitch: a refinement is
+        # interior by construction (refined_axis), so the outer cells keep it.
         step_x = self._x[1] - self._x[0]
         step_y = self._y[1] - self._y[0]
         depth_x = int(round(self.pml_thickness / step_x))
@@ -260,9 +335,42 @@ class PMLModeSolver:
             layers_plus_y=depth_y if "+y" in self.pml_edges else 0,
             layers_minus_y=depth_y if "-y" in self.pml_edges else 0,
         )
+        self._x = self._refine(self._x, self.refine_x, self._layers["layers_minus_x"],
+                               self._layers["layers_plus_x"], "x")
+        self._y = self._refine(self._y, self.refine_y, self._layers["layers_minus_y"],
+                               self._layers["layers_plus_y"], "y")
         self.x, self.y = stretched_grid(
             self._x, self._y, factor=self.pml_factor, **self._layers
         )
+
+    @staticmethod
+    def _refine(base, regions, layers_low, layers_high, name):
+        """A refined axis whose regions stay clear of both PML layers."""
+        if not regions:
+            return base
+        step = base[1] - base[0]
+        inner_lo = base[0] + layers_low * step
+        inner_hi = base[-1] - layers_high * step
+        for lo, hi, _ in regions:
+            if lo < inner_lo - 1e-6 * step or hi > inner_hi + 1e-6 * step:
+                raise ValueError(
+                    f"refine_{name} region ({lo:g}, {hi:g}) reaches into the PML; "
+                    f"the absorbing layers occupy the outer {layers_low} / "
+                    f"{layers_high} cells"
+                )
+        return refined_axis(base, regions)
+
+    def _cell_area(self):
+        """``|dx| x |dy|`` per node, ``(len(x), len(y))``: the weight of a
+        sum over the field arrays, which hold one value per node, each node
+        owning the cell to its right - the same convention as the overlap
+        integral's weights (``compute_differences``).  Constant on a uniform
+        grid, so nothing there changes; on a refined one a fraction of power
+        summed without it counts the fine cells several times over.
+        """
+        dx = np.abs(np.diff(np.real(self.x)))
+        dy = np.abs(np.diff(np.real(self.y)))
+        return np.outer(np.r_[dx, dx[-1]], np.r_[dy, dy[-1]])
 
     # ------------------------------------------------------------------ API
 
@@ -304,8 +412,22 @@ class PMLModeSolver:
         )
 
     def index_profile(self, params):
-        """Real index on the solve grid, for plotting and the core mask."""
-        return self.cross_section.index(np.real(self.x), np.real(self.y), params)
+        """Real index on the solve grid, for plotting and the core mask.
+
+        Sampled at the nodes on a uniform grid, exactly as before - a
+        half-cell shift a mask does not notice, kept so that every existing
+        PML dataset's confinement numbers are unchanged.  On a refined grid
+        the nodes are *not* cell centres: the cross section reconstructs cell
+        edges from what it is given (``_cell_edges``), and fed nodes across a
+        fine/coarse transition it would reconstruct a zero-width cell.  So a
+        refined grid samples at the centres the solver itself uses, padded to
+        the node shape.
+        """
+        x, y = np.real(self.x), np.real(self.y)
+        if not (self.refine_x or self.refine_y):
+            return self.cross_section.index(x, y, params)
+        xc, yc = 0.5 * (x[:-1] + x[1:]), 0.5 * (y[:-1] + y[1:])
+        return np.pad(self.cross_section.index(xc, yc, params), ((0, 1), (0, 1)), mode="edge")
 
     def solve(self, params, target_neff, return_all=False):
         """Modes near ``target_neff``, selected by confinement.
@@ -466,9 +588,10 @@ class PMLModeSolver:
             H[i, 0], H[i, 1], H[i, 2] = (
                 _crop(hx[i], nx, ny), _crop(hy[i], nx, ny), _crop(hz[i], nx, ny)
             )
-            total = np.abs(E[i, 0]) ** 2 + np.abs(E[i, 1]) ** 2
+            area = self._cell_area()[:nx, :ny]
+            total = (np.abs(E[i, 0]) ** 2 + np.abs(E[i, 1]) ** 2) * area
             te_fraction[i] = (
-                float(np.sum(np.abs(E[i, 0]) ** 2) / np.sum(total))
+                float(np.sum(np.abs(E[i, 0]) ** 2 * area) / np.sum(total))
                 if np.sum(total)
                 else 0.0
             )
@@ -520,11 +643,12 @@ class PMLModeSolver:
             column_min = index.min(axis=1, keepdims=True)
             core = index > 0.5 * (column_max + column_min)
 
+        area = self._cell_area()[:nx, :ny]
         out = np.empty(vectors.shape[1])
         for i in range(vectors.shape[1]):
             hx = vectors[: nx * ny, i].reshape(nx, ny)
             hy = vectors[nx * ny :, i].reshape(nx, ny)
-            power = np.abs(hx) ** 2 + np.abs(hy) ** 2
+            power = (np.abs(hx) ** 2 + np.abs(hy) ** 2) * area
             total = power.sum()
             out[i] = power[core].sum() / total if total else 0.0
         return out
@@ -587,6 +711,10 @@ class PMLBackend(PMLModeSolver, FDEBackend):
         # existed keeps a byte-identical identity.
         if self.colocate:
             fingerprint["colocate"] = True
+        if self.refine_x:
+            fingerprint["refine_x"] = [list(r) for r in self.refine_x]
+        if self.refine_y:
+            fingerprint["refine_y"] = [list(r) for r in self.refine_y]
         return fingerprint
 
     def solve(self, parameter_point):

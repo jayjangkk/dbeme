@@ -156,9 +156,9 @@ the paper, in the order they should be tested:
    with its sections placed continuously instead of on the grid, and it
    reaches 84.1 %. Some of that is a sub-cell artefact and some is real, but
    it bounds the axis-snapping cost at about 12 points — half the deficit.
-   The gap axis is the suspect: it steps 5 nm, so the gold wall stands still
-   for several sections and then jumps, and per-step scattering is convex in
-   the step.
+   The first reading of this was that the gap axis was the suspect, because
+   the gold wall stands still for several sections and then jumps 5 nm. The
+   per-interface split below says otherwise: **the cost is the silicon tip.**
 
    *The axis cannot be refined on its own.* `w_si` steps `2 cell` and `gap`
    steps `cell` precisely so that the Si edge (at `w_si/2`) and the metal's
@@ -172,6 +172,25 @@ the paper, in the order they should be tested:
    **Tested, and it is about half the story.** 72.3 % → 78.9 %, the two grids
    fitting `loss = 2.5 %/nm × Δ + 12 %`. The staircase part is real and
    extrapolates away; the 12 % does not.
+
+   **Which edge the staircase is.** Charging each interface of the 5 nm design
+   path with its unrepresented mismatch *and* the decay of what it scattered
+   into the Berenger set (the propagation loss of the following section net
+   of the launched branch's own metal loss), and sorting by which edge moved:
+
+   | moving edge | interfaces | cost |
+   |---|---|---|
+   | gold wall, 5 nm jumps | 10 | **2.1 %** (0.21 % each) |
+   | Si width, 10 nm steps | 40 | **13.6 %** (0.34 % each) |
+   |  of which Si 400 → 200 nm | 20 | 0.4 % |
+   |  Si 200 → 100 nm | 10 | 4.0 % |
+   |  Si 100 → 0 nm | 10 | **9.2 %** |
+
+   The wall is nearly free; two thirds of the whole staircase sits in the last
+   100 nm of Si width, where a 10 nm step is a 10–100 % relative change to a
+   core the supermode still lives on. That is where a fixed grid fails an
+   adiabatic taper, and it is also where lithography cannot follow the mask:
+   see the facet measurement in §7.
 2. **The basis size**, 20 modes against the 40–50 a PML-EME normally wants.
    **Now the leading suspect**, because that 12 % floor has a signature: the
    forward amplitude in the Berenger branches is ~9 % on *both* grids. It is
@@ -225,10 +244,11 @@ discretisation here**: the dataset's gap axis has a 5 nm step, so a path that
 opens the clearance by 100 nm visits exactly 20 grid points more than one that
 holds it constant, and 42 + (125 − `w_gap`)/5 reproduces the third column
 exactly. The 4.9 points of transmission between the ends of the sweep divided
-by those 20 extra sections is 0.25 % each — the same size as the per-interface
-mismatch of §3. A wall that stays put costs nothing to step past; that is true
-of the physics *and* of the staircase, and this dataset cannot say in what
-proportion.
+by those 20 extra sections is 0.25 % each — and §3's per-edge split puts a
+5 nm wall jump at 0.21 %, so the whole sweep is consistent with the extra
+wall steps and nothing else. A wall that stays put costs nothing to step
+past; that is true of the physics *and* of the staircase, and this dataset
+cannot say in what proportion.
 
 What can be said: nothing in the range 25–125 nm reaches the paper's
 efficiency, the ordering does not contradict it, and the paper's own choice of
@@ -321,11 +341,12 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
   the only representation of radiation here and it cannot re-couple. §7 puts
   a number on that — a ~12 % floor refining the grid does not touch — which
   makes basis size, not step size, the next thing to buy.
-* The gap axis is coarse against the physics it carries: 5 nm steps of the
-  gold wall on a device whose whole taper moves that wall 50 nm. §5 bounds
-  what that costs at ~12 points of transmission, which is the single largest
-  identified term between this model and the paper, and the cheapest to
-  remove.
+* The Si-width axis is coarse where it matters: 10 nm steps against a core
+  that shrinks to nothing, so the last 100 nm of taper carry 9.2 of the
+  staircase's 13.6 % (§3). The gold wall's 5 nm jumps cost 2.1 % in total.
+  Refining the whole grid (§7) halves the staircase; refining the grid *near
+  the tip only* would do most of that at a fraction of the cost, and is the
+  natural next platform change.
 * One wavelength, one metal thickness. The paper's Fig. 7 sweep over
   `h_Au` = 30–250 nm is a dataset per thickness, since `h_Au` changes the
   cross-section topology and therefore the mode problem.
@@ -337,8 +358,9 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
 ## 7. Halving the axes: the 2.5 nm cell
 
 §5 bounds the cost of snapping this device onto the grid at about 12 points
-of transmission, and §3 names the gap axis as the suspect. This section
-measures it.
+of transmission. This section measures what halving the grid does about it;
+§3's per-edge split, made afterwards, says the cost sits at the Si tip rather
+than at the gold wall the first draft suspected.
 
 **Why the cell and not just the axis.** `w_si` steps `2 cell` and `gap` steps
 `cell` so that the Si edge (`w_si/2`) and the metal's inner edge
@@ -440,6 +462,30 @@ several restarts, against 15 034 s for the 52-section coarse path — and it
 needed `overlap_matrix` fixed first (below) plus a retry wrapper, because a
 single fine solve holds ~1.5 GiB for ARPACK's Ritz basis alone and the run
 died twice on allocation.
+
+### What a finite tip costs
+
+The staircase lives at the tip (§3), and no lithography makes a 0 nm tip.
+Two solves on the 5 nm grid — the cross section at an 80 nm Si tip (slot
+250 nm, so clearance 85 nm) and the bare slot — give the facet transmission
+of the supermode into the slot mode directly (`kocabas_tip_facet.json`):
+
+| | |
+|---|---|
+| tip supermode, 80 nm Si | 1.6215 + 0.0057j, confinement 0.70 — still largely Si-guided |
+| slot mode | 1.4498 + 0.0086j, confinement 0.49 |
+| facet `|t|²` | **0.911 (−0.41 dB)**; 12 % of the supermode into non-guided slot-side branches |
+| the model's own 80 → 0 nm staircase, from the design-path profile | 0.852 |
+| net at the end | ~76 % with the facet, 72.3 % with the staircase |
+
+In this model an 80 nm facet *beats* the staircase, by 6 points — but only
+because it replaces a 15 % numerical artefact with a 9 % physical mismatch.
+Against the paper it is a step backwards: Kocabaş's 95 % is for `w_end = 0`
+in a 3-D FEM where the tip is smooth and costs nothing, and the facet adds a
+loss his device does not have. A rounded tip of the same CD is the same
+physics, marginally softer: 80 → 0 nm over 40 nm of length is one or two EME
+sections. What the finite tip *does* approximate is the wafer, and a
+fab-faithful comparison should sweep `w_end` rather than assume zero.
 
 **The cascade.** Running: the design point on the fine dataset
 (`demo_kocabas_converter.py --cell 2.5 --lengths 1700 --gaps 75`), about 100

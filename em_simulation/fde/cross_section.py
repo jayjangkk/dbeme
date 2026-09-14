@@ -93,20 +93,53 @@ class CrossSection(metaclass=abc.ABCMeta):
         return self.cladding_index_at(self.reference_wavelength)
 
 
+def _cell_edges(centers):
+    """Cell boundaries from cell centres, exact on a piecewise-uniform grid.
+
+    A mode solver hands the cross section the *centres* of its cells and
+    keeps the nodes to itself.  Taking each edge half-way between two
+    neighbouring centres is right only while those two cells are the same
+    size: where a 5 nm cell meets a 1 nm one the midpoint of the centres sits
+    1 nm from the node, and a metal edge placed on that node lands a fifth
+    of a cell into the wrong material.  Every centre is the exact midpoint of
+    its own cell, so the edges follow by recursion from the first one:
+    ``e[i+1] = 2 c[i] - e[i]``.  The first edge needs the first cell's width,
+    which is taken from the first two centres - hence the requirement that
+    the two outermost cells at each end be equal, which every grid this
+    project builds satisfies (a refinement never touches the PML side).  The
+    recursion's error alternates in sign and does not grow.
+    """
+    c = np.asarray(np.real(centers), dtype=float)
+    if c.size == 1:
+        return np.array([c[0] - 0.5, c[0] + 0.5])
+    edges = np.empty(c.size + 1)
+    edges[0] = c[0] - 0.5 * (c[1] - c[0])
+    for i in range(c.size):
+        edges[i + 1] = 2.0 * c[i] - edges[i]
+    # the same rule must close at the far end, or the start was wrong
+    expected_end = c[-1] + 0.5 * (c[-1] - c[-2])
+    scale = max(abs(c[-1] - c[0]), abs(c[1] - c[0]), 1e-300)
+    if abs(edges[-1] - expected_end) > 1e-9 * scale:
+        raise ValueError(
+            "cell centres are not consistent with equal outermost cells; a "
+            "grid refinement must leave the first and last two cells uniform"
+        )
+    return edges
+
+
 def _fill_fraction(centers, lo, hi):
     """Fraction of each 1-D cell that lies inside ``[lo, hi]``.
 
-    ``centers`` are cell centres; cell edges are taken half-way between
-    neighbours.  This is the sub-pixel averaging that lets a moderate mesh
-    resolve a 20 nm change in waveguide width, which the dataset grid needs.
+    ``centers`` are cell centres; the edges come from :func:`_cell_edges`, so
+    a straight feature edge placed on a grid node fills its cells exactly on
+    a uniform *and* on a piecewise-refined grid.  This is the sub-pixel
+    averaging that lets a moderate mesh resolve a 20 nm change in waveguide
+    width, which the dataset grid needs.
     """
     centers = np.asarray(np.real(centers), dtype=float)
     if centers.size == 1:
         return np.array([1.0 if lo <= centers[0] <= hi else 0.0])
-    edges = np.empty(centers.size + 1)
-    edges[1:-1] = 0.5 * (centers[:-1] + centers[1:])
-    edges[0] = centers[0] - 0.5 * (centers[1] - centers[0])
-    edges[-1] = centers[-1] + 0.5 * (centers[-1] - centers[-2])
+    edges = _cell_edges(centers)
     left, right = edges[:-1], edges[1:]
     overlap = np.minimum(right, hi) - np.maximum(left, lo)
     return np.clip(overlap / (right - left), 0.0, 1.0)

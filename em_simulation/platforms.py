@@ -556,7 +556,7 @@ def kocabas_materials():
     )
 
 
-def kocabas_path(set_number=2, w_gap=None, l_taper=None, w_slot=None):
+def kocabas_path(set_number=2, w_gap=None, l_taper=None, w_slot=None, half_slot=False):
     """``{"w_si": f(z), "gap": f(z)}`` and the total length of one converter.
 
     Si width ``w_si -> w_end`` linearly over ``l_taper`` after a ``start``
@@ -564,6 +564,10 @@ def kocabas_path(set_number=2, w_gap=None, l_taper=None, w_slot=None):
     over the same length and stay at ``w_slot`` for ``extra``.  The gap the
     cross section sees is half the difference.  Any of ``w_gap``, ``l_taper``,
     ``w_slot`` may be overridden (metres) for a sweep.
+
+    :param half_slot: Return ``{"w_si", "half_slot"}`` instead - the same
+        device on the ``(w_si, half_slot)`` axes a tip-refined dataset uses
+        (``kocabas_converter_dataset_info(tip_refine=...)``).
     """
     p = dict(KOCABAS_SETS[set_number])
     w_gap = p["w_gap"] * 1e-9 if w_gap is None else float(w_gap)
@@ -583,6 +587,11 @@ def kocabas_path(set_number=2, w_gap=None, l_taper=None, w_slot=None):
         slot = slot_in + (w_slot - slot_in) * frac(z)
         return 0.5 * (slot - w_si(z))
 
+    def half(z):
+        return 0.5 * (slot_in + (w_slot - slot_in) * frac(z))
+
+    if half_slot:
+        return {"w_si": w_si, "half_slot": half}, start + l_taper + extra
     return {"w_si": w_si, "gap": gap}, start + l_taper + extra
 
 
@@ -597,6 +606,7 @@ def kocabas_converter_dataset_info(
     corner_radius=0.0,
     plate_reach=0.3e-6,
     colocate=True,
+    tip_refine=None,
 ):
     """Kocabas's Si-wire-to-plasmonic-slot converter as a two-axis dataset.
 
@@ -622,12 +632,36 @@ def kocabas_converter_dataset_info(
     every grid point (report 12 section 7.3).  The slot tapers independently
     of the Si in this layout, so the gap runs along the path and both axes
     are visited; lazy evaluation solves only the points a device touches.
+
+    :param tip_refine: ``(half_extent, cell_fine)`` in metres: refine the
+        grid to ``cell_fine`` for ``|x| < half_extent`` and switch the axes
+        to ``("w_si", "half_slot")``.  Two thirds of the design path's
+        staircase loss sits in the last 100 nm of Si width (report 13
+        section 3), where a 10 nm step is a large relative change; the Si
+        edge lives within ``half_extent`` of the centre there, so refining
+        that strip alone buys fine width steps at a fifth of the grid.  The
+        width axis then steps ``2 cell_fine`` up to ``2 half_extent`` and
+        ``2 cell`` beyond; the metal's inner edge is the second axis in its
+        own right, on the coarse grid, because with ``(w_si, gap)`` a path
+        detour ``(w_new, gap_old)`` would move the wall by half a fine step
+        and put it inside a coarse cell.  Requires the slot end
+        (``w_slot / 2``) to lie outside the refined strip.
     """
     from .fde.pml import PMLBackend
     from .fde.slot_converter import PlasmonicSlotConverter
 
     p = KOCABAS_SETS[set_number]
     si, sio2, au = kocabas_materials()
+    refine_x = ()
+    if tip_refine is not None:
+        half_extent, cell_fine = (float(v) for v in tip_refine)
+        k_ext, k_cell = half_extent / cell, cell / cell_fine
+        if abs(k_ext - round(k_ext)) > 1e-6 or abs(k_cell - round(k_cell)) > 1e-6 or k_ext < 1:
+            raise ValueError("tip_refine: half_extent must be a multiple of cell and "
+                             "cell a multiple of cell_fine")
+        if 0.5 * p["w_slot"] * 1e-9 < half_extent + cell:
+            raise ValueError("tip_refine: the slot's half width must lie outside the refined strip")
+        refine_x = ((-half_extent, half_extent, cell_fine),)
     section = PlasmonicSlotConverter(
         si_thickness=p["h_si"] * 1e-9,
         metal_thickness=p["h_au"] * 1e-9,
@@ -636,7 +670,8 @@ def kocabas_converter_dataset_info(
         plate_reach=plate_reach,
         corner_radius=corner_radius,
         core_mask_margin=0.0,
-        sweep_gap=True,
+        sweep_gap=tip_refine is None,
+        sweep_half_slot=tip_refine is not None,
         core=si, metal=au, cladding=sio2, substrate=sio2,
         reference_wavelength=wavelength,
     )
@@ -646,10 +681,22 @@ def kocabas_converter_dataset_info(
 
     step_nm = 2 * cell * 1e9
     g0, g1 = gap_range
-    parameters = {
-        "w_si": axis(nm(0, p["w_si"] + 0.5 * step_nm, step_nm)),
-        "gap": axis(nm(g0 * 1e9, g1 * 1e9 + 0.5 * cell * 1e9, cell * 1e9)),
-    }
+    if tip_refine is None:
+        names = ("w_si", "gap")
+        parameters = {
+            "w_si": axis(nm(0, p["w_si"] + 0.5 * step_nm, step_nm)),
+            "gap": axis(nm(g0 * 1e9, g1 * 1e9 + 0.5 * cell * 1e9, cell * 1e9)),
+        }
+    else:
+        names = ("w_si", "half_slot")
+        fine_nm, ext_nm = 2 * cell_fine * 1e9, 2 * half_extent * 1e9
+        hs0_nm = 0.5 * p["w_slot"]                       # the slot end, on the coarse grid
+        hs1_nm = 0.5 * p["w_si"] + g1 * 1e9
+        parameters = {
+            "w_si": axis(nm(0, ext_nm + 0.5 * fine_nm, fine_nm),
+                         nm(ext_nm, p["w_si"] + 0.5 * step_nm, step_nm)),
+            "half_slot": axis(nm(hs0_nm, hs1_nm + 0.5 * cell * 1e9, cell * 1e9)),
+        }
     half_width = 0.5 * p["w_si"] * 1e-9 + g1 + plate_reach + 0.5e-6
     y_half = 0.5 * max(p["h_si"], p["h_au"]) * 1e-9 + 0.5e-6
     half_cells = int(np.ceil(half_width / cell))
@@ -662,16 +709,16 @@ def kocabas_converter_dataset_info(
             cross_section, target_neff=target_neff, parameter_names=names,
             wavelength=wl, window=window, mesh=mesh_points, mesh_y=mesh_y,
             pml_thickness=pml_thickness, pml_edges=("+x", "-x", "+y", "-y"),
-            num_modes=modes, colocate=colocate,
+            num_modes=modes, colocate=colocate, refine_x=refine_x,
         )
 
     return _make_dataset_info(
         name=(f"Kocabas set {set_number}: Si wire {p['w_si']} x {p['h_si']} nm to a "
               f"{p['w_slot']} nm slot in {p['h_au']} nm Au, SiO2-embedded"),
-        description="complex neff, TE_pol and overlaps of the (w_si, gap) family, lossy PML basis",
+        description=f"complex neff, TE_pol and overlaps of the {names} family, lossy PML basis",
         wavelength=wavelength,
         parameters=parameters,
-        parameter_names=("w_si", "gap"),
+        parameter_names=names,
         cross_section_factory=cross_section,
         window=(half_width, -y_half, y_half),
         mode_numbers=mode_numbers,

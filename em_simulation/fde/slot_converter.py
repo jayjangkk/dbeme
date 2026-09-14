@@ -40,7 +40,7 @@ the PML solver squares back into the complex :math:`\varepsilon` map it needs.
 
 import numpy as np
 
-from .cross_section import CrossSection, _fill_fraction
+from .cross_section import CrossSection, _cell_edges, _fill_fraction
 from .materials import air, as_material, gold, silica, silicon
 
 __all__ = ["PlasmonicSlotConverter"]
@@ -49,19 +49,20 @@ __all__ = ["PlasmonicSlotConverter"]
 def _rounded_rect_fill(x, y, x0, x1, y0, y1, radius, sub=8):
     """Fill fraction of each ``(x, y)`` cell inside a rounded rectangle.
 
-    ``x``, ``y`` are cell centres on a uniform grid; the rectangle is
-    ``[x0, x1] x [y0, y1]`` with all four corners rounded by ``radius``
-    (clipped to half the shorter side).  Each cell is sub-sampled
-    ``sub x sub``; the result is exact for straight faces on cell
-    boundaries and quantised in ``1/sub^2`` along the arcs.
+    ``x``, ``y`` are cell centres; the cells' extents come from
+    :func:`_cell_edges`, so a piecewise-refined grid is sampled with each
+    cell's own width.  The rectangle is ``[x0, x1] x [y0, y1]`` with all four
+    corners rounded by ``radius`` (clipped to half the shorter side).  Each
+    cell is sub-sampled ``sub x sub``; the result is exact for straight faces
+    on cell boundaries and quantised in ``1/sub^2`` along the arcs.
     """
     x = np.asarray(np.real(x), dtype=float)
     y = np.asarray(np.real(y), dtype=float)
-    dx = np.gradient(x) if x.size > 1 else np.ones(1)
-    dy = np.gradient(y) if y.size > 1 else np.ones(1)
-    offsets = (np.arange(sub) + 0.5) / sub - 0.5
-    xs = x[:, None] + dx[:, None] * offsets[None, :]        # (nx, sub)
-    ys = y[:, None] + dy[:, None] * offsets[None, :]        # (ny, sub)
+    ex = _cell_edges(x) if x.size > 1 else np.array([x[0] - 0.5, x[0] + 0.5])
+    ey = _cell_edges(y) if y.size > 1 else np.array([y[0] - 0.5, y[0] + 0.5])
+    offsets = (np.arange(sub) + 0.5) / sub
+    xs = ex[:-1, None] + np.diff(ex)[:, None] * offsets[None, :]   # (nx, sub)
+    ys = ey[:-1, None] + np.diff(ey)[:, None] * offsets[None, :]   # (ny, sub)
     xc, yc = 0.5 * (x0 + x1), 0.5 * (y0 + y1)
     hw, hh = 0.5 * abs(x1 - x0), 0.5 * abs(y1 - y0)
     r = min(float(radius), hw, hh)
@@ -110,6 +111,17 @@ class PlasmonicSlotConverter(CrossSection):
         "gap"``), for converters whose slot tapers independently of the
         Si - Kocabas's, where the gap runs 75 -> 125 nm along the taper.
         The constructor ``gap`` is then the default when a point omits it.
+    :param sweep_half_slot: The same device family with the second parameter
+        being the metal's inner-edge position ``half_slot`` (half the slot
+        width, metres) instead of the gap, so the axes are ``("w_si",
+        "half_slot")`` and ``gap = half_slot - w_si / 2``.  This is what a
+        grid refined around the Si tip needs: with ``(w_si, gap)`` the wall
+        sits at ``w_si/2 + gap``, so a diagonal path step's detour point
+        ``(w_new, gap_old)`` moves the wall by half the *silicon* step - off
+        the coarse grid once that step is finer than a coarse cell.  With
+        ``(w_si, half_slot)`` both edges are grid values in their own right
+        at every point a path can visit.  Mutually exclusive with
+        ``sweep_gap``.
     :param core_mask_margin: How far beyond the slot and the Si the
         confinement mask reaches, metres.  A gap plasmon between *thin* films
         keeps its field at the film edges and just outside them, so a mask
@@ -130,6 +142,7 @@ class PlasmonicSlotConverter(CrossSection):
         corner_radius=0.0,
         core_mask_margin=0.0,
         sweep_gap=False,
+        sweep_half_slot=False,
         core=None,
         metal=None,
         cladding=None,
@@ -147,10 +160,14 @@ class PlasmonicSlotConverter(CrossSection):
         )
         self.corner_radius = float(corner_radius)
         self.core_mask_margin = float(core_mask_margin)
+        if sweep_gap and sweep_half_slot:
+            raise ValueError("sweep_gap and sweep_half_slot are alternatives")
         if sweep_gap:
             # the gap becomes a second path parameter; the constructor value is
             # then only the default for callers that do not pass one
             self.parameter_names = ("w_si", "gap")
+        elif sweep_half_slot:
+            self.parameter_names = ("w_si", "half_slot")
         self.reference_wavelength = float(reference_wavelength)
         self.core = as_material(core) if core is not None else silicon()
         self.metal = as_material(metal) if metal is not None else gold()
@@ -185,6 +202,8 @@ class PlasmonicSlotConverter(CrossSection):
         return si_half, inner, inner + self.plate_reach
 
     def _gap_of(self, params):
+        if "half_slot" in params:
+            return float(params["half_slot"]) - 0.5 * float(params["w_si"])
         return float(params.get("gap", self.gap))
 
     def index(self, x, y, params):

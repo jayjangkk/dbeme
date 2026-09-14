@@ -62,11 +62,26 @@ DATASET = os.path.join(ROOT, "datasets", "SiO2_kocabas_set2_1550")
 OUT_JSON = os.path.join(ROOT, "reports", "output", f"{TAG}_converter.json")
 
 
-def use_cell(cell_nm):
-    """Point the demo at the dataset for this pitch (5.0 or 2.5 nm)."""
-    global CELL_NM, SUFFIX, DATASET, OUT_JSON
+#: ``{"half_slot": True}`` on the tip-refined dataset, whose second axis is the
+#: metal's inner edge rather than the gap (``kocabas_converter_dataset_info``).
+PATH_KW = {}
+
+
+def use_cell(cell_nm, tip=None):
+    """Point the demo at the dataset for this pitch (5.0 or 2.5 nm), or at
+    the tip-refined one: ``tip = (half_extent_nm, cell_fine_nm)`` refines
+    ``|x| < half_extent`` of the 5 nm grid to ``cell_fine`` and switches the
+    axes to ``(w_si, half_slot)``, so the width steps ``2 cell_fine`` while
+    the Si edge is inside the strip."""
+    global CELL_NM, SUFFIX, DATASET, OUT_JSON, PATH_KW
     CELL_NM = float(cell_nm)
-    SUFFIX = "" if abs(CELL_NM - 5.0) < 1e-9 else "_c25"
+    if tip is not None:
+        extent, fine = (float(v) for v in tip)
+        SUFFIX = f"_tip{extent:g}_{fine:g}"
+        PATH_KW = {"half_slot": True}
+    else:
+        SUFFIX = "" if abs(CELL_NM - 5.0) < 1e-9 else "_c25"
+        PATH_KW = {}
     DATASET = os.path.join(ROOT, "datasets", "SiO2_kocabas_set2_1550" + SUFFIX)
     OUT_JSON = os.path.join(ROOT, "reports", "output",
                             f"{TAG}_converter{SUFFIX}.json")
@@ -99,6 +114,7 @@ def device(du, w_gap_nm=None, l_taper_nm=None):
         SET,
         w_gap=None if w_gap_nm is None else w_gap_nm * 1e-9,
         l_taper=None if l_taper_nm is None else l_taper_nm * 1e-9,
+        **PATH_KW,
     )
     return ParametricPath(du, funcs, total_length=length), length
 
@@ -118,7 +134,8 @@ def record(res, extra_m):
         "seconds": res["seconds"], "route": res["route"],
         "sections": len(od["EME_path"]),
         "w_si_nm": [float(p[0] * 1e9) for p in od["EME_path"]],
-        "gap_nm": [float(p[1] * 1e9) for p in od["EME_path"]],
+        # the Si-to-metal clearance whichever axis the dataset carries
+        "gap_nm": [float((p[1] - 0.5 * p[0] if PATH_KW else p[1]) * 1e9) for p in od["EME_path"]],
         "neff_re": np.real(od["neff"][:, :N]).tolist(),
         "neff_im": np.imag(od["neff"][:, :N]).tolist(),
         "physical": np.array([physical(od, s) for s in range(len(od["EME_path"]))]).tolist(),
@@ -186,7 +203,8 @@ def gate(payload, du):
     rows = []
     # constant slot: propagation loss carried through the cascade
     L = 1.0e-6
-    res = lumped(ParametricPath(du, {"w_si": 0.0, "gap": DESIGN["w_slot"] * 0.5e-9}, total_length=L))
+    slot_end = {"w_si": 0.0, ("half_slot" if PATH_KW else "gap"): DESIGN["w_slot"] * 0.5e-9}
+    res = lumped(ParametricPath(du, slot_end, total_length=L))
     n0 = res["od"]["neff"][0, 0]
     expected = float(np.exp(-2 * K0 * np.imag(n0) * L)); measured = float(np.abs(res["S"][0, 0]) ** 2)
     rows.append({"check": "constant 250 nm slot, 1 um: T = exp(-2 k0 Im n L)", "criterion": "|T - expected| < 1e-3",
@@ -251,7 +269,7 @@ def direct(payload):
         dump(payload)
     de = DataExtractor(DATASET)
     ref = payload["design"]
-    funcs, length = kocabas_path(SET)
+    funcs, length = kocabas_path(SET, **PATH_KW)
     print("\n[direct EME] the design path solved section by section, no cache")
 
     if "offgrid" not in store:
@@ -332,11 +350,19 @@ def main():
     parser.add_argument("--direct", action="store_true")
     parser.add_argument("--cell", type=float, default=5.0, choices=[5.0, 2.5],
                         help="grid pitch in nm; 2.5 halves both parameter axes")
+    parser.add_argument("--tip", type=float, nargs=2, metavar=("HALF_EXTENT_NM", "CELL_FINE_NM"),
+                        help="refine |x| < HALF_EXTENT of the 5 nm grid to CELL_FINE and "
+                             "use the (w_si, half_slot) axes; e.g. --tip 60 1")
     args = parser.parse_args()
-    use_cell(args.cell)
+    use_cell(args.cell, tip=args.tip)
     print("Demo 4b - Kocabas Set 2 converter, SiO2-embedded, lossy PML basis")
-    print(f"{CELL_NM:g} nm cell -> w_si axis {2*CELL_NM:g} nm, gap axis "
-          f"{CELL_NM:g} nm; dataset {os.path.basename(DATASET)}")
+    if args.tip:
+        print(f"{CELL_NM:g} nm cell, |x| < {args.tip[0]:g} nm refined to {args.tip[1]:g} nm -> "
+              f"w_si axis {2*args.tip[1]:g} nm at the tip, walls on the {CELL_NM:g} nm grid; "
+              f"dataset {os.path.basename(DATASET)}")
+    else:
+        print(f"{CELL_NM:g} nm cell -> w_si axis {2*CELL_NM:g} nm, gap axis "
+              f"{CELL_NM:g} nm; dataset {os.path.basename(DATASET)}")
     payload = load(); t0 = time.time()
     du = DataUpdater(DATASET)
     design(payload, du)
