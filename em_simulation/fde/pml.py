@@ -41,6 +41,17 @@ validation could see that; the plasmonic converter, which needs three edges,
 returned nothing but gain/loss corner modes until it was found.  See
 :func:`stretched_grid`.
 
+**The grid may be refined where the physics is, and only there.**
+``refine_x`` / ``refine_y`` cut the uniform grid into finer cells inside given
+regions (:func:`refined_axis`).  The operator takes per-cell spacings, the
+overlap weights are per-node widths and the cross section reconstructs its
+cell edges exactly from the centres it is handed, so a refinement changes the
+grid and nothing else - but it changes the grid, so it is in the dataset
+identity.  The one place that had to be gated is ``index_profile``: on a
+uniform grid it samples the nodes, as it always did, and on a refined one the
+cell centres, because nodes fed to the edge reconstruction across a
+fine/coarse transition would yield a zero-width cell.
+
 **The PML must sit outside the turning point.**  Inside it the field is
 evanescent and there is nothing to absorb.  For a bend the conformal transform
 puts the turning point at ``u_t = R ln(n_eff / n_clad)``.

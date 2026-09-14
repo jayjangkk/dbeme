@@ -371,6 +371,18 @@ taper's (report 12 section 8).
 
 ---
 
+**Piecewise-refined solve grids** (`PMLModeSolver(refine_x=, refine_y=)`) —
+the uniform grid can be cut into finer cells inside chosen regions, with the
+PML and the outer cells untouched; the finite-difference operator already took
+per-cell spacings, and the three places that inferred cell geometry from the
+centres alone (the cross-section fill fractions, the rounded-corner fill, the
+power sums behind confinement and `TE_pol`) now reconstruct exact cell edges
+and weight by area. A refinement enters the dataset identity. Built for the
+Kocabaş tip, where two thirds of the staircase loss sat in the last 100 nm of
+Si width: 1 nm cells for |x| < 60 nm on the 5 nm grid give 2 nm width steps
+there for 20 % more unknowns (`--tip 60 1`, dataset
+`SiO2_kocabas_set2_1550_tip60_1`, axes `(w_si, half_slot)`).
+
 **Si-wire-to-slot converter, silica-embedded** (`demo_kocabas_converter.py` →
 `reports/13`) — the same physics on a device whose every dimension is
 published (Kocabaş, arXiv:1801.00833, Table II Set 2: Si 400 × 725 nm, gold

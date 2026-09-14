@@ -120,6 +120,26 @@ cross sections. Three mitigations, apply all of them:
    the identity. Elsewhere the axis can be 5–10× coarser. Lazy evaluation
    means a wide axis costs nothing until a device visits it.
 
+   *On a metal-edge platform the axis is tied to the cell* (an edge inside
+   a cell aliases `n_eff`, report 12 §7.3), so a finer axis where it matters
+   needs a finer **grid** where it matters. `PMLModeSolver(refine_x=,
+   refine_y=)` cuts the uniform grid into finer cells inside given regions
+   (`pml.refined_axis`: region bounds on base nodes, integer ratio, two base
+   cells clear of each end so the PML and the cross section's edge
+   reconstruction stay on uniform cells). Everything downstream already took
+   per-cell spacings except three things that inferred cell geometry from
+   the centres — `_fill_fraction`, `_rounded_rect_fill`, and the unweighted
+   power sums behind confinement and `TE_pol` — which now use exact cell
+   edges and per-node areas (`tests/test_nonuniform_grid.py`). A refinement
+   is part of the dataset identity. First use: the Kocabaş tip
+   (`kocabas_converter_dataset_info(tip_refine=(60e-9, 1e-9))`), 1 nm cells
+   for |x| < 60 nm on the 5 nm grid, 2 nm width steps at the tip for 20 %
+   more unknowns; on a SiN strip the same trick reproduces the uniformly
+   fine `n_eff` to 0.3 % of the coarse-to-fine gap at half the unknowns.
+   Its axes are `(w_si, half_slot)`, not `(w_si, gap)`: with the gap as an
+   axis a diagonal path step's detour point moves the wall by half a
+   *silicon* step, off the coarse grid.
+
 ---
 
 ## 4. Where the current simulator stands
