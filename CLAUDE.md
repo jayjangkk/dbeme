@@ -145,6 +145,21 @@ cross sections. Three mitigations, apply all of them:
    choosing the strip; an attribution on `(w_si, gap)` axes counts wall
    motion as Si motion.
 
+   *Metal corners, three rules learned the hard way (report 13 §7).* A
+   refined strip must keep the cells at any metal corner **isotropic** —
+   1 × 5 nm cells at a gold wedge returned |E_y| 37× the coarse value and a
+   TE fraction of 0.09 for a TE mode while H and `n_eff` looked fine, so
+   pair an `x` strip with a `refine_y` strip over the corner rows. A
+   **sharp** metal wedge does not converge as it is resolved (the 200 nm
+   Kocabaş branch moved 0.05 from 5 nm to 1 nm cells); the 5 nm grid's
+   answer is the grid's regularisation, and only a rounded corner is a
+   geometry a refinement can converge on (0.012 for a 20 nm arc). And a
+   rounded metal arc on this silica platform needs
+   `PlasmonicSlotConverter(fill_floor=0.06)`: the 8 × 8 sub-sampled fill
+   lands on the ε-near-zero mix (1/64 = 0.0156 against 0.0162), which
+   produced |E| = 7.8 against a bulk of 0.01. Off by default; in the
+   fingerprint when on.
+
 ---
 
 ## 4. Where the current simulator stands

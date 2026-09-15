@@ -540,14 +540,65 @@ corners still at 5 nm presumably carrying the rest.
 **The gold wall: 100 < |x| < 300 nm at 1 nm** — the strip the wall moves
 through, 275 → 125 nm, plus the ~23 nm skin depth beyond it
 (`SiO2_kocabas_set2_1550_r100-300_1`, 791 × 347, +68 % unknowns, the wall
-stepping **1 nm** through 191 positions, the Si axis at 10 nm). It addresses
-both findings at once: the wall's staircase, 6.1 % that should fall as Δ to
-~1.2 %, and the wall's resolution. Running; the row below fills when it
-lands.
+stepping **1 nm** through 191 positions, the Si axis at 10 nm). It was meant
+to address both findings at once, and it was stopped after its first solve,
+because a check of the fields on that grid showed three things in turn
+(`kocabas_wall_modes_w200.log`, `check_E_refined`, `where_is_the_spike`):
 
-| | at the tip | staircase `A` | expected |
+1. **1 × 5 nm cells at a metal corner corrupt E.** With the strip refined
+   in `x` only, the cells at the gold's four corners are 1 × 5 nm, and there
+   the reconstructed field is not the physics: |E_y| at a corner 1.08
+   against 0.029 on the 5 nm grid, 37×, zero along the wall at mid-height as
+   a TE mode should be; the TE fraction of the TE-like branch read 0.09
+   instead of 0.79, while H and `n_eff` were unremarkable. The tip strip
+   never showed this because it holds no metal. One solve with the corner
+   rows refined to 1 nm as well — isotropic corner cells — brings the corner
+   to 0.19 (6.5×) and the TE fraction to 0.76. It is the anisotropy at a
+   wedge, not the solver; the overlaps of that dataset would have been wrong.
+2. **A sharp metal wedge does not converge.** With isotropic cells the field
+   is sane but the mode keeps moving as the corner is resolved: the 200 nm
+   TE branch reads 1.9864 on the 5 nm grid, 1.9998 with the walls at 1 nm,
+   2.0358 with the corner rows at 1 nm too. That is the wedge singularity
+   doing what it always does, and it means every number on this platform,
+   the paper's COMSOL included, is its mesh's regularisation of a corner
+   that has none. The 5 nm grid is not converged in the modes and cannot be
+   made so by refinement while the corners are sharp.
+3. **Rounding is the physical regularisation, and it had a trap.** The
+   rounded arcs are sub-sampled 8 × 8, so fills come in steps of 1/64 =
+   0.0156, and for gold in *silica* the epsilon-near-zero mix is at
+   `f = ε_d/(ε_d − ε_Au)` = 0.0162 — the first step lands on it. One such
+   cell gave |E| = 7.8 against a bulk of 0.01 and a mode with the wrong
+   index (in air the mix is at 0.0078 and the 1/64 step clears it by 2×,
+   which is why report 12's rounded platform never met this). The next
+   hazard up, `ε_mix = −ε_d` at twice that fraction, makes the stencil's
+   cross-cell averages vanish. `PlasmonicSlotConverter(fill_floor=)` snaps
+   metal fills below the floor to zero; 0.06 clears both for gold in air or
+   silica, moves an arc inward by at most 6 % of a cell, is off by default
+   and in the fingerprint when on.
+
+   With corners rounded 20 nm and the floor, the same three grids give
+   2.0364 → 2.0043 (walls only, the anisotropy artefact again: |E_y| 0.70,
+   TE 0.08) → **2.0247** with isotropic corner cells (|E_y| 0.185, TE 0.67).
+   The drift from 5 nm to 1 nm-at-the-corners is 0.012 against 0.05 for the
+   sharp wedge — four times better, not converged; what remains is the arc's
+   own sub-cell staircase, four cells across at 5 nm. Note also that
+   rounding by 20 nm moves the 5 nm answer by +0.05 on its own: the
+   geometry matters as much as the grid here.
+
+**The experiment as it now runs** is a like-for-like pair on the rounded
+geometry and the `(w_si, half_slot)` axes (which alone are worth about a
+point: on `(w_si, gap)` the wall moves with every Si step and back with
+every gap step, 50 wall moves against 30): `SiO2_kocabas_set2_1550_hs_c20`,
+the plain 5 nm grid, 71 path points; then
+`SiO2_kocabas_set2_1550_r100-300_1+y95-135_1_c20`, the wall strip and the
+corner rows at 1 nm, 791 × 411 (+98 % unknowns), the wall stepping 1 nm
+through 191 positions. The difference between the two is what refining the
+wall buys once the corners are a geometry the grid can converge on.
+
+| | at the tip | staircase `A` | status |
 |---|---|---|---|
-| walls 100–300 nm at 1 nm | pending | pending | staircase ~1 %, modes toward the 2.5 nm values, at +68 % unknowns against 4.9× |
+| rounded, 5 nm, `(w_si, half_slot)` | pending | pending | running |
+| rounded, walls and corner rows at 1 nm | pending | pending | queued behind it |
 
 **The cascade.** Running: the design point on the fine dataset
 (`demo_kocabas_converter.py --cell 2.5 --lengths 1700 --gaps 75`), about 100
