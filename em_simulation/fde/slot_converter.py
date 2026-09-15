@@ -122,6 +122,20 @@ class PlasmonicSlotConverter(CrossSection):
         ``(w_si, half_slot)`` both edges are grid values in their own right
         at every point a path can visit.  Mutually exclusive with
         ``sweep_gap``.
+    :param fill_floor: Snap a partially filled *metal* cell whose gold
+        fraction is below this to no gold at all.  The rounded arcs are
+        sub-sampled 8 x 8, so fills come in steps of 1/64 = 0.0156, and a
+        cell that is a fraction ``f`` gold has the arithmetic mix
+        ``f eps_Au + (1 - f) eps_d``, which is *zero* at
+        ``f = eps_d / (eps_d - eps_Au)``: 0.0078 for gold in air, 0.0162 in
+        silica - the 1/64 step lands on it in silica, and one such cell
+        produced a spurious |E| of 7.8 against a bulk of 1e-2 and a mode with
+        the wrong index.  The next hazard up is ``eps_mix = -eps_d`` at twice
+        that fraction, where the finite-difference stencil's cross-cell
+        averages ``w eps_1 + e eps_2`` vanish.  A floor of 0.06 clears both
+        for gold in air or silica and moves an arc inward by at most 6 % of
+        one cell.  Default 0 keeps every existing rounded dataset
+        byte-identical; when set it enters the fingerprint.
     :param core_mask_margin: How far beyond the slot and the Si the
         confinement mask reaches, metres.  A gap plasmon between *thin* films
         keeps its field at the film edges and just outside them, so a mask
@@ -140,6 +154,7 @@ class PlasmonicSlotConverter(CrossSection):
         plate_reach=0.25e-6,
         metal_bottom=None,
         corner_radius=0.0,
+        fill_floor=0.0,
         core_mask_margin=0.0,
         sweep_gap=False,
         sweep_half_slot=False,
@@ -159,6 +174,9 @@ class PlasmonicSlotConverter(CrossSection):
             float(metal_bottom) if metal_bottom is not None else -0.5 * self.si_thickness
         )
         self.corner_radius = float(corner_radius)
+        self.fill_floor = float(fill_floor)
+        if not 0.0 <= self.fill_floor < 0.5:
+            raise ValueError("fill_floor is a small fraction in [0, 0.5)")
         self.core_mask_margin = float(core_mask_margin)
         if sweep_gap and sweep_half_slot:
             raise ValueError("sweep_gap and sweep_half_slot are alternatives")
@@ -242,6 +260,8 @@ class PlasmonicSlotConverter(CrossSection):
                 f = _rounded_rect_fill(x, y, lo, hi, y_m0, y_m1, self.corner_radius)
             else:
                 f = np.outer(_fill_fraction(x, lo, hi), fy_m)
+            if self.fill_floor > 0:
+                f = np.where(f < self.fill_floor, 0.0, f)
             eps = f * eps_au + (1.0 - f) * eps
 
         n = np.sqrt(eps)
@@ -281,6 +301,8 @@ class PlasmonicSlotConverter(CrossSection):
         ]
         if self.corner_radius > 0:
             parts.append(f"corner={self.corner_radius:.6g}")
+        if self.fill_floor > 0:
+            parts.append(f"fill_floor={self.fill_floor:.6g}")
         parts += [m.fingerprint() for m in self.materials()]
         return "|".join(parts)
 

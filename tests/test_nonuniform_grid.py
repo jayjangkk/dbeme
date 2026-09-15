@@ -268,6 +268,56 @@ def test_kocabas_tip_refine_is_the_zero_strip():
                                        refine=((0.0, 50e-9, 5e-9),))()
 
 
+def test_kocabas_refine_y_strips_are_mirrored_and_change_no_axis():
+    from em_simulation.platforms import kocabas_converter_dataset_info
+
+    cell, fine = 25e-9, 5e-9
+    plain = kocabas_converter_dataset_info(set_number=2, cell=cell, refine=((100e-9, 300e-9, fine),))()
+    both = kocabas_converter_dataset_info(set_number=2, cell=cell, refine=((100e-9, 300e-9, fine),),
+                                          refine_y=((100e-9, 150e-9, fine),))()
+    assert np.array_equal(plain.parameters["w_si"], both.parameters["w_si"])
+    assert np.array_equal(plain.parameters["half_slot"], both.parameters["half_slot"])
+    fp = both.get_fde_backend().fingerprint()
+    assert fp["refine_y"] == [[-150e-9, -100e-9, fine], [100e-9, 150e-9, fine]]
+    y = np.real(both.get_fde_backend().y)
+    mid = np.abs(0.5 * (y[:-1] + y[1:]))
+    assert np.allclose(np.diff(y)[(mid > 100e-9) & (mid < 150e-9)], fine)
+    assert np.allclose(np.diff(y)[(mid < 100e-9) | (mid > 150e-9)], cell)
+    assert "refine_y" not in plain.get_fde_backend().fingerprint()
+
+
+def test_fill_floor_removes_the_epsilon_near_zero_cells():
+    """A gold arc in silica sub-sampled 8 x 8 produces fills of 1/64, which
+    is the epsilon-near-zero mix (0.0162) to within 4 %; with the floor no
+    cell carries a metal fraction in (0, floor) and the fingerprint says so."""
+    from em_simulation.fde.materials import ConstantIndex
+    from em_simulation.fde.slot_converter import PlasmonicSlotConverter
+
+    kw = dict(si_thickness=0.7e-6, metal_thickness=0.25e-6, metal_bottom=-0.125e-6, gap=0.1e-6,
+              plate_reach=0.3e-6, corner_radius=20e-9, core=ConstantIndex(3.476), metal=ConstantIndex(0.238 + 11.26j),
+              cladding=ConstantIndex(1.444), substrate=ConstantIndex(1.444))
+    # the hazard appeared on 1 x 5 nm cells at the corners of a wall strip
+    xn = refined_axis(np.linspace(-0.6e-6, 0.6e-6, 241), [(-0.25e-6, -0.15e-6, 1e-9), (0.15e-6, 0.25e-6, 1e-9)])
+    yn = np.linspace(-0.5e-6, 0.5e-6, 201)
+    x, y = 0.5 * (xn[:-1] + xn[1:]), 0.5 * (yn[:-1] + yn[1:])
+    params = {"w_si": 200e-9, "wavelength": 1.55e-6}
+    eps_raw = PlasmonicSlotConverter(**kw).index(x, y, params) ** 2
+    eps_safe = PlasmonicSlotConverter(fill_floor=0.06, **kw).index(x, y, params) ** 2
+    eps_au = (0.238 + 11.26j) ** 2
+    # a fill f gives eps = f eps_au + (1 - f) eps_sio2; recover f where the cell is not pure
+    f_raw = np.real((eps_raw - 1.444 ** 2) / (eps_au - 1.444 ** 2))
+    f_safe = np.real((eps_safe - 1.444 ** 2) / (eps_au - 1.444 ** 2))
+    partial = (f_raw > 1e-9) & (f_raw < 1 - 1e-9)
+    assert partial.any()                                    # the arcs do produce partial cells
+    assert (f_raw[partial] < 0.06).any()                    # including dangerously low ones
+    assert not ((f_safe > 1e-9) & (f_safe < 0.06)).any()   # none survive the floor
+    assert np.abs(eps_safe).min() > 1.0                     # and no cell is near epsilon = 0
+    assert "fill_floor=0.06" in PlasmonicSlotConverter(fill_floor=0.06, **kw).fingerprint()
+    assert "fill_floor" not in PlasmonicSlotConverter(**kw).fingerprint()
+    with pytest.raises(ValueError):
+        PlasmonicSlotConverter(fill_floor=0.7, **kw)
+
+
 def test_kocabas_refine_rejects_off_grid_strips():
     from em_simulation.platforms import kocabas_converter_dataset_info
 

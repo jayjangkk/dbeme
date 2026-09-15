@@ -67,7 +67,7 @@ OUT_JSON = os.path.join(ROOT, "reports", "output", f"{TAG}_converter.json")
 PATH_KW = {}
 
 
-def use_cell(cell_nm, tip=None, strips=()):
+def use_cell(cell_nm, tip=None, strips=(), y_strips=(), corner_nm=0.0):
     """Point the demo at the dataset for this pitch (5.0 or 2.5 nm), or at a
     refined one.  ``tip = (half_extent_nm, cell_fine_nm)`` is the tip strip
     (dataset ``_tip{extent}_{fine}``); ``strips = ((lo_nm, hi_nm, cell_nm),
@@ -81,6 +81,8 @@ def use_cell(cell_nm, tip=None, strips=()):
         PATH_KW = {"half_slot": True}
     elif strips:
         SUFFIX = "_" + "+".join(f"r{lo:g}-{hi:g}_{cf:g}" for lo, hi, cf in strips)
+        SUFFIX += "".join(f"+y{lo:g}-{hi:g}_{cf:g}" for lo, hi, cf in y_strips)
+        SUFFIX += f"_c{corner_nm:g}" if corner_nm else ""
         PATH_KW = {"half_slot": True}
     else:
         SUFFIX = "" if abs(CELL_NM - 5.0) < 1e-9 else "_c25"
@@ -359,10 +361,17 @@ def main():
     parser.add_argument("--refine", type=float, nargs=3, action="append", default=[],
                         metavar=("LO_NM", "HI_NM", "CELL_NM"),
                         help="refine LO < |x| < HI of the 5 nm grid to CELL (repeatable); "
-                             "the wall strip is --refine 120 280 1")
+                             "the wall strip is --refine 100 300 1")
+    parser.add_argument("--refine-y", type=float, nargs=3, action="append", default=[],
+                        metavar=("LO_NM", "HI_NM", "CELL_NM"),
+                        help="refine LO < |y| < HI to CELL (repeatable); the gold's corner rows "
+                             "are --refine-y 100 130 1")
+    parser.add_argument("--corner", type=float, default=0.0,
+                        help="round the gold corners by this radius in nm (with an ENZ-safe fill floor)")
     args = parser.parse_args()
     strips = tuple(tuple(r) for r in args.refine)
-    use_cell(args.cell, tip=args.tip, strips=strips)
+    y_strips = tuple(tuple(r) for r in args.refine_y)
+    use_cell(args.cell, tip=args.tip, strips=strips, y_strips=y_strips, corner_nm=args.corner)
     print("Demo 4b - Kocabas Set 2 converter, SiO2-embedded, lossy PML basis")
     if args.tip:
         print(f"{CELL_NM:g} nm cell, |x| < {args.tip[0]:g} nm refined to {args.tip[1]:g} nm -> "

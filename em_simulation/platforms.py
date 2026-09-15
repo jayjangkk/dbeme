@@ -608,6 +608,8 @@ def kocabas_converter_dataset_info(
     colocate=True,
     tip_refine=None,
     refine=None,
+    refine_y=None,
+    fill_floor=0.0,
 ):
     """Kocabas's Si-wire-to-plasmonic-slot converter as a two-axis dataset.
 
@@ -654,6 +656,16 @@ def kocabas_converter_dataset_info(
     :param tip_refine: ``(half_extent, cell_fine)``, the same as
         ``refine=((0, half_extent, cell_fine),)``; kept for the
         ``_tip60_1`` dataset.
+    :param refine_y: Strips ``((lo, hi, cell_fine), ...)`` in ``|y|``,
+        mirrored, with no axis implications - the gold's top and bottom
+        faces sit at ``+-h_Au/2``, and a wall strip in ``x`` alone makes the
+        cells at the four corners 1 x 5 nm: a sharp wedge on an anisotropic
+        cell returned |E_y| 37x the 5 nm value there and a TE fraction of
+        0.09 for a TE mode, where 1 x 1 nm cells gave 6.5x and 0.76 (report
+        13 section 7).  Pair a wall strip with a strip over the corner rows.
+    :param fill_floor: :class:`PlasmonicSlotConverter` ``fill_floor``; needed
+        with ``corner_radius > 0`` on this silica platform, where the 1/64
+        fill of a sub-sampled arc is the epsilon-near-zero mix.
     """
     from .fde.pml import PMLBackend
     from .fde.slot_converter import PlasmonicSlotConverter
@@ -675,6 +687,15 @@ def kocabas_converter_dataset_info(
             raise ValueError(f"refine: bad strip ({lo:g}, {hi:g})")
     refine_x = tuple(r for lo, hi, cf in strips
                      for r in (((-hi, hi, cf),) if lo == 0 else ((-hi, -lo, cf), (lo, hi, cf))))
+    y_strips = tuple((float(lo), float(hi), float(cf)) for lo, hi, cf in (refine_y or ()))
+    for lo, hi, cf in y_strips:
+        for v in (lo, hi):
+            if abs(v / cell - round(v / cell)) > 1e-6:
+                raise ValueError(f"refine_y: strip bound {v:g} m is not on the {cell:g} m base grid")
+        if cf <= 0 or abs(cell / cf - round(cell / cf)) > 1e-6 or hi <= lo or lo < 0:
+            raise ValueError(f"refine_y: bad strip ({lo:g}, {hi:g}, {cf:g})")
+    refine_y_regions = tuple(r for lo, hi, cf in y_strips
+                             for r in (((-hi, hi, cf),) if lo == 0 else ((-hi, -lo, cf), (lo, hi, cf))))
     section = PlasmonicSlotConverter(
         si_thickness=p["h_si"] * 1e-9,
         metal_thickness=p["h_au"] * 1e-9,
@@ -682,6 +703,7 @@ def kocabas_converter_dataset_info(
         gap=p["w_gap"] * 1e-9,
         plate_reach=plate_reach,
         corner_radius=corner_radius,
+        fill_floor=fill_floor,
         core_mask_margin=0.0,
         sweep_gap=not strips,
         sweep_half_slot=bool(strips),
@@ -733,6 +755,7 @@ def kocabas_converter_dataset_info(
             wavelength=wl, window=window, mesh=mesh_points, mesh_y=mesh_y,
             pml_thickness=pml_thickness, pml_edges=("+x", "-x", "+y", "-y"),
             num_modes=modes, colocate=colocate, refine_x=refine_x,
+            refine_y=refine_y_regions,
         )
 
     return _make_dataset_info(
