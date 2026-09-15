@@ -318,6 +318,19 @@ def test_fill_floor_removes_the_epsilon_near_zero_cells():
         PlasmonicSlotConverter(fill_floor=0.7, **kw)
 
 
+def test_kocabas_axes_can_be_half_slot_without_a_refinement():
+    from em_simulation.platforms import kocabas_converter_dataset_info
+
+    info = kocabas_converter_dataset_info(set_number=2, cell=25e-9, axes="half_slot")()
+    assert tuple(info.parameter_names) == ("w_si", "half_slot")
+    assert "refine_x" not in info.get_fde_backend().fingerprint()
+    x = np.real(info.get_fde_backend().x)
+    for h in info.parameters["half_slot"]:
+        assert np.abs(x - h).min() < 1e-15
+    with pytest.raises(ValueError, match="half_slot"):
+        kocabas_converter_dataset_info(set_number=2, cell=25e-9, refine=((100e-9, 300e-9, 5e-9),), axes="gap")()
+
+
 def test_kocabas_refine_rejects_off_grid_strips():
     from em_simulation.platforms import kocabas_converter_dataset_info
 

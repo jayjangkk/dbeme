@@ -610,6 +610,7 @@ def kocabas_converter_dataset_info(
     refine=None,
     refine_y=None,
     fill_floor=0.0,
+    axes=None,
 ):
     """Kocabas's Si-wire-to-plasmonic-slot converter as a two-axis dataset.
 
@@ -666,6 +667,13 @@ def kocabas_converter_dataset_info(
     :param fill_floor: :class:`PlasmonicSlotConverter` ``fill_floor``; needed
         with ``corner_radius > 0`` on this silica platform, where the 1/64
         fill of a sub-sampled arc is the epsilon-near-zero mix.
+    :param axes: ``"gap"`` or ``"half_slot"``; default ``"half_slot"`` when
+        any ``refine`` strip is given and ``"gap"`` otherwise.  Set it
+        explicitly to build an unrefined ``(w_si, half_slot)`` dataset as the
+        like-for-like baseline of a refined one - the two parameterisations
+        are not the same staircase (on ``(w_si, gap)`` the wall moves with
+        every Si step and back with every gap step, 50 wall moves against
+        30 for the same taper).
     """
     from .fde.pml import PMLBackend
     from .fde.slot_converter import PlasmonicSlotConverter
@@ -687,6 +695,13 @@ def kocabas_converter_dataset_info(
             raise ValueError(f"refine: bad strip ({lo:g}, {hi:g})")
     refine_x = tuple(r for lo, hi, cf in strips
                      for r in (((-hi, hi, cf),) if lo == 0 else ((-hi, -lo, cf), (lo, hi, cf))))
+    if axes is None:
+        axes = "half_slot" if strips else "gap"
+    if axes not in ("gap", "half_slot"):
+        raise ValueError("axes must be 'gap' or 'half_slot'")
+    if axes == "gap" and strips:
+        raise ValueError("a refined dataset needs the (w_si, half_slot) axes")
+    half = axes == "half_slot"
     y_strips = tuple((float(lo), float(hi), float(cf)) for lo, hi, cf in (refine_y or ()))
     for lo, hi, cf in y_strips:
         for v in (lo, hi):
@@ -705,8 +720,8 @@ def kocabas_converter_dataset_info(
         corner_radius=corner_radius,
         fill_floor=fill_floor,
         core_mask_margin=0.0,
-        sweep_gap=not strips,
-        sweep_half_slot=bool(strips),
+        sweep_gap=not half,
+        sweep_half_slot=half,
         core=si, metal=au, cladding=sio2, substrate=sio2,
         reference_wavelength=wavelength,
     )
@@ -716,7 +731,7 @@ def kocabas_converter_dataset_info(
 
     step_nm = 2 * cell * 1e9
     g0, g1 = gap_range
-    if not strips:
+    if not half:
         names = ("w_si", "gap")
         parameters = {
             "w_si": axis(nm(0, p["w_si"] + 0.5 * step_nm, step_nm)),

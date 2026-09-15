@@ -67,7 +67,7 @@ OUT_JSON = os.path.join(ROOT, "reports", "output", f"{TAG}_converter.json")
 PATH_KW = {}
 
 
-def use_cell(cell_nm, tip=None, strips=(), y_strips=(), corner_nm=0.0):
+def use_cell(cell_nm, tip=None, strips=(), y_strips=(), corner_nm=0.0, suffix=None, axes=None):
     """Point the demo at the dataset for this pitch (5.0 or 2.5 nm), or at a
     refined one.  ``tip = (half_extent_nm, cell_fine_nm)`` is the tip strip
     (dataset ``_tip{extent}_{fine}``); ``strips = ((lo_nm, hi_nm, cell_nm),
@@ -75,7 +75,11 @@ def use_cell(cell_nm, tip=None, strips=(), y_strips=(), corner_nm=0.0):
     joined by ``+``).  Either switches the axes to ``(w_si, half_slot)``."""
     global CELL_NM, SUFFIX, DATASET, OUT_JSON, PATH_KW
     CELL_NM = float(cell_nm)
-    if tip is not None:
+    if suffix is not None:
+        # a dataset named directly (its dataset_info.py says what it is)
+        SUFFIX = "_" + suffix.lstrip("_")
+        PATH_KW = {"half_slot": True} if axes == "half_slot" else {}
+    elif tip is not None:
         extent, fine = (float(v) for v in tip)
         SUFFIX = f"_tip{extent:g}_{fine:g}"
         PATH_KW = {"half_slot": True}
@@ -368,12 +372,19 @@ def main():
                              "are --refine-y 100 130 1")
     parser.add_argument("--corner", type=float, default=0.0,
                         help="round the gold corners by this radius in nm (with an ENZ-safe fill floor)")
+    parser.add_argument("--suffix", default=None,
+                        help="use datasets/SiO2_kocabas_set2_1550_<SUFFIX> as defined by its dataset_info.py")
+    parser.add_argument("--axes", choices=["gap", "half_slot"], default=None,
+                        help="the path parameterisation the named dataset uses (with --suffix)")
     args = parser.parse_args()
     strips = tuple(tuple(r) for r in args.refine)
     y_strips = tuple(tuple(r) for r in args.refine_y)
-    use_cell(args.cell, tip=args.tip, strips=strips, y_strips=y_strips, corner_nm=args.corner)
+    use_cell(args.cell, tip=args.tip, strips=strips, y_strips=y_strips, corner_nm=args.corner,
+             suffix=args.suffix, axes=args.axes)
     print("Demo 4b - Kocabas Set 2 converter, SiO2-embedded, lossy PML basis")
-    if args.tip:
+    if args.suffix:
+        print(f"dataset {os.path.basename(DATASET)} as defined by its dataset_info.py; axes {args.axes or 'gap'}")
+    elif args.tip:
         print(f"{CELL_NM:g} nm cell, |x| < {args.tip[0]:g} nm refined to {args.tip[1]:g} nm -> "
               f"w_si axis {2*args.tip[1]:g} nm at the tip, walls on the {CELL_NM:g} nm grid; "
               f"dataset {os.path.basename(DATASET)}")
