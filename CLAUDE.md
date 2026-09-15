@@ -131,14 +131,19 @@ cross sections. Three mitigations, apply all of them:
    the centres — `_fill_fraction`, `_rounded_rect_fill`, and the unweighted
    power sums behind confinement and `TE_pol` — which now use exact cell
    edges and per-node areas (`tests/test_nonuniform_grid.py`). A refinement
-   is part of the dataset identity. First use: the Kocabaş tip
-   (`kocabas_converter_dataset_info(tip_refine=(60e-9, 1e-9))`), 1 nm cells
-   for |x| < 60 nm on the 5 nm grid, 2 nm width steps at the tip for 20 %
-   more unknowns; on a SiN strip the same trick reproduces the uniformly
-   fine `n_eff` to 0.3 % of the coarse-to-fine gap at half the unknowns.
-   Its axes are `(w_si, half_slot)`, not `(w_si, gap)`: with the gap as an
-   axis a diagonal path step's detour point moves the wall by half a
-   *silicon* step, off the coarse grid.
+   is part of the dataset identity. On a SiN strip, refining `x` and `y`
+   over the core reproduces the uniformly fine `n_eff` to 0.3 % of the
+   coarse-to-fine gap at half the unknowns. On the Kocabaş converter
+   (`kocabas_converter_dataset_info(refine=((lo, hi, cell_fine), ...))`,
+   strips in |x|, axes `(w_si, half_slot)` so that both edges are grid
+   values in their own right) the lesson was *where*: the Si tip at 1 nm
+   (2 nm width steps, +20 %) bought 0.7 points because the silicon's steps
+   were never the staircase — the gold wall's 5 nm jumps are, 6.1 % of the
+   7.2 % single-mode mismatch on clean axes, and the wall's skin depth is
+   also what the 5 nm grid under-resolves (report 13 §7). Measure which edge
+   carries the loss on axes where the edges move separately *before*
+   choosing the strip; an attribution on `(w_si, gap)` axes counts wall
+   motion as Si motion.
 
 ---
 

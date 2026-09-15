@@ -229,8 +229,49 @@ def test_kocabas_tip_platform_keeps_every_edge_on_a_node():
         int(np.argmin(np.abs(x - 0.0))), len(backend.y) // 2].real, np.sqrt(12.085), atol=0.05)
 
 
-def test_kocabas_tip_platform_refuses_a_slot_inside_the_strip():
+def test_kocabas_wall_strip_refines_the_wall_axis_and_leaves_the_width_axis_coarse():
+    """The strip the gold wall moves through: fine wall steps, 10 nm width
+    steps as before, every edge on a node - including the strip's own
+    boundaries and the slot end."""
     from em_simulation.platforms import kocabas_converter_dataset_info
 
-    with pytest.raises(ValueError, match="outside the refined strip"):
-        kocabas_converter_dataset_info(set_number=2, cell=25e-9, tip_refine=(150e-9, 5e-9))()
+    cell, fine = 25e-9, 5e-9
+    info = kocabas_converter_dataset_info(set_number=2, cell=cell, refine=((100e-9, 300e-9, fine),))()
+    assert tuple(info.parameter_names) == ("w_si", "half_slot")
+    backend = info.get_fde_backend()
+    x = np.real(backend.x)
+    assert backend.fingerprint()["refine_x"] == [[-300e-9, -100e-9, fine], [100e-9, 300e-9, fine]]
+    mid = np.abs(0.5 * (x[:-1] + x[1:]))                             # cells by their midpoint
+    assert np.allclose(np.diff(x)[(mid > 100e-9) & (mid < 300e-9)], fine)
+    assert np.allclose(np.diff(x)[(mid < 100e-9) | (mid > 300e-9)], cell)
+    w, h = info.parameters["w_si"], info.parameters["half_slot"]
+    assert np.allclose(np.diff(w), 2 * cell)                       # width axis untouched
+    fine_part = h[(h >= 100e-9 - 1e-12) & (h <= 300e-9 + 1e-12)]
+    assert np.allclose(np.diff(fine_part), fine)                   # wall axis fine inside the strip
+    assert np.allclose(np.diff(h[h >= 300e-9 - 1e-12]), cell)     # and coarse beyond it
+    for v in w:
+        assert np.abs(x - 0.5 * v).min() < 1e-15
+    for v in h:
+        assert np.abs(x - v).min() < 1e-15
+
+
+def test_kocabas_tip_refine_is_the_zero_strip():
+    from em_simulation.platforms import kocabas_converter_dataset_info
+
+    a = kocabas_converter_dataset_info(set_number=2, cell=25e-9, tip_refine=(50e-9, 5e-9))()
+    b = kocabas_converter_dataset_info(set_number=2, cell=25e-9, refine=((0.0, 50e-9, 5e-9),))()
+    assert np.array_equal(a.parameters["w_si"], b.parameters["w_si"])
+    assert np.array_equal(a.parameters["half_slot"], b.parameters["half_slot"])
+    assert a.get_fde_backend().fingerprint() == b.get_fde_backend().fingerprint()
+    with pytest.raises(ValueError, match="not both"):
+        kocabas_converter_dataset_info(set_number=2, cell=25e-9, tip_refine=(50e-9, 5e-9),
+                                       refine=((0.0, 50e-9, 5e-9),))()
+
+
+def test_kocabas_refine_rejects_off_grid_strips():
+    from em_simulation.platforms import kocabas_converter_dataset_info
+
+    with pytest.raises(ValueError, match="base grid"):
+        kocabas_converter_dataset_info(set_number=2, cell=25e-9, refine=((110e-9, 300e-9, 5e-9),))()
+    with pytest.raises(ValueError, match="integer multiple"):
+        kocabas_converter_dataset_info(set_number=2, cell=25e-9, refine=((100e-9, 300e-9, 7e-9),))()

@@ -157,8 +157,10 @@ the paper, in the order they should be tested:
    reaches 84.1 %. Some of that is a sub-cell artefact and some is real, but
    it bounds the axis-snapping cost at about 12 points — half the deficit.
    The first reading of this was that the gap axis was the suspect, because
-   the gold wall stands still for several sections and then jumps 5 nm. The
-   per-interface split below says otherwise: **the cost is the silicon tip.**
+   the gold wall stands still for several sections and then jumps 5 nm; a
+   second reading blamed the silicon tip. The exact split below, made on
+   axes where the two edges move separately, settles it: **the cost is the
+   gold wall's 5 nm jumps once the mode is slot-like.**
 
    *The axis cannot be refined on its own.* `w_si` steps `2 cell` and `gap`
    steps `cell` precisely so that the Si edge (at `w_si/2`) and the metal's
@@ -173,24 +175,27 @@ the paper, in the order they should be tested:
    fitting `loss = 2.5 %/nm × Δ + 12 %`. The staircase part is real and
    extrapolates away; the 12 % does not.
 
-   **Which edge the staircase is.** Charging each interface of the 5 nm design
-   path with its unrepresented mismatch *and* the decay of what it scattered
-   into the Berenger set (the propagation loss of the following section net
-   of the launched branch's own metal loss), and sorting by which edge moved:
+   **Which edge the staircase is.** Two attributions were tried and one of
+   them was wrong in an instructive way. Charging each section's propagation
+   loss to the interface before it smears badly on fine slicing, because a
+   Berenger mode decays over ~300 nm; and on the `(w_si, gap)` axes the wall
+   sits at `w_si/2 + gap`, so every "Si step" also moves the wall by 5 nm.
+   The clean quantity is the launched branch's own single-mode mismatch
+   `1 − |t|²` at each interface, read straight from the cached overlaps,
+   on the `(w_si, half_slot)` dataset of §7 where the two edges move
+   separately (`kocabas_exact_attribution.json`):
 
-   | moving edge | interfaces | cost |
+   | moving edge | interfaces | single-mode mismatch |
    |---|---|---|
-   | gold wall, 5 nm jumps | 10 | **2.1 %** (0.21 % each) |
-   | Si width, 10 nm steps | 40 | **13.6 %** (0.34 % each) |
-   |  of which Si 400 → 200 nm | 20 | 0.4 % |
-   |  Si 200 → 100 nm | 10 | 4.0 % |
-   |  Si 100 → 0 nm | 10 | **9.2 %** |
+   | gold wall, 5 nm jumps | 30 | **6.1 %** — 0.2–0.3 % each once the wall is inside 225 nm and the mode slot-like |
+   | Si width, 10 nm steps above 120 nm, 2 nm below | 88 | **1.1 %** — the fifty 2 nm steps at the tip cost 0.25 % together |
 
-   The wall is nearly free; two thirds of the whole staircase sits in the last
-   100 nm of Si width, where a 10 nm step is a 10–100 % relative change to a
-   core the supermode still lives on. That is where a fixed grid fails an
-   adiabatic taper, and it is also where lithography cannot follow the mask:
-   see the facet measurement in §7.
+   Product over the path 0.931, against 0.903 on the plain 5 nm grid, where
+   the same integral splits as 2.0 % for the ten explicit gap steps and 8.2 %
+   for the forty steps that moved Si and wall together. The wall is the
+   staircase; the silicon is cheap. What the tip *does* carry is the field's
+   change of character as the core vanishes, and §7 shows that is not a step
+   effect either.
 2. **The basis size**, 20 modes against the 40–50 a PML-EME normally wants.
    **Now the leading suspect**, because that 12 % floor has a signature: the
    forward amplitude in the Berenger branches is ~9 % on *both* grids. It is
@@ -244,9 +249,9 @@ discretisation here**: the dataset's gap axis has a 5 nm step, so a path that
 opens the clearance by 100 nm visits exactly 20 grid points more than one that
 holds it constant, and 42 + (125 − `w_gap`)/5 reproduces the third column
 exactly. The 4.9 points of transmission between the ends of the sweep divided
-by those 20 extra sections is 0.25 % each — and §3's per-edge split puts a
-5 nm wall jump at 0.21 %, so the whole sweep is consistent with the extra
-wall steps and nothing else. A wall that stays put costs nothing to step
+by those 20 extra sections is 0.25 % each — and §3's exact split puts a
+5 nm wall jump at 0.2–0.3 % once the mode is slot-like, so the whole sweep
+is consistent with the extra wall steps and nothing else. A wall that stays put costs nothing to step
 past; that is true of the physics *and* of the staircase, and this dataset
 cannot say in what proportion.
 
@@ -341,12 +346,12 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
   the only representation of radiation here and it cannot re-couple. §7 puts
   a number on that — a ~12 % floor refining the grid does not touch — which
   makes basis size, not step size, the next thing to buy.
-* The Si-width axis is coarse where it matters: 10 nm steps against a core
-  that shrinks to nothing, so the last 100 nm of taper carry 9.2 of the
-  staircase's 13.6 % (§3). The gold wall's 5 nm jumps cost 2.1 % in total.
-  Refining the whole grid (§7) halves the staircase; refining the grid *near
-  the tip only* would do most of that at a fraction of the cost, and is the
-  natural next platform change.
+* The wall axis is coarse where it matters: 5 nm jumps of the gold wall,
+  each worth 0.2–0.3 % once the mode is slot-like, 6.1 % over the design
+  path (§3). Refining the whole grid halves that (§7); refining the strip
+  the wall moves through does the same at a fraction of the cost, and the
+  1 nm wall-strip dataset is the run in progress. Refining the Si tip,
+  tried first, bought 0.7 points — its steps were never the problem.
 * One wavelength, one metal thickness. The paper's Fig. 7 sweep over
   `h_Au` = 30–250 nm is a dataset per thickness, since `h_Au` changes the
   cross-section topology and therefore the mode problem.
@@ -358,9 +363,10 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
 ## 7. Halving the axes: the 2.5 nm cell
 
 §5 bounds the cost of snapping this device onto the grid at about 12 points
-of transmission. This section measures what halving the grid does about it;
-§3's per-edge split, made afterwards, says the cost sits at the Si tip rather
-than at the gold wall the first draft suspected.
+of transmission. This section measures what halving the grid does about it,
+then — with the piecewise-refined grid built for the purpose — what refining
+the Si tip does (little) and what refining the gold wall does (the run in
+progress).
 
 **Why the cell and not just the axis.** `w_si` steps `2 cell` and `gap` steps
 `cell` so that the Si edge (`w_si/2`) and the metal's inner edge
@@ -486,6 +492,62 @@ loss his device does not have. A rounded tip of the same CD is the same
 physics, marginally softer: 80 → 0 nm over 40 nm of length is one or two EME
 sections. What the finite tip *does* approximate is the wafer, and a
 fab-faithful comparison should sweep `w_end` rather than assume zero.
+
+### Refining where the edge moves, not everywhere
+
+The piecewise-refined grid (`PMLModeSolver(refine_x=)`, CLAUDE.md §3) makes
+it possible to refine one strip of the cross section and leave the rest at
+5 nm. Two strips were tried, in the order the evidence suggested them.
+
+**The Si tip: |x| < 60 nm at 1 nm** (`SiO2_kocabas_set2_1550_tip60_1`,
+567 × 347, +20 % unknowns, width steps 2 nm below 120 nm, walls on the 5 nm
+grid, 122 cross sections). **73.0 % at the tip** — 0.7 points over the
+uniform 5 nm grid, where the uniform 2.5 nm grid gave 6.6. Two things make
+that number useful. The modes on this grid are *identical* to the 5 nm ones
+at every matched width (1.5728 + 0.0049j at 80 nm on both, 1.4498 + 0.0086j
+at 0 on both), so it isolates the step-size effect at the tip cleanly, and
+that effect is small: the launched branch's single-mode staircase product
+does improve, 0.903 → 0.931, but the fifty 2 nm steps cost 0.25 % together
+and the wall's thirty 5 nm jumps still cost 6.1 %. And the cascade gains less
+than the staircase product does, because in the last 50 nm of width the fine
+grid has forty interfaces where the coarse one has five, and each projects
+onto the same 20-mode basis; the launched-branch power is 1.4 points ahead of
+the 5 nm grid at 50 nm width and 0.6 ahead at 0.
+
+| | 5 nm | 2.5 nm | tip 60/1 |
+|---|---|---|---|
+| at the tip | 72.3 % | 78.9 % | 73.0 % |
+| single-mode staircase product `A` | 0.903 | 0.940 | 0.931 |
+| sum of single-mode mismatch | 10.2 % | 6.2 % | 7.2 % |
+|  of which the wall's steps | 2.0 % explicit (+ implicit in 8.2 %) | 1.3 % (+ implicit) | **6.1 %** |
+|  of which the Si's steps | | | 1.1 % |
+| launched power into Berenger branches, summed over interfaces | 3.1 % | 1.6 % | 2.8 % |
+| launched branch at 80 nm width | 1.5728 + 0.0049j | 1.6134 + 0.0041j | 1.5728 + 0.0049j |
+| slot mode | 1.4498 + 0.0086j | 1.4941 + 0.0062j | 1.4498 + 0.0086j |
+
+**So where did the 2.5 nm grid's 6.6 points come from?** Its staircase
+product improved by 3.7 points, its modes by the rest: +0.04 in `Re n_eff`
+at every width, including 200 nm where the silicon is trivially resolved,
+and a slot loss 28 % lower. The 5 nm grid is under-resolved somewhere that
+is not the tip. Single solves with targeted strips say where
+(`kocabas_diagnose_5nm.log`): putting the Si slab faces on nodes (they sit
+mid-cell at 5 nm, on-node at 2.5) changes nothing, 1.9864 → 1.9865 at 200 nm
+and 1.4498 → 1.4498 at the slot; refining ±50 nm around each gold wall to
+1 nm in `x` alone moves the slot mode 1.4498 → **1.4751** + 0.0071j, more
+than half of the way to the 2.5 nm value, with the walls' vertical faces and
+corners still at 5 nm presumably carrying the rest.
+
+**The gold wall: 100 < |x| < 300 nm at 1 nm** — the strip the wall moves
+through, 275 → 125 nm, plus the ~23 nm skin depth beyond it
+(`SiO2_kocabas_set2_1550_r100-300_1`, 791 × 347, +68 % unknowns, the wall
+stepping **1 nm** through 191 positions, the Si axis at 10 nm). It addresses
+both findings at once: the wall's staircase, 6.1 % that should fall as Δ to
+~1.2 %, and the wall's resolution. Running; the row below fills when it
+lands.
+
+| | at the tip | staircase `A` | expected |
+|---|---|---|---|
+| walls 100–300 nm at 1 nm | pending | pending | staircase ~1 %, modes toward the 2.5 nm values, at +68 % unknowns against 4.9× |
 
 **The cascade.** Running: the design point on the fine dataset
 (`demo_kocabas_converter.py --cell 2.5 --lengths 1700 --gaps 75`), about 100

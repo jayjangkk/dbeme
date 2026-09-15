@@ -67,17 +67,20 @@ OUT_JSON = os.path.join(ROOT, "reports", "output", f"{TAG}_converter.json")
 PATH_KW = {}
 
 
-def use_cell(cell_nm, tip=None):
-    """Point the demo at the dataset for this pitch (5.0 or 2.5 nm), or at
-    the tip-refined one: ``tip = (half_extent_nm, cell_fine_nm)`` refines
-    ``|x| < half_extent`` of the 5 nm grid to ``cell_fine`` and switches the
-    axes to ``(w_si, half_slot)``, so the width steps ``2 cell_fine`` while
-    the Si edge is inside the strip."""
+def use_cell(cell_nm, tip=None, strips=()):
+    """Point the demo at the dataset for this pitch (5.0 or 2.5 nm), or at a
+    refined one.  ``tip = (half_extent_nm, cell_fine_nm)`` is the tip strip
+    (dataset ``_tip{extent}_{fine}``); ``strips = ((lo_nm, hi_nm, cell_nm),
+    ...)`` are general strips in ``|x|`` (dataset ``_r{lo}-{hi}_{fine}``,
+    joined by ``+``).  Either switches the axes to ``(w_si, half_slot)``."""
     global CELL_NM, SUFFIX, DATASET, OUT_JSON, PATH_KW
     CELL_NM = float(cell_nm)
     if tip is not None:
         extent, fine = (float(v) for v in tip)
         SUFFIX = f"_tip{extent:g}_{fine:g}"
+        PATH_KW = {"half_slot": True}
+    elif strips:
+        SUFFIX = "_" + "+".join(f"r{lo:g}-{hi:g}_{cf:g}" for lo, hi, cf in strips)
         PATH_KW = {"half_slot": True}
     else:
         SUFFIX = "" if abs(CELL_NM - 5.0) < 1e-9 else "_c25"
@@ -353,13 +356,21 @@ def main():
     parser.add_argument("--tip", type=float, nargs=2, metavar=("HALF_EXTENT_NM", "CELL_FINE_NM"),
                         help="refine |x| < HALF_EXTENT of the 5 nm grid to CELL_FINE and "
                              "use the (w_si, half_slot) axes; e.g. --tip 60 1")
+    parser.add_argument("--refine", type=float, nargs=3, action="append", default=[],
+                        metavar=("LO_NM", "HI_NM", "CELL_NM"),
+                        help="refine LO < |x| < HI of the 5 nm grid to CELL (repeatable); "
+                             "the wall strip is --refine 120 280 1")
     args = parser.parse_args()
-    use_cell(args.cell, tip=args.tip)
+    strips = tuple(tuple(r) for r in args.refine)
+    use_cell(args.cell, tip=args.tip, strips=strips)
     print("Demo 4b - Kocabas Set 2 converter, SiO2-embedded, lossy PML basis")
     if args.tip:
         print(f"{CELL_NM:g} nm cell, |x| < {args.tip[0]:g} nm refined to {args.tip[1]:g} nm -> "
               f"w_si axis {2*args.tip[1]:g} nm at the tip, walls on the {CELL_NM:g} nm grid; "
               f"dataset {os.path.basename(DATASET)}")
+    elif strips:
+        print(f"{CELL_NM:g} nm cell, refined " + ", ".join(f"{lo:g}-{hi:g} nm to {cf:g} nm" for lo, hi, cf in strips)
+              + f"; axes (w_si, half_slot); dataset {os.path.basename(DATASET)}")
     else:
         print(f"{CELL_NM:g} nm cell -> w_si axis {2*CELL_NM:g} nm, gap axis "
               f"{CELL_NM:g} nm; dataset {os.path.basename(DATASET)}")

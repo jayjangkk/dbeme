@@ -282,10 +282,10 @@ class PMLModeSolver:
         the cross section reconstructs its cell edges exactly, so nothing
         else changes - but the grid does, so a refinement is part of the
         dataset identity (``fingerprint``).  Built for the Kocabas converter,
-        whose staircase loss sits where the Si tip narrows to nothing and a
-        10 nm width step is a large relative change (report 13 section 3);
-        refining the 120 nm around the tip at 1 nm costs a fifth of the grid
-        where refining everything costs five times a solve.
+        to refine the strip an edge moves through instead of the whole
+        cross section: the tip strip cost a fifth of the grid and the wall
+        strip two thirds, against five times a solve for a uniformly halved
+        cell (report 13 section 7).
     """
 
     def __init__(

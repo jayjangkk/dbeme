@@ -607,6 +607,7 @@ def kocabas_converter_dataset_info(
     plate_reach=0.3e-6,
     colocate=True,
     tip_refine=None,
+    refine=None,
 ):
     """Kocabas's Si-wire-to-plasmonic-slot converter as a two-axis dataset.
 
@@ -633,35 +634,47 @@ def kocabas_converter_dataset_info(
     of the Si in this layout, so the gap runs along the path and both axes
     are visited; lazy evaluation solves only the points a device touches.
 
-    :param tip_refine: ``(half_extent, cell_fine)`` in metres: refine the
-        grid to ``cell_fine`` for ``|x| < half_extent`` and switch the axes
-        to ``("w_si", "half_slot")``.  Two thirds of the design path's
-        staircase loss sits in the last 100 nm of Si width (report 13
-        section 3), where a 10 nm step is a large relative change; the Si
-        edge lives within ``half_extent`` of the centre there, so refining
-        that strip alone buys fine width steps at a fifth of the grid.  The
-        width axis then steps ``2 cell_fine`` up to ``2 half_extent`` and
-        ``2 cell`` beyond; the metal's inner edge is the second axis in its
-        own right, on the coarse grid, because with ``(w_si, gap)`` a path
-        detour ``(w_new, gap_old)`` would move the wall by half a fine step
-        and put it inside a coarse cell.  Requires the slot end
-        (``w_slot / 2``) to lie outside the refined strip.
+    :param refine: Strips ``((lo, hi, cell_fine), ...)`` in metres of
+        ``|x|`` (mirrored to ``-x``) inside which the grid is cut to
+        ``cell_fine``; ``lo``, ``hi`` on the 5 nm base grid, ``cell`` an
+        integer multiple of ``cell_fine``.  Any refinement switches the
+        axes to ``("w_si", "half_slot")``: with ``(w_si, gap)`` the wall
+        sits at ``w_si/2 + gap``, so a path detour ``(w_new, gap_old)``
+        moves it by half a silicon step and off the coarse grid, and every
+        "Si step" also moves the wall.  The axes follow the strips: the
+        ``half_slot`` axis steps ``cell_fine`` where a wall position falls
+        inside a strip and ``cell`` elsewhere; the ``w_si`` axis steps
+        ``2 cell_fine`` only inside a strip that starts at ``0`` (a tip
+        strip) and ``2 cell`` otherwise, since 10 nm width steps are cheap
+        (report 13 section 7: fifty 2 nm steps at the tip cost 0.25 %).
+        What the design path's staircase actually is, measured on clean
+        axes, is the gold wall's 5 nm jumps once the mode is slot-like -
+        6.1 % of the 7.2 % single-mode mismatch - so the strip to buy is
+        the one the wall moves through, ``|x|`` = 125-275 nm.
+    :param tip_refine: ``(half_extent, cell_fine)``, the same as
+        ``refine=((0, half_extent, cell_fine),)``; kept for the
+        ``_tip60_1`` dataset.
     """
     from .fde.pml import PMLBackend
     from .fde.slot_converter import PlasmonicSlotConverter
 
     p = KOCABAS_SETS[set_number]
     si, sio2, au = kocabas_materials()
-    refine_x = ()
     if tip_refine is not None:
-        half_extent, cell_fine = (float(v) for v in tip_refine)
-        k_ext, k_cell = half_extent / cell, cell / cell_fine
-        if abs(k_ext - round(k_ext)) > 1e-6 or abs(k_cell - round(k_cell)) > 1e-6 or k_ext < 1:
-            raise ValueError("tip_refine: half_extent must be a multiple of cell and "
-                             "cell a multiple of cell_fine")
-        if 0.5 * p["w_slot"] * 1e-9 < half_extent + cell:
-            raise ValueError("tip_refine: the slot's half width must lie outside the refined strip")
-        refine_x = ((-half_extent, half_extent, cell_fine),)
+        if refine is not None:
+            raise ValueError("give tip_refine or refine, not both")
+        refine = ((0.0, float(tip_refine[0]), float(tip_refine[1])),)
+    strips = tuple((float(lo), float(hi), float(cf)) for lo, hi, cf in (refine or ()))
+    for lo, hi, cf in strips:
+        for v in (lo, hi):
+            if abs(v / cell - round(v / cell)) > 1e-6:
+                raise ValueError(f"refine: strip bound {v:g} m is not on the {cell:g} m base grid")
+        if cf <= 0 or abs(cell / cf - round(cell / cf)) > 1e-6:
+            raise ValueError(f"refine: base cell {cell:g} is not an integer multiple of {cf:g}")
+        if hi <= lo or lo < 0:
+            raise ValueError(f"refine: bad strip ({lo:g}, {hi:g})")
+    refine_x = tuple(r for lo, hi, cf in strips
+                     for r in (((-hi, hi, cf),) if lo == 0 else ((-hi, -lo, cf), (lo, hi, cf))))
     section = PlasmonicSlotConverter(
         si_thickness=p["h_si"] * 1e-9,
         metal_thickness=p["h_au"] * 1e-9,
@@ -670,8 +683,8 @@ def kocabas_converter_dataset_info(
         plate_reach=plate_reach,
         corner_radius=corner_radius,
         core_mask_margin=0.0,
-        sweep_gap=tip_refine is None,
-        sweep_half_slot=tip_refine is not None,
+        sweep_gap=not strips,
+        sweep_half_slot=bool(strips),
         core=si, metal=au, cladding=sio2, substrate=sio2,
         reference_wavelength=wavelength,
     )
@@ -681,7 +694,7 @@ def kocabas_converter_dataset_info(
 
     step_nm = 2 * cell * 1e9
     g0, g1 = gap_range
-    if tip_refine is None:
+    if not strips:
         names = ("w_si", "gap")
         parameters = {
             "w_si": axis(nm(0, p["w_si"] + 0.5 * step_nm, step_nm)),
@@ -689,14 +702,24 @@ def kocabas_converter_dataset_info(
         }
     else:
         names = ("w_si", "half_slot")
-        fine_nm, ext_nm = 2 * cell_fine * 1e9, 2 * half_extent * 1e9
-        hs0_nm = 0.5 * p["w_slot"]                       # the slot end, on the coarse grid
+        hs0_nm = 0.5 * p["w_slot"]                       # the slot end
         hs1_nm = 0.5 * p["w_si"] + g1 * 1e9
-        parameters = {
-            "w_si": axis(nm(0, ext_nm + 0.5 * fine_nm, fine_nm),
-                         nm(ext_nm, p["w_si"] + 0.5 * step_nm, step_nm)),
-            "half_slot": axis(nm(hs0_nm, hs1_nm + 0.5 * cell * 1e9, cell * 1e9)),
-        }
+        w_segments = [nm(0, p["w_si"] + 0.5 * step_nm, step_nm)]
+        hs_segments = [nm(hs0_nm, hs1_nm + 0.5 * cell * 1e9, cell * 1e9)]
+        for lo, hi, cf in strips:
+            lo_nm, hi_nm, cf_nm = lo * 1e9, hi * 1e9, cf * 1e9
+            if lo == 0:                                  # a tip strip: fine width steps
+                w_segments.append(nm(0, 2 * hi_nm + cf_nm, 2 * cf_nm))
+            # wall positions inside the strip step at the fine cell
+            a, b = max(lo_nm, hs0_nm), min(hi_nm, hs1_nm)
+            if b > a:
+                hs_segments.append(nm(a, b + 0.5 * cf_nm, cf_nm))
+        parameters = {"w_si": axis(*w_segments), "half_slot": axis(*hs_segments)}
+        # every wall position must be a node: outside the strips that is the
+        # base grid, so the slot end (hs0) has to be on it
+        if abs(hs0_nm / (cell * 1e9) - round(hs0_nm / (cell * 1e9))) > 1e-6 and not any(
+                lo * 1e9 <= hs0_nm <= hi * 1e9 for lo, hi, _ in strips):
+            raise ValueError("refine: the slot end is neither on the base grid nor inside a strip")
     half_width = 0.5 * p["w_si"] * 1e-9 + g1 + plate_reach + 0.5e-6
     y_half = 0.5 * max(p["h_si"], p["h_au"]) * 1e-9 + 0.5e-6
     half_cells = int(np.ceil(half_width / cell))

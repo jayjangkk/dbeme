@@ -377,11 +377,12 @@ PML and the outer cells untouched; the finite-difference operator already took
 per-cell spacings, and the three places that inferred cell geometry from the
 centres alone (the cross-section fill fractions, the rounded-corner fill, the
 power sums behind confinement and `TE_pol`) now reconstruct exact cell edges
-and weight by area. A refinement enters the dataset identity. Built for the
-Kocabaş tip, where two thirds of the staircase loss sat in the last 100 nm of
-Si width: 1 nm cells for |x| < 60 nm on the 5 nm grid give 2 nm width steps
-there for 20 % more unknowns (`--tip 60 1`, dataset
-`SiO2_kocabas_set2_1550_tip60_1`, axes `(w_si, half_slot)`).
+and weight by area. A refinement enters the dataset identity. Strips of the
+Kocabaş cross section (`--refine LO HI CELL`, axes `(w_si, half_slot)`):
+the Si tip at 1 nm (`--tip 60 1`, +20 % unknowns) bought 0.7 points, because
+on axes where the two edges move separately the staircase turns out to be
+the gold wall's 5 nm jumps, not the silicon's steps; the wall strip at 1 nm
+(`--refine 100 300 1`, +68 %) is the one that addresses it.
 
 **Si-wire-to-slot converter, silica-embedded** (`demo_kocabas_converter.py` →
 `reports/13`) — the same physics on a device whose every dimension is
