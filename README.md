@@ -381,8 +381,16 @@ and weight by area. A refinement enters the dataset identity. Strips of the
 Kocabaş cross section (`--refine LO HI CELL`, axes `(w_si, half_slot)`):
 the Si tip at 1 nm (`--tip 60 1`, +20 % unknowns) bought 0.7 points, because
 on axes where the two edges move separately the staircase turns out to be
-the gold wall's 5 nm jumps, not the silicon's steps; the wall strip at 1 nm
-(`--refine 100 300 1`, +68 %) is the one that addresses it.
+the gold wall's 5 nm jumps, not the silicon's steps. Refining the wall then
+exposed three things (report 13 §7): 1 × 5 nm cells at a metal corner corrupt
+the reconstructed E while H and `n_eff` look fine, so corner rows need a
+`--refine-y` strip too; a sharp metal wedge does not converge as it is
+resolved, so only a rounded corner is a geometry a refinement can converge
+on; and a rounded gold arc in silica needs `fill_floor=0.06`, because the
+sub-sampled fill lands on the ε-near-zero mix. The like-for-like pair on the
+rounded geometry (`--suffix hs_c20` against
+`--suffix r100-300_1+y95-135_1_c20`, both `--axes half_slot`) is the
+experiment.
 
 **Si-wire-to-slot converter, silica-embedded** (`demo_kocabas_converter.py` →
 `reports/13`) — the same physics on a device whose every dimension is
