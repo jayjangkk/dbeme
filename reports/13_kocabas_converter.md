@@ -595,10 +595,33 @@ corner rows at 1 nm, 791 × 411 (+98 % unknowns), the wall stepping 1 nm
 through 191 positions. The difference between the two is what refining the
 wall buys once the corners are a geometry the grid can converge on.
 
-| | at the tip | staircase `A` | status |
-|---|---|---|---|
-| rounded, 5 nm, `(w_si, half_slot)` | pending | pending | running |
-| rounded, walls and corner rows at 1 nm | pending | pending | queued behind it |
+| | at the tip | staircase `A` | wall steps | Berenger | slot mode | status |
+|---|---|---|---|---|---|---|
+| sharp, 5 nm, `(w_si, gap)` (§3) | 72.3 % | 0.903 | 6.1 % (on clean axes) | 2.8 % | 1.4498 + 0.0086j | — |
+| **rounded, 5 nm, `(w_si, half_slot)`** | **82.4 % (−0.84 dB)** | 0.943 | 4.4 % | 1.4 % | **1.5528 + 0.0043j**, `L_p` 28.8 µm | done, 72 sections, 10 359 s |
+| rounded, walls and corner rows at 1 nm | pending | pending | | | | running, ~10 min per cross section |
+
+**Rounding the corners is worth ten points on its own.** The baseline's
+exact attribution (`kocabas_exact_attribution_rounded.json`) explains only
+part of it: the wall's staircase falls from 6.1 to 4.4 % (0.46 / 1.72 /
+2.26 % for the wall at 275–225 / 225–175 / 175–125 nm) and the power scattered
+into the Berenger set at the interfaces from 2.8 to 1.4 %, together about
+three points. The rest is the modes: with rounded corners the slot mode
+sits at 1.5528 + 0.0043j instead of 1.4498 + 0.0086j — 0.11 higher above the
+silica line, half the loss, `L_p` 28.8 µm against 14.3 — and the slot-like
+supermodes along the last third of the taper are correspondingly better
+bound, so less of what each interface scatters is absorbed before it can
+re-couple. In other words, a good part of the "12 % floor" of the first
+half of this section was the sharp corner's singular field, regularised by
+a 5 nm grid, and not the basis. Reciprocity 6.9e−4, passivity 0.899,
+constant-slot check exact.
+
+Two caveats travel with the number. It is a *different device* from the
+paper's, whose COMSOL model has sharp rectangles — though any real device
+has a corner radius of this order, and a body-conforming FEM mesh
+regularises a sharp wedge in its own way. And the 5 nm value of a rounded
+mode is not converged either (0.012 above): the refined run says by how
+much.
 
 **The cascade.** Running: the design point on the fine dataset
 (`demo_kocabas_converter.py --cell 2.5 --lengths 1700 --gaps 75`), about 100

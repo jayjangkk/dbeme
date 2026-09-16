@@ -1,0 +1,51 @@
+{
+  "backend": {
+    "colocate": true,
+    "confinement_threshold": 0.05,
+    "pml_edges": [
+      "+x",
+      "+y",
+      "-x",
+      "-y"
+    ],
+    "pml_factor": [
+      1.0,
+      2.0
+    ],
+    "pml_thickness_m": 2.5e-07,
+    "stretch_convention": 1,
+    "target_neff": 2.3
+  },
+  "basis_convention": 2,
+  "cross_section": "PlasmonicSlotConverter|t_si=7.25e-07|t_m=2.5e-07|gap=7.5e-08|reach=3e-07|m_bottom=-1.25e-07|corner=2e-08|fill_floor=0.06|const:3.47634866+0j|const:0.238229889+11.2630703j|const:1.44402216+0j|const:1.44402216+0j",
+  "mesh": [
+    471,
+    347
+  ],
+  "mode_numbers": 20,
+  "parameter_grid": {
+    "half_slot": {
+      "count": 51,
+      "max": 3.75e-07,
+      "min": 1.25e-07,
+      "sum": 1.275e-05
+    },
+    "w_si": {
+      "count": 41,
+      "max": 4e-07,
+      "min": 0.0,
+      "sum": 8.2e-06
+    }
+  },
+  "parameter_names": [
+    "w_si",
+    "half_slot"
+  ],
+  "solver": "PMLBackend",
+  "wavelength_m": 1.55e-06,
+  "window_m": [
+    1.175e-06,
+    -8.65e-07,
+    8.65e-07
+  ]
+}
