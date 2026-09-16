@@ -589,17 +589,22 @@ because a check of the fields on that grid showed three things in turn
 geometry and the `(w_si, half_slot)` axes (which alone are worth about a
 point: on `(w_si, gap)` the wall moves with every Si step and back with
 every gap step, 50 wall moves against 30): `SiO2_kocabas_set2_1550_hs_c20`,
-the plain 5 nm grid, 71 path points; then
-`SiO2_kocabas_set2_1550_r100-300_1+y95-135_1_c20`, the wall strip and the
-corner rows at 1 nm, 791 × 411 (+98 % unknowns), the wall stepping 1 nm
-through 191 positions. The difference between the two is what refining the
-wall buys once the corners are a geometry the grid can converge on.
+the plain 5 nm grid, 71 path points; then the wall strip and the corner rows
+refined. The 1 nm version (791 × 411, +98 % unknowns, 197 points) measured
+30+ minutes per cross section — the rounded geometry is a slower
+eigenproblem than the sharp one, and SuperLU's factorisation is
+single-threaded — so it was paused at 6 points in favour of the 2.5 nm
+version (551 × 363, +22 %, the wall stepping 2.5 nm through 86 positions,
+~101 points), which still halves the wall step and refines the corners
+isotropically. The difference between it and the baseline is what refining
+the wall buys once the corners are a geometry the grid can converge on.
 
 | | at the tip | staircase `A` | wall steps | Berenger | slot mode | status |
 |---|---|---|---|---|---|---|
 | sharp, 5 nm, `(w_si, gap)` (§3) | 72.3 % | 0.903 | 6.1 % (on clean axes) | 2.8 % | 1.4498 + 0.0086j | — |
 | **rounded, 5 nm, `(w_si, half_slot)`** | **82.4 % (−0.84 dB)** | 0.943 | 4.4 % | 1.4 % | **1.5528 + 0.0043j**, `L_p` 28.8 µm | done, 72 sections, 10 359 s |
-| rounded, walls and corner rows at 1 nm | pending | pending | | | | running, ~10 min per cross section |
+| rounded, walls and corner rows at 2.5 nm (`_r100-300_2.5+y95-135_2.5_c20`, 551 × 363, +22 %, the wall stepping 2.5 nm through 86 positions) | pending | pending | | | | running |
+| rounded, walls and corner rows at 1 nm (`_r100-300_1+y95-135_1_c20`, 791 × 411, +98 %, 197 points) | — | — | | | | paused at 6 points: 30+ min per cross section on this grid, a ~100 h job; the cache resumes it if wanted |
 
 **Rounding the corners is worth ten points on its own.** The baseline's
 exact attribution (`kocabas_exact_attribution_rounded.json`) explains only
