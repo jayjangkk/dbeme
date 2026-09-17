@@ -92,6 +92,25 @@ class CrossSection(metaclass=abc.ABCMeta):
         """Radiation-mode cut-off index, at the reference wavelength."""
         return self.cladding_index_at(self.reference_wavelength)
 
+    # ------------------------------------------------ boundary-conforming form
+
+    def polygons(self, params: dict):
+        """The cross section as named regions for a finite-element mesh.
+
+        :returns: ``OrderedDict`` of ``name -> (shapely polygon in metres,
+            complex relative permittivity)``, in drawing order: a later region
+            overrides an earlier one where they overlap, exactly as
+            :meth:`index` paints them.  Only the regions that differ from the
+            background are listed; :meth:`background_epsilon` says what fills
+            the rest.  Optional - a cross section without it can only be solved
+            on a grid (``EmepyFDE``, ``PMLBackend``).
+        """
+        raise NotImplementedError(f"{type(self).__name__} has no polygon form")
+
+    def background_epsilon(self, params: dict):
+        """Permittivity of whatever :meth:`polygons` leaves unpainted."""
+        raise NotImplementedError(f"{type(self).__name__} has no polygon form")
+
 
 def _cell_edges(centers):
     """Cell boundaries from cell centres, exact on a piecewise-uniform grid.
@@ -321,6 +340,29 @@ class FullEtchStrip(CrossSection):
             n = n * np.exp(self.curvature_sign * curvature * x[:, np.newaxis])
 
         return n
+
+    def polygons(self, params):
+        """Core trapezoid over a substrate half-plane; cladding is the background."""
+        from collections import OrderedDict
+        from shapely.geometry import Polygon, box
+
+        width = float(params["top_width"])
+        wavelength = self.wavelength_of(params)
+        if float(params.get("curvature", 0.0)) != 0.0:
+            raise NotImplementedError("the conformal bend transform is not a polygon")
+        half_t = 0.5 * self.thickness
+        run = _sidewall_run(self.thickness, self.sidewall_angle)
+        core = Polygon([(-0.5 * width - run, -half_t), (0.5 * width + run, -half_t),
+                        (0.5 * width, half_t), (-0.5 * width, half_t)])
+        big = 1.0  # metres: far larger than any window; the backend clips to it
+        substrate = box(-big, -big, big, -half_t)
+        n_core = self.core_index_at(wavelength)
+        n_sub = complex(np.asarray(self.substrate.index(wavelength)).ravel()[0])
+        return OrderedDict(substrate=(substrate, n_sub ** 2), core=(core, complex(n_core) ** 2))
+
+    def background_epsilon(self, params):
+        n = complex(np.asarray(self.cladding.index(self.wavelength_of(params))).ravel()[0])
+        return n ** 2
 
     def fingerprint(self):
         parts = [type(self).__name__, f"t={self.thickness:.6g}"]

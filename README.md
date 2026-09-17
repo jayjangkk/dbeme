@@ -392,6 +392,19 @@ rounded geometry (`--suffix hs_c20` against
 `--suffix r100-300_1+y95-135_1_c20`, both `--axes half_slot`) is the
 experiment.
 
+**A finite-element backend** (`em_simulation/fde/femwell_fde.py`) — a
+boundary-conforming mesh behind the same backend contract, for the case the
+finite-difference grid cannot converge: a rounded metal corner is a staircase
+at any affordable cell, and the gap plasmon moved 0.03–0.05 in `n_eff`
+between 5, 2.5 and 1 nm cells. Cross sections describe themselves as shapely
+polygons (`CrossSection.polygons()`), femwell/gmsh meshes them with the arcs
+as curves, a lossy outer ring stands in for the PML, and the fields are
+point-evaluated onto the dataset's uniform grid so that nothing downstream
+changes. Validated against the FD backend on a dielectric strip, where the
+two solvers' fields overlap as the same modes to better than 0.99
+(`tests/test_femwell_backend.py`); `kocabas_converter_dataset_info(solver="femwell")`
+selects it (report 13 §8).
+
 **Si-wire-to-slot converter, silica-embedded** (`demo_kocabas_converter.py` →
 `reports/13`) — the same physics on a device whose every dimension is
 published (Kocabaş, arXiv:1801.00833, Table II Set 2: Si 400 × 725 nm, gold

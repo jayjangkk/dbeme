@@ -671,6 +671,64 @@ about 40 % of its build time there.
 | 5 nm cell, 52 sections | 72.3 % | 40 width steps, 10 gap steps | ✓ |
 | 2.5 nm cell, 102 sections | **78.9 %** | 80 width steps, 20 gap steps | ✓ |
 
+## 8. A boundary-conforming mesh: the finite-element backend
+
+§7 ended with the finite-difference platform's limit stated plainly: a
+rounded gold corner is a staircase of cells at any pitch we can afford, and
+the gap plasmon — which lives on the ~23 nm skin depth and the corner's
+curvature — moves by 0.03–0.05 between 5, 2.5 and 1 nm cells without
+converging. A mesh that conforms to the metal boundary describes the arc as
+a curve, so the mode converges with element size; and because a wall at
+202.5 nm is then just another geometry rather than an edge inside a cell,
+the dataset's parameter axes are freed from the cell pitch. Both are what
+the taper needs.
+
+**The backend** (`em_simulation/fde/femwell_fde.py`, `FemwellBackend`) sits
+behind the same `FDEBackend` contract as the PML solver, so `DataUpdater`,
+`assemble`, the overlaps and the cascade are untouched. It asks the cross
+section for its geometry as shapely polygons (`CrossSection.polygons()`,
+implemented for the Si strip and for `PlasmonicSlotConverter`, whose plate
+corners are true arcs), meshes them with gmsh through femwell with
+per-region element sizes (6 nm on the gold, 15 nm on the silicon, 80 nm in
+the cladding), solves the vectorial eigenproblem on Nédélec–Lagrange elements
+with a complex permittivity where the material is, absorbs outgoing
+radiation in a lossy outer ring (femwell has no coordinate-stretch PML; a
+ring of `ε'' = 0.5` over 0.3 µm does the same job for a mode whose tail has
+decayed by the window), and then **evaluates E and H on the dataset's
+uniform grid** by point evaluation of the finite-element functions (skfem
+`probes`, chunked — the element finder is quadratic in memory otherwise).
+That last step is the one thing this backend adds to the error budget:
+everything downstream only ever sees fields on the common grid, and the
+grid pitch there is a *sampling* choice for the overlap integrals, not a
+resolution of the geometry. Modes are ordered and gauge-pinned exactly as
+the PML backend's, and the mesh recipe enters the dataset identity.
+
+**Validation** (`tests/test_femwell_backend.py`). On a 500 × 220 nm Si strip
+in oxide — a geometry the FD grid *does* converge — the two backends agree,
+and, more to the point, their *fields* evaluated on the same grid overlap as
+the same modes (`|O₀₀| > 0.99`, cross terms < 0.03), which is the quantity the
+method rests on. Their `n_eff` converge to the common limit from opposite
+sides: first-order FEM from below (2.4446 / 2.4451 / 2.4452 at 12 / 6 / 3 nm
+elements; second order 2.4454 at both 12 and 6 nm, i.e. converged), the FD
+grid from above (2.4476 at 5 nm), the window and the absorber ring having no
+effect at this level (2.4446 at both windows, with or without the ring).
+The 2e−3 between the converged FEM and the 5 nm FD value is the FD grid's own
+residual; on a dielectric it is harmless, on a metal edge it is the whole
+story of §7. On the Kocabaş cross
+section at 200 nm width the rounded-corner TE branch comes out at
+2.049 + 0.0017j against the 5 nm FD grid's 2.036 — and, unlike any FD
+refinement in §7, the corner field is bounded (|E_y| at the corner below
+3× the bulk |E_x|) because there are no cells to be anisotropic. One solve is
+~40 s on a 30 000-triangle mesh, a third of the FD cost, and the mesh is
+rebuilt per point since the geometry moves.
+
+**What it has not yet done** is the taper. That is the next run:
+`kocabas_converter_dataset_info(solver="femwell")` builds the same
+`(w_si, half_slot)` dataset on the FEM backend, with both axes at the cell
+because nothing has to align. Its result against the FD 82.4 % is the
+measurement of how much of the remaining gap to the paper was the
+finite-difference corner.
+
 ---
 
 ### Reproducing

@@ -611,6 +611,10 @@ def kocabas_converter_dataset_info(
     refine_y=None,
     fill_floor=0.0,
     axes=None,
+    solver="pml",
+    fem_resolution=None,
+    fem_order=1,
+    absorber=(0.3e-6, 0.5),
 ):
     """Kocabas's Si-wire-to-plasmonic-slot converter as a two-axis dataset.
 
@@ -667,6 +671,20 @@ def kocabas_converter_dataset_info(
     :param fill_floor: :class:`PlasmonicSlotConverter` ``fill_floor``; needed
         with ``corner_radius > 0`` on this silica platform, where the 1/64
         fill of a sub-sampled arc is the epsilon-near-zero mix.
+    :param solver: ``"pml"`` (the finite-difference :class:`PMLBackend`, the
+        default) or ``"femwell"`` (:class:`FemwellBackend`, a boundary-
+        conforming FEM mesh with the gold corners as true arcs).  With
+        ``"femwell"`` the ``cell`` is only the pitch of the grid the fields
+        are *evaluated* on for the overlaps - the geometry is resolved by the
+        mesh - so the parameter axes are free of the alignment rule: both
+        step ``cell`` regardless of where an edge falls.  ``refine`` strips
+        are meaningless there and rejected.
+    :param fem_resolution: ``{"si": (size, distance), "au": (size, distance),
+        "default": (max_size, 0)}`` in metres for the FEM mesh; the default
+        puts 6 nm elements on the gold and 15 nm on the silicon.
+    :param fem_order: Finite-element order, 1 or 2.
+    :param absorber: ``(thickness_m, epsilon'')`` of the lossy ring that
+        stands in for the PML on the FEM mesh.
     :param axes: ``"gap"`` or ``"half_slot"``; default ``"half_slot"`` when
         any ``refine`` strip is given and ``"gap"`` otherwise.  Set it
         explicitly to build an unrefined ``(w_si, half_slot)`` dataset as the
@@ -678,6 +696,10 @@ def kocabas_converter_dataset_info(
     from .fde.pml import PMLBackend
     from .fde.slot_converter import PlasmonicSlotConverter
 
+    if solver not in ("pml", "femwell"):
+        raise ValueError("solver must be 'pml' or 'femwell'")
+    if solver == "femwell" and (refine or refine_y or tip_refine):
+        raise ValueError("grid refinement strips have no meaning on a FEM mesh")
     p = KOCABAS_SETS[set_number]
     si, sio2, au = kocabas_materials()
     if tip_refine is not None:
@@ -729,7 +751,9 @@ def kocabas_converter_dataset_info(
     def cross_section(core, cladding, wl, names):
         return section
 
-    step_nm = 2 * cell * 1e9
+    # on the FD grid the Si edge (w_si / 2) must land on a node, so w_si steps
+    # 2 cell; a FEM mesh has no such rule and both axes step the cell
+    step_nm = (2 if solver == "pml" else 1) * cell * 1e9
     g0, g1 = gap_range
     if not half:
         names = ("w_si", "gap")
@@ -765,6 +789,17 @@ def kocabas_converter_dataset_info(
     mesh, mesh_y = 2 * half_cells + 1, 2 * y_cells + 1
 
     def backend(cross_section, names, wl, window, modes, mesh_points):
+        if solver == "femwell":
+            from .fde.femwell_fde import FemwellBackend
+
+            resolution = {"si": (15e-9, 0.1e-6), "au": (6e-9, 0.05e-6), "default": (80e-9, 0.0)}
+            resolution.update(fem_resolution or {})
+            return FemwellBackend(
+                cross_section, target_neff=target_neff, parameter_names=names,
+                wavelength=wl, window=window, cell=cell, num_modes=modes,
+                absorber_thickness=absorber[0], absorber_loss=absorber[1],
+                resolution=resolution, order=fem_order,
+            )
         return PMLBackend(
             cross_section, target_neff=target_neff, parameter_names=names,
             wavelength=wl, window=window, mesh=mesh_points, mesh_y=mesh_y,

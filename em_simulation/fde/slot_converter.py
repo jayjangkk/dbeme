@@ -269,6 +269,43 @@ class PlasmonicSlotConverter(CrossSection):
         # pin it anyway so a round-off -0j never reads as gain.
         return np.where(np.imag(n) < 0, np.conj(n), n)
 
+    def polygons(self, params):
+        """Substrate half-plane, the Si core and the two gold plates as curves.
+
+        The plates' corners are true arcs of ``corner_radius`` (an erode-dilate
+        of the rectangle, 16 segments per quarter turn), which is the geometry
+        the finite-difference grid could only staircase (report 13 section 7).
+        ``fill_floor`` has no meaning here and is ignored.
+        """
+        from collections import OrderedDict
+        from shapely.geometry import box
+
+        w_si = float(params["w_si"])
+        wavelength = self.wavelength_of(params)
+        eps_si = self._eps(self.core, wavelength)
+        eps_au = self._eps(self.metal, wavelength)
+        eps_sub = self._eps(self.substrate, wavelength)
+        y_lo = -0.5 * self.si_thickness
+        big = 1.0
+        out = OrderedDict()
+        out["substrate"] = (box(-big, -big, big, y_lo), eps_sub)
+        si_half, inner, outer = self.edges(w_si, self._gap_of(params))
+        if w_si > 0:
+            out["si"] = (box(-si_half, y_lo, si_half, y_lo + self.si_thickness), eps_si)
+        y_m0, y_m1 = self.metal_bottom, self.metal_bottom + self.metal_thickness
+        plates = []
+        for lo, hi in ((-outer, -inner), (inner, outer)):
+            plate = box(lo, y_m0, hi, y_m1)
+            r = min(self.corner_radius, 0.5 * (hi - lo), 0.5 * (y_m1 - y_m0))
+            if r > 0:
+                plate = plate.buffer(-r).buffer(r, quad_segs=16)
+            plates.append(plate)
+        out["au"] = (plates[0].union(plates[1]), eps_au)
+        return out
+
+    def background_epsilon(self, params):
+        return self._eps(self.cladding, self.wavelength_of(params))
+
     def core_mask(self, x, y, params):
         """Where a guided mode of this structure keeps its power.
 

@@ -365,9 +365,20 @@ solution** — 1-D, semi-analytic, cheap, and it probes the radiating tail
 directly, which is precisely what a PML must get right. Then a published SOI
 bend-loss-vs-radius curve, then FDTD.
 
-*Alternative:* a `FemwellFDE` backend (FEM + PML + bends, maintained, same
-gdsfactory ecosystem). Note this **coexists** with `EmepyFDE` rather than
-replacing it — `get_fde_backend()` is per dataset, so lossless datasets keep
+*Alternative — built 2026-09-17:* `em_simulation/fde/femwell_fde.py::FemwellBackend`
+(femwell 0.1.12 / scikit-fem / gmsh), a boundary-conforming FEM mesh behind
+the same `FDEBackend` contract. Geometry comes from `CrossSection.polygons()`
+(shapely, per material region; implemented for `FullEtchStrip` and
+`PlasmonicSlotConverter`, whose rounded corners are true arcs); radiation is
+absorbed in a lossy outer ring rather than a stretched-coordinate PML; fields
+are point-evaluated onto the dataset's uniform grid (skfem `probes`,
+chunked), which is the one new term in the error budget and what
+`tests/test_femwell_backend.py` pins against the FD backend on a dielectric
+strip (`|O₀₀| > 0.99` between the two solvers' fields). Built because the FD
+grid cannot converge a rounded metal corner at any affordable cell (report
+13 §7–§8); on the Kocabaş platform `kocabas_converter_dataset_info(solver="femwell")`,
+with both parameter axes at the cell since nothing has to align. Note this
+**coexists** with `EmepyFDE` rather than replacing it — `get_fde_backend()` is per dataset, so lossless datasets keep
 the fast uniform-grid EMpy path. Backends cannot be mixed *within* one dataset,
 because the overlaps require one shared grid and femwell's unstructured mesh
 must be interpolated onto it (that interpolation error then enters every
