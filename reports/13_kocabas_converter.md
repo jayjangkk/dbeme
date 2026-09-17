@@ -603,8 +603,34 @@ the wall buys once the corners are a geometry the grid can converge on.
 |---|---|---|---|---|---|---|
 | sharp, 5 nm, `(w_si, gap)` (§3) | 72.3 % | 0.903 | 6.1 % (on clean axes) | 2.8 % | 1.4498 + 0.0086j | — |
 | **rounded, 5 nm, `(w_si, half_slot)`** | **82.4 % (−0.84 dB)** | 0.943 | 4.4 % | 1.4 % | **1.5528 + 0.0043j**, `L_p` 28.8 µm | done, 72 sections, 10 359 s |
-| rounded, walls and corner rows at 2.5 nm (`_r100-300_2.5+y95-135_2.5_c20`, 551 × 363, +22 %, the wall stepping 2.5 nm through 86 positions) | pending | pending | | | | running |
-| rounded, walls and corner rows at 1 nm (`_r100-300_1+y95-135_1_c20`, 791 × 411, +98 %, 197 points) | — | — | | | | paused at 6 points: 30+ min per cross section on this grid, a ~100 h job; the cache resumes it if wanted |
+| rounded, walls and corner rows at 2.5 nm (`_r100-300_2.5+y95-135_2.5_c20`, 551 × 363, +22 %, the wall stepping 2.5 nm through 86 positions) | **83.4 % (−0.79 dB)** | 0.867 | 12.0 % | 7.5 % | 1.5169 + 0.0054j | done, 101 sections, 20 011 s |
+| rounded, walls and corner rows at 1 nm (`_r100-300_1+y95-135_1_c20`, 791 × 411, +98 %, 197 points) | — | — | | | | abandoned at 6 points (30+ min per cross section, ~100 h); the 2.5 nm result below says it would not have helped |
+
+**Refining the wall buys one point and a worse basis.** The cascade moves
+82.4 → 83.4 %, but every diagnostic underneath it goes the wrong way: the
+launched branch's single-mode mismatch summed over the path *rises* from
+5.9 to 14.2 % (the wall's share 4.4 → 12.0 %), power scattered into the
+Berenger set at the interfaces 1.4 → 7.5 %, reciprocity 6.9e−4 → 3.9e−3,
+and the TE fractions of the whole physical set drift toward 0.5–0.7 (the
+TE-like branch at 200 nm width 0.90 → 0.77, its TM-like partner 0.02 →
+0.10; at 80 nm the second and third modes read 0.37 / 0.67 where the 5 nm
+grid has them cleanly at 0.09 / 0.30). The tracking is consistent — the
+same branch, the same ordering at every width on both grids — so the one
+point is real, but it is two large effects nearly cancelling, not
+convergence. The mode also moves: 1.5528 → 1.5169 + 0.0054j at the slot,
+2.0364 → 2.0056 at 200 nm.
+
+The reading is the milder form of the corner artefact above. The corner
+rows are isotropic at 2.5 nm, but the 20 nm arc is now sampled with
+2.5 × 2.5 nm cells — eight cells across — and the sub-sampled fill, with
+its floor, describes it differently from the four-cell version at 5 nm:
+the wedge's field is being *more* resolved, and a rounded corner of this
+radius on a finite-difference grid is not converged at either cell. A
+1 nm grid would push further in the same direction at twenty times the
+cost, which is why it was abandoned. What refining the wall has settled is
+that the wall step is worth about a point, the corner geometry ten, and the
+remainder against the paper is not a grid question but a geometry and basis
+one: the corner's own sub-cell staircase, and the 20-mode set.
 
 **Rounding the corners is worth ten points on its own.** The baseline's
 exact attribution (`kocabas_exact_attribution_rounded.json`) explains only
