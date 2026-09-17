@@ -48,11 +48,18 @@ class DataUpdater:
     :type is_testmode: bool
     :param cache_size: Number of solved parameter points kept in memory.  Each
         point is adjacent to several others, so caching avoids re-solving the
-        same cross section a handful of times during a sweep.
+        same cross section a handful of times during a sweep.  Size it for
+        the fields it holds: a point's ``ModeData`` is ``2 x 3 x N x nx x ny``
+        complex128 - 0.29 GB at 20 modes on the 471 x 347 Kocabas grid,
+        0.58 GB at 40 - so the old default of 64 was 19 GB at 20 modes and
+        37 GB at 40, which is what stalled every long plasmonic build (RSS
+        climbing ~1 GB per new point until the machine paged).  A path visits
+        each point once and links it to at most its previous and next
+        neighbours, so 4 is enough for the walk and costs ~2 GB at 40 modes.
     :type cache_size: int
     """
 
-    def __init__(self, data_directory, backend=None, is_testmode=False, cache_size=64):
+    def __init__(self, data_directory, backend=None, is_testmode=False, cache_size=4):
         """Build the updater, load dataset metadata and attach a mode solver."""
         self.data_directory = data_directory
         self._is_testmode = is_testmode
