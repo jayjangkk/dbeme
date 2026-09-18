@@ -308,10 +308,16 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
 
 **What this report establishes.**
 
+0. **The converged answer is 81–83 % modal** (§8): with the gold corners
+   rounded 20 nm, the 5 nm finite-difference grid gives 82.4 % at 20 modes
+   and 82.9 % at 40, and a boundary-conforming finite-element mesh 80.7 %;
+   grid, basis and solver each move it two points or less. The remaining
+   gap to the paper's ~95 % total power is the 5 nm wall staircase (7 %),
+   the sharp-rectangle geometry, and the measure — not a numerical setting.
 1. The lossy PML backend runs a two-axis dataset end to end on a device with
    a published geometry, and lands at **72.3 % modal conversion** on the 5 nm
-   grid and **78.9 %** on the 2.5 nm one, where the paper reports ~95 % total
-   power. §7 turns the gap from a guess into a decomposition: the
+   grid and **78.9 %** on the 2.5 nm one with the paper's sharp corners,
+   where the paper reports ~95 % total power. §7 turns the gap from a guess into a decomposition: the
    discretisation part is `2.5 %/nm × Δ` and extrapolates away, leaving about
    **85 %** in the continuum limit, and the remaining ~12 % is a
    step-independent floor whose signature is the ~9 % forward amplitude
@@ -722,12 +728,51 @@ refinement in §7, the corner field is bounded (|E_y| at the corner below
 ~40 s on a 30 000-triangle mesh, a third of the FD cost, and the mesh is
 rebuilt per point since the geometry moves.
 
-**What it has not yet done** is the taper. That is the next run:
-`kocabas_converter_dataset_info(solver="femwell")` builds the same
-`(w_si, half_slot)` dataset on the FEM backend, with both axes at the cell
-because nothing has to align. Its result against the FD 82.4 % is the
-measurement of how much of the remaining gap to the paper was the
-finite-difference corner.
+**The taper on the FEM backend, and the 40-mode basis on the FD one** — the
+two experiments §7 ended by naming, run in that order
+(`SiO2_kocabas_set2_1550_hs_c20_N40`, `SiO2_kocabas_set2_1550_fem_c20`):
+
+| | at the tip | slot mode | single-mode staircase `A` | wall steps | into Berenger at interfaces | reciprocity | cost |
+|---|---|---|---|---|---|---|---|
+| FD 5 nm, rounded, 20 modes (§7) | 82.4 % | 1.5528 + 0.0043j, `L_p` 28.8 µm | 0.943 | 4.4 % | 1.4 % | 6.9e−4 | 72 sections, 10 355 s |
+| FD 5 nm, rounded, **40 modes** | **82.9 %** | 1.5528 + 0.0043j | — | — | — | 3.0e−3 | 72 sections, 11 278 s |
+| **FEM, rounded, 20 modes** | **80.7 % (−0.93 dB)** | **1.5835 + 0.0037j, `L_p` 33.4 µm** | 0.923 | 7.0 % | 0.5 % | 6.1e−4 | 112 sections, 82 756 s |
+
+**Forty modes buy half a point.** The slot mode, the forward Berenger
+amplitude (0.085 against 0.080) and the gate are unchanged; the twenty
+added modes are all continuum (Im n 0.07–1.08, the seven physical modes
+identical to four digits at 20 and 40), and doubling the continuum's
+sampling moved nothing. The remaining gap to the paper is not basis
+truncation.
+
+**The conforming mesh lands within two points of the grid — below it.** Its
+modes are the converged ones: the launched branch reads 2.0491 at 200 nm
+width against the grid's 2.0364, 1.6942 against 1.6666 at 80 nm, and the
+slot mode 1.5835 + 0.0037j against 1.5528 + 0.0043j — 0.03 higher, 14 % less
+loss, `L_p` 33.4 µm — exactly the direction and size §7's grid ladder
+predicted a rounded corner would move once the arc is a curve. Yet the
+cascade gives 80.7 %, not more. The attribution says why: with the modes
+better bound, the gold wall's 5 nm steps cost *more* per step, 7.0 % over
+the path against 4.4 % on the grid (0.56 / 2.77 / 3.65 % for the wall at
+275–225 / 225–175 / 175–125 nm) — a mode that hugs the metal more closely
+is displaced more by the same wall jump — while the silicon's eighty 5 nm
+steps cost 1.0 % and the scatter into the Berenger set falls from 1.4 to
+0.5 %. The two effects nearly cancel, and the converged number sits at
+81–83 %.
+
+**So the model has converged, at 81–83 % modal, and the rest is not
+discretisation.** Grid (5 → 2.5 nm, tip and wall strips), basis (20 → 40) and
+solver (finite differences → boundary-conforming finite elements) each move
+the design point by two points or less once the corners are rounded, and
+the last of these moves it *down*. What separates 81–83 % from the paper's
+~95 % is now three things, none of them a numerical parameter of this
+model: the wall staircase itself (7 % on the FEM mesh, removable only by a
+finer `half_slot` axis, which the FEM backend now permits at no alignment
+cost — the next run if the number matters); the geometry, where the paper
+simulates sharp rectangles that no method converges and a fabricated
+device has some radius; and the measure, his total Poynting flux against
+our modal power, the ~8 % of forward Berenger amplitude being the field his
+integral counts and ours does not.
 
 ---
 

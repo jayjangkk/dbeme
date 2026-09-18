@@ -414,7 +414,9 @@ is two-axis: `(w_si, gap)`, 471 × 347 at a 5 nm cell, 20 modes about a
 shift-invert target of 2.3. The cascade gives **72.3 % into the slot mode**
 with the paper's sharp gold corners, and **82.4 %** once they are rounded by
 20 nm on the same grid (report 13 §7: the sharp wedge's singular field,
-regularised by a 5 nm grid, was most of what looked like a basis floor),
+regularised by a 5 nm grid, was most of what looked like a basis floor) —
+and that number is converged: 40 modes give 82.9 %, the finite-element mesh
+80.7 % (§8), so grid, basis and solver each move it two points or less,
 where the paper reports ~95 % of total power; the deficit is 0.22 dB of
 staircase mismatch, 0.19 dB of the supermode's own metal loss, and amplitude
 scattered into the Berenger set. Two results matter more than the number.

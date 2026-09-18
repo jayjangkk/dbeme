@@ -525,7 +525,7 @@ at 1550 nm.
 | 2. polarization rotator | ✗ needed | ✗ needed (§5.11) | ✗ needed | – | after §5.11 + §5.12 + §5.14 |
 | 3. rapid adiabatic coupler | ✗ needed | – | ✗ needed (§5.14, §5.15) | – | after §5.12 + §5.14 |
 | 4. plasmonic converter | metal | – | – | ✓ `PMLBackend` (§5.9, §5.16a/b done) | **2-D lateral model shipped** — `reports/12`; the 3-D taper still needs a second geometric axis |
-| 4b. Si-to-slot converter, SiO₂-embedded | metal, 2 axes | – | – | ✓ `PMLBackend` | **shipped** — `reports/13`; 72.3 % modal with sharp corners, **82.4 % with 20 nm-rounded corners** on the same 5 nm grid, vs Kocabaş's ~95 % total; the first plasmonic device here that is adiabatic (T rises with `L`) |
+| 4b. Si-to-slot converter, SiO₂-embedded | metal, 2 axes | – | – | ✓ `PMLBackend`, `FemwellBackend` | **shipped, converged** — `reports/13`; 72.3 % modal with sharp corners; with 20 nm-rounded corners **82.4 % (FD 5 nm, 20 modes) / 82.9 % (40 modes) / 80.7 % (FEM)** vs Kocabaş's ~95 % total — grid, basis and solver each move it ≤ 2 points; the rest is the wall staircase, geometry and measure. The first plasmonic device here that is adiabatic (T rises with `L`) |
 
 Build order: **5.12 (coupled pair) → demo 1 → 5.14/5.15 (λ + dispersion) →
 demo 3 → 5.11 (bi-level) → demo 2 → new backend → demo 4.**
