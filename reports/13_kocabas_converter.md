@@ -308,12 +308,15 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
 
 **What this report establishes.**
 
-0. **The converged answer is 81–83 % modal** (§8): with the gold corners
-   rounded 20 nm, the 5 nm finite-difference grid gives 82.4 % at 20 modes
-   and 82.9 % at 40, and a boundary-conforming finite-element mesh 80.7 %;
-   grid, basis and solver each move it two points or less. The remaining
-   gap to the paper's ~95 % total power is the 5 nm wall staircase (7 %),
-   the sharp-rectangle geometry, and the measure — not a numerical setting.
+0. **The converged answer is 85.6 % modal, 91.6 % under the paper's
+   measure** (§8–§10): with the gold corners rounded 20 nm, a
+   boundary-conforming finite-element mesh with the gold wall stepping
+   1 nm gives 85.6 % at the tip; the 5 nm wall had cost 7 % (80.7 %), and
+   the 5 nm finite-difference grid sits at 82.4 % (20 modes) / 82.9 % (40).
+   The paper's quantity — total forward flux 1100 nm past the tip,
+   back-propagated — is 91.6 % on the same cascade (§9), against his ~95 %.
+   What remains is a percent of Si staircase, a percent or two of wall, and
+   the sharp-rectangle geometry; no numerical setting of the model is left.
 1. The lossy PML backend runs a two-axis dataset end to end on a device with
    a published geometry, and lands at **72.3 % modal conversion** on the 5 nm
    grid and **78.9 %** on the 2.5 nm one with the paper's sharp corners,
@@ -842,6 +845,55 @@ so the total is not the incoherent sum. The remaining gap to 95 %, about
 seven points on this grid, is what §7–§8 attributed to the wall staircase
 (4.4 % here, 7.0 % on the FEM mesh) and to the sharp-rectangle geometry;
 §10 measures the first of these on the 1 nm-wall FEM dataset.
+
+## 10. The wall at 1 nm: the last numerical term removed
+
+§8 left one discretisation term standing, the gold wall's 5 nm jumps
+(7.0 % of the launched power on the FEM mesh), and noted that on a
+conforming mesh nothing ties the `half_slot` axis to the field grid. The
+dataset `SiO2_kocabas_set2_1550_fem_c20_hs1` steps the wall 1 nm
+(`kocabas_converter_dataset_info(axis_steps={"half_slot": 1e-9})`), keeps
+the Si width at 5 nm steps and the field sampling at the 5 nm pitch, and is
+otherwise §8's dataset under mesh convention 2 (points on element edges
+averaged, §8). 247 path points, 5.0 h; 232 sections.
+
+| | at the tip | single-mode staircase `A` | wall steps | Si steps | into Berenger | paper's measure (§9) | gate: reciprocity |
+|---|---|---|---|---|---|---|---|
+| FD 5 nm, rounded, 20 modes (§7) | 82.4 % | 0.943 | 4.4 % | — | 1.4 % | 87.7 % | 6.9e−4 |
+| FEM, wall 5 nm (§8) | 80.7 % | 0.923 | 7.0 % | 1.0 % | 0.5 % | — | 6.1e−4 |
+| **FEM, wall 1 nm** | **85.6 % (−0.68 dB)** | 0.969 | **2.1 %** | 1.1 % | 0.4 % | **91.6 %** | 1.3e−3 |
+
+**The staircase scales with the step, as a staircase should.** Five times
+finer wall steps cut the wall's mismatch from 7.0 to 2.1 % (0.17 / 0.73 /
+1.18 % over 275–225 / 225–175 / 175–125 nm — still rising toward the slot,
+where the mode hugs the metal hardest), while the Si steps, unchanged at
+5 nm, cost the same 1.1 %, and the scatter into the continuum the same
+0.4 %. The slot mode is identical (1.5835 + 0.0037j), the constant-slot
+check passes to 1e−8, and the length sweep — free, the same points — is
+monotonic, 78.3 % at 500 nm to 86.8 % at 3 µm. Extrapolating the two wall
+steps linearly to zero puts the wall-free number near 87 %; the remaining
+Si steps would be worth another point at 1 nm.
+
+**Under the paper's own measure the design point is 91.6 %.** §9's
+calculation on this dataset (the re-solved end sections reproduce the stored
+overlap to 3e−11; the FEM backend's absorber lies outside the returned
+window, so the whole grid is physical and the slot mode's power factor is
+1.001): total forward flux at his 1100 nm cut, back-propagated, 91.6 %, of
+which 82.9 % is the slot mode, 4.5 % forward continuum light still crossing
+the cut, and +1.2 % interference. Against ~95 %, what is left is 3–4 points:
+a percent of Si staircase, a percent or two of wall, and the geometry — the
+paper's sharp rectangles, which no method converges (§7), against the 20 nm
+arcs here. There is no numerical setting of this model left to turn.
+
+**What it cost, and why it is now cheap.** The run took 5.0 h for 247
+points, 60–70 s each; the same run at §8's per-point cost would have taken
+29 h. Two things changed: the field sampling (§8, 88 s → 0.7 s per point),
+and the discovery that a detached solver job on this hybrid CPU had been
+scheduled onto the E-cores — §8's 739 s per point was 161 s of solve.
+`examples/run_solver_job.py` pins long runs to the P-cores (CLAUDE.md §1).
+On the finite-difference platform the same 1 nm wall would have needed a
+1 nm grid over the wall strip and the anisotropic-corner fix of §7 — at
+2.5 nm that dataset already cost 83.4 % and twice the unknowns.
 
 ---
 
