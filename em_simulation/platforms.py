@@ -615,6 +615,7 @@ def kocabas_converter_dataset_info(
     fem_resolution=None,
     fem_order=1,
     absorber=(0.3e-6, 0.5),
+    axis_steps=None,
 ):
     """Kocabas's Si-wire-to-plasmonic-slot converter as a two-axis dataset.
 
@@ -685,6 +686,13 @@ def kocabas_converter_dataset_info(
     :param fem_order: Finite-element order, 1 or 2.
     :param absorber: ``(thickness_m, epsilon'')`` of the lossy ring that
         stands in for the PML on the FEM mesh.
+    :param axis_steps: ``{"w_si": step_m, "half_slot": step_m}`` (or
+        ``"gap"``) overriding the parameter-axis steps - FEM only, since on
+        the finite-difference grid an axis is tied to the cell.  The set's
+        wire width, slot start and slot end must land on the axes.  This is
+        how the wall is stepped finer than the field grid: on the 5 nm axis
+        its staircase is 7 % of the FEM result and scales with the step
+        (report 13 section 8).
     :param axes: ``"gap"`` or ``"half_slot"``; default ``"half_slot"`` when
         any ``refine`` strip is given and ``"gap"`` otherwise.  Set it
         explicitly to build an unrefined ``(w_si, half_slot)`` dataset as the
@@ -700,6 +708,11 @@ def kocabas_converter_dataset_info(
         raise ValueError("solver must be 'pml' or 'femwell'")
     if solver == "femwell" and (refine or refine_y or tip_refine):
         raise ValueError("grid refinement strips have no meaning on a FEM mesh")
+    steps = {name: float(v) for name, v in (axis_steps or {}).items()}
+    if steps and solver != "femwell":
+        raise ValueError("axis_steps: on the finite-difference grid the axes are tied to the cell")
+    if any(name not in ("w_si", "half_slot", "gap") for name in steps) or any(v <= 0 for v in steps.values()):
+        raise ValueError("axis_steps: keys w_si, half_slot or gap, positive steps in metres")
     p = KOCABAS_SETS[set_number]
     si, sio2, au = kocabas_materials()
     if tip_refine is not None:
@@ -754,19 +767,24 @@ def kocabas_converter_dataset_info(
     # on the FD grid the Si edge (w_si / 2) must land on a node, so w_si steps
     # 2 cell; a FEM mesh has no such rule and both axes step the cell
     step_nm = (2 if solver == "pml" else 1) * cell * 1e9
+    w_step_nm = steps["w_si"] * 1e9 if "w_si" in steps else step_nm
     g0, g1 = gap_range
     if not half:
         names = ("w_si", "gap")
+        gap_step_nm = steps["gap"] * 1e9 if "gap" in steps else cell * 1e9
         parameters = {
-            "w_si": axis(nm(0, p["w_si"] + 0.5 * step_nm, step_nm)),
-            "gap": axis(nm(g0 * 1e9, g1 * 1e9 + 0.5 * cell * 1e9, cell * 1e9)),
+            "w_si": axis(nm(0, p["w_si"] + 0.5 * w_step_nm, w_step_nm)),
+            "gap": axis(nm(g0 * 1e9, g1 * 1e9 + 0.5 * gap_step_nm, gap_step_nm)),
         }
+        design = {"w_si": p["w_si"], "gap": p["w_gap"]}
     else:
         names = ("w_si", "half_slot")
+        hs_step_nm = steps["half_slot"] * 1e9 if "half_slot" in steps else cell * 1e9
         hs0_nm = 0.5 * p["w_slot"]                       # the slot end
         hs1_nm = 0.5 * p["w_si"] + g1 * 1e9
-        w_segments = [nm(0, p["w_si"] + 0.5 * step_nm, step_nm)]
-        hs_segments = [nm(hs0_nm, hs1_nm + 0.5 * cell * 1e9, cell * 1e9)]
+        w_segments = [nm(0, p["w_si"] + 0.5 * w_step_nm, w_step_nm)]
+        hs_segments = [nm(hs0_nm, hs1_nm + 0.5 * hs_step_nm, hs_step_nm)]
+        design = {"w_si": p["w_si"], "half_slot": (hs0_nm, 0.5 * p["w_si"] + p["w_gap"])}
         for lo, hi, cf in strips:
             lo_nm, hi_nm, cf_nm = lo * 1e9, hi * 1e9, cf * 1e9
             if lo == 0:                                  # a tip strip: fine width steps
@@ -776,6 +794,11 @@ def kocabas_converter_dataset_info(
             if b > a:
                 hs_segments.append(nm(a, b + 0.5 * cf_nm, cf_nm))
         parameters = {"w_si": axis(*w_segments), "half_slot": axis(*hs_segments)}
+    if steps:
+        for name, values in design.items():
+            for v in np.atleast_1d(values):
+                if not np.isclose(parameters[name], v * 1e-9, atol=1e-13).any():
+                    raise ValueError(f"axis_steps: the set's {name} = {v:g} nm is not on the axes")
         # every wall position must be a node: outside the strips that is the
         # base grid, so the slot end (hs0) has to be on it
         if abs(hs0_nm / (cell * 1e9) - round(hs0_nm / (cell * 1e9))) > 1e-6 and not any(

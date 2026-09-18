@@ -25,14 +25,22 @@ What this backend does, in order:
    absorber of a few tenths in ``epsilon''`` over 0.3 um does the same job for
    a mode whose tail has decayed by the window edge (the same standoff rule as
    the PML: the ring must sit outside the field);
-4. **evaluates E and H on the dataset's uniform** ``(x, y)`` **grid** through
-   skfem's ``probes`` (point evaluation of the finite-element function, in
-   chunks: the element finder builds an ``(n_points x n_triangles)`` array).
-   Everything downstream - normalisation, biorthogonalisation, the overlap
-   integrals, the cascade - is unchanged, because it only ever sees fields on
-   the common grid.  That interpolation is the one thing this backend adds to
-   the error budget, and it is what the tests pin: the FEM and FD backends
-   must agree on a dielectric strip, where the FD grid *is* converged.
+4. **evaluates E and H on the dataset's uniform** ``(x, y)`` **grid** by
+   point evaluation of the finite-element functions.  Every grid point is
+   located in the triangulation once per solve (a trapezoid map, O(log n)
+   per point), the two probe matrices - Nedelec for the transverse
+   components, Lagrange for the longitudinal one - are built once and
+   applied to all modes at once, and a grid point that lies on an element
+   edge, which every point on a material interface along a grid line does,
+   takes the mean over the elements sharing that edge (all elements at a
+   vertex): the Nedelec element's normal component is discontinuous across
+   edges by the discretisation error, so a one-sided value would depend on
+   which element a locator happened to pick.  Everything downstream -
+   normalisation, biorthogonalisation, the overlap integrals, the cascade -
+   is unchanged, because it only ever sees fields on the common grid.  That
+   sampling is the one thing this backend adds to the error budget, and it
+   is what the tests pin: the FEM and FD backends must agree on a dielectric
+   strip, where the FD grid *is* converged.
 
 The fields femwell returns are co-located by construction (both E and H are
 finite-element functions evaluated at the same points), so there is no
@@ -224,8 +232,19 @@ class FemwellModeSolver:
         nx, ny = self.x.size, self.y.size
         E = np.zeros((wanted, 3, nx, ny), dtype=np.complex128)
         H = np.zeros((wanted, 3, nx, ny), dtype=np.complex128)
-        for i, m in enumerate(modes.modes):
-            E[i], H[i] = self._evaluate(m)
+        found = list(modes.modes)
+        shared = np.zeros(0, dtype=int)
+        if found:
+            basis = found[0].basis
+            if any(m.basis is not basis for m in found):
+                raise RuntimeError("femwell returned modes on different bases")
+            P, Q, shared = self._sampling(basis)
+            it, iz = basis.split_indices()
+            k = len(found)
+            for field, dofs in ((E, np.stack([m.E for m in found], axis=1)),
+                                (H, np.stack([m.H for m in found], axis=1))):
+                field[:k, :2] = (P @ dofs[it]).T.reshape(k, 2, nx, ny)
+                field[:k, 2] = (Q @ dofs[iz]).T.reshape(k, nx, ny)
         t_eval = time.time() - t0 - t_mesh - t_solve
 
         confinement = self._confinement(E, H, params)
@@ -238,28 +257,77 @@ class FemwellModeSolver:
             te[i] = float(np.sum(np.abs(E[i, 0]) ** 2) / total) if total else 0.0
             _pin_gauge(E[i], H[i])
         self.last_solve_info = dict(nodes=int(mesh.p.shape[1]), triangles=int(mesh.t.shape[1]),
+                                    shared_points=int(shared.size),
                                     t_mesh=t_mesh, t_solve=t_solve, t_eval=t_eval)
         return ModeData(x=self.x, y=self.y, E=E, H=H, neff=neff, TE_pol=te), confinement
 
-    def _evaluate(self, mode, chunk=4000):
-        """One femwell mode's ``(E, H)`` on the uniform grid, ``(3, nx, ny)`` each."""
+    # ------------------------------------------------------------ sampling
+
+    def _sampling(self, basis):
+        """The probe matrices ``(P, Q)`` that carry a solution's transverse
+        (Nedelec) and longitudinal (Lagrange) dofs onto the uniform grid,
+        rows component-major then grid point (``P`` has ``2 nx ny`` rows), and
+        the indices of the grid points that were averaged over several
+        elements.
+
+        Location is a trapezoid map of the triangulation, exact and O(log n)
+        per point, built once per solve.  skfem's own ``probes`` locates with
+        a finder that tests every point of a batch against every candidate
+        element - quadratic in the batch - and had to be called per mode and
+        per 4000-point chunk: 88 s of a 160 s solve on the Kocabas mesh
+        (report 13 section 8).  This path costs half a second for all modes.
+
+        A grid point on an element edge (one vanishing barycentric weight)
+        or vertex (two) is averaged over every element that contains it.
+        The Nedelec element's normal component jumps across edges by the
+        discretisation error - 0.2 % on a guided mode, 10 % on a continuum
+        mode of the same solve - so the one-sided value skfem's finder used
+        to return depended on which element it happened to pick; the mean is
+        also what the finite-difference backend's co-location gives at an
+        interface node.  Every material edge that coincides with a grid line
+        is such a set of points.
+        """
+        from matplotlib.tri import Triangulation
+
+        mesh = basis.mesh
+        bt, bz = basis.split_bases()
         X, Y = np.meshgrid(self.x * _M_TO_UM, self.y * _M_TO_UM, indexing="ij")
         pts = np.vstack([X.ravel(), Y.ravel()])
-        npts = pts.shape[1]
-        bt, bz = mode.basis.split_bases()
-        it, iz = mode.basis.split_indices()
-        Et = np.zeros((2, npts), complex); Ez = np.zeros(npts, complex)
-        Ht = np.zeros((2, npts), complex); Hz = np.zeros(npts, complex)
-        for s in range(0, npts, chunk):
-            sl = slice(s, min(s + chunk, npts)); n = sl.stop - sl.start
-            P = bt.probes(pts[:, sl]); Q = bz.probes(pts[:, sl])
-            Et[:, sl] = np.asarray(P @ mode.E[it]).reshape(2, n)
-            Ez[sl] = np.asarray(Q @ mode.E[iz])
-            Ht[:, sl] = np.asarray(P @ mode.H[it]).reshape(2, n)
-            Hz[sl] = np.asarray(Q @ mode.H[iz])
-        E = np.stack([Et[0], Et[1], Ez]).reshape(3, *X.shape)
-        H = np.stack([Ht[0], Ht[1], Hz]).reshape(3, *X.shape)
-        return E, H
+        n = pts.shape[1]
+        cells = np.asarray(Triangulation(mesh.p[0], mesh.p[1], mesh.t.T).get_trifinder()(pts[0], pts[1]))
+        if (cells < 0).any():
+            raise RuntimeError(f"{np.count_nonzero(cells < 0)} grid points lie outside the mesh")
+        loc = bt.mapping.invF(pts[:, :, None], tind=cells)[:, :, 0]
+        bary = np.vstack([1.0 - loc[0] - loc[1], loc[0], loc[1]])   # weights of vertices t[0], t[1], t[2]
+        touch = np.abs(bary) > 1e-9
+        shared = np.flatnonzero(touch.sum(axis=0) < 3)
+        keep = np.ones(n, dtype=bool)
+        keep[shared] = False
+        point, cell, weight = [np.flatnonzero(keep)], [cells[keep]], [np.ones(int(keep.sum()))]
+        for p in shared:
+            verts = mesh.t[touch[:, p], cells[p]]
+            elems = np.flatnonzero(np.isin(mesh.t, verts).sum(axis=0) == verts.size)
+            point.append(np.full(elems.size, p))
+            cell.append(elems)
+            weight.append(np.full(elems.size, 1.0 / elems.size))
+        point, cell, weight = (np.concatenate(v) for v in (point, cell, weight))
+        return self._probe_matrix(bt, pts, point, cell, weight), self._probe_matrix(bz, pts, point, cell, weight), shared
+
+    @staticmethod
+    def _probe_matrix(basis, pts, point, cell, weight):
+        """skfem's ``CellBasis.probes`` with the containing element supplied
+        per entry and a weight per entry, so that one grid point may draw on
+        several elements.  Rows are component-major, then grid point."""
+        from scipy.sparse import coo_matrix
+
+        loc = basis.mapping.invF(pts[:, point][:, :, None], tind=cell)
+        phis = np.array([basis.elem.gbasis(basis.mapping, loc, k, tind=cell)[0] for k in range(basis.Nbfun)])
+        comp = int(np.prod(basis._base_tensor_order))
+        phis = (phis.reshape(basis.Nbfun, comp, -1) * weight).reshape(-1)
+        n = pts.shape[1]
+        rows = np.tile(np.concatenate([point + c * n for c in range(comp)]), basis.Nbfun)
+        cols = basis.element_dofs[:, np.tile(cell, comp)].reshape(-1)
+        return coo_matrix((phis, (rows, cols)), shape=(comp * n, basis.N)).tocsr()
 
     def _confinement(self, E, H, params):
         """Fraction of transverse magnetic power inside the core, on the grid."""
@@ -287,7 +355,10 @@ class FemwellBackend(FemwellModeSolver, FDEBackend):
     """
 
     #: Bumped when stored FEM modes change meaning with no parameter changing.
-    MESH_CONVENTION = 1
+    #: 1: fields sampled one-sided at element edges, whichever element skfem's
+    #: finder returned.  2 (2026-09-18): grid points on an edge or vertex are
+    #: averaged over the elements sharing it (:meth:`_sampling`).
+    MESH_CONVENTION = 2
 
     def __init__(self, cross_section, target_neff, parameter_names=None, **kwargs):
         super().__init__(cross_section, **kwargs)

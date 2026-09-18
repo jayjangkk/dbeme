@@ -371,8 +371,11 @@ the same `FDEBackend` contract. Geometry comes from `CrossSection.polygons()`
 (shapely, per material region; implemented for `FullEtchStrip` and
 `PlasmonicSlotConverter`, whose rounded corners are true arcs); radiation is
 absorbed in a lossy outer ring rather than a stretched-coordinate PML; fields
-are point-evaluated onto the dataset's uniform grid (skfem `probes`,
-chunked), which is the one new term in the error budget and what
+are point-evaluated onto the dataset's uniform grid (every point located
+once per solve by a trapezoid map, two probe matrices applied to all modes,
+points on element edges averaged over the sharing elements — skfem's own
+`probes` is quadratic per batch and cost more than the eigensolve), which
+is the one new term in the error budget and what
 `tests/test_femwell_backend.py` pins against the FD backend on a dielectric
 strip (`|O₀₀| > 0.99` between the two solvers' fields). Built because the FD
 grid cannot converge a rounded metal corner at any affordable cell (report

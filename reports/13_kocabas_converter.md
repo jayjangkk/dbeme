@@ -701,8 +701,19 @@ with a complex permittivity where the material is, absorbs outgoing
 radiation in a lossy outer ring (femwell has no coordinate-stretch PML; a
 ring of `ε'' = 0.5` over 0.3 µm does the same job for a mode whose tail has
 decayed by the window), and then **evaluates E and H on the dataset's
-uniform grid** by point evaluation of the finite-element functions (skfem
-`probes`, chunked — the element finder is quadratic in memory otherwise).
+uniform grid** by point evaluation of the finite-element functions. That
+evaluation was first written on skfem's `probes`, chunked, and cost 88 s of
+every 161 s solve in the taper run below — skfem's element finder tests
+every point of a batch against every candidate element, and it was called
+per mode. It now locates every grid point once per solve with a trapezoid
+map, builds the two probe matrices once and applies them to all modes
+(0.5 s), and averages a grid point that lies on an element edge over the
+elements sharing it: the Nédélec element's normal component is
+discontinuous across edges by the discretisation error (0.2 % on the guided
+mode, 11 % on a continuum mode of the same solve), so the one-sided value
+the finder returned depended on which element it happened to pick, and
+every material edge on a grid line is such a set of points. That is mesh
+convention 2; the taper run below was built under convention 1.
 That last step is the one thing this backend adds to the error budget:
 everything downstream only ever sees fields on the common grid, and the
 grid pitch there is a *sampling* choice for the overlap integrals, not a
