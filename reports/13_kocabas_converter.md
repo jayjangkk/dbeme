@@ -785,6 +785,64 @@ device has some radius; and the measure, his total Poynting flux against
 our modal power, the ~8 % of forward Berenger amplitude being the field his
 integral counts and ours does not.
 
+## 9. The paper's measure: total flux against modal power
+
+§3 stated that Kocabaş's 95 % is the *total* forward Poynting flux through
+a cut 1100 nm past the tip, back-propagated with the slot mode's `L_p`,
+while every number above is modal power, and argued from the ~8 % of
+forward Berenger amplitude that the two must differ. This section computes
+his quantity from the cascade, on the rounded 5 nm design point (§7,
+82.4 % modal), so that the comparison is like for like
+(`examples/kocabas_paper_measure.py`).
+
+**What has to be done.** The cascade hands back the complex forward
+amplitudes `a_j` at the end of the 200 nm lead-out, in a basis normalised
+to unit *unconjugated* power. The physical power through a plane carried by
+their superposition is the conjugated quadratic form
+`P = Re Σ_jk a_j a_k* W_jk` with `W_jk = ½∫(E_j × H_k*)_z dA`: its diagonal
+holds each mode's power factor `r_j` (the conjugated power of a
+unit-unconjugated-power mode, 1 for a real field), and its off-diagonal
+terms are the interference between modes that the modal number ignores.
+Three things had to be got right. `W` needs fields, which the dataset does
+not store, so the two end sections are re-solved; the re-solve reproduces
+the stored overlap between them to 1.7e-10, so the basis is the same. The
+cascade's basis at the output is the dataset's permuted by the mode
+tracking and given a ±1 sign gauge by the overlap-phase equalisation — both
+recovered exactly (the permutation checked against `n_eff` to 0, the signs
+from the ratio of the equalised to the stored overlap, ±1 to 5e-8; ten of
+the twenty modes are flipped). And the integral must stop at the PML: with
+the stretched layers included the slot mode's `r` reads 1.069 and a
+Berenger mode's up to 9.9, numbers without meaning; over the physical
+window (|x| ≤ 925 nm, |y| ≤ 615 nm) they are 0.980 and 1.07–4.13. In the
+uniform lead-out every mode propagates as `exp(i k₀ n_j z)`, so the flux
+at any cut past the tip follows analytically.
+
+| cut `z` past the tip | total forward flux | back-propagated with `L_p` | slot mode | continuum | interference |
+|---|---|---|---|---|---|
+| 0 (the tip) | 92.6 % | 92.6 % | 80.8 % | 10.5 % | +1.3 % |
+| 200 nm (the lead-out end) | 90.9 % | 91.5 % | 80.2 % | 9.1 % | +1.6 % |
+| 600 nm | 87.8 % | 89.7 % | 79.1 % | 7.3 % | +1.4 % |
+| **1100 nm (the paper's cut)** | 84.4 % | **87.7 %** | 77.8 % | 5.8 % | +0.8 % |
+| 2000 nm | 79.4 % | 85.2 % | 75.4 % | 4.1 % | −0.0 % |
+
+All entries are fractions of the launched power (`r_in` = 0.9999).
+
+**Reading.** Under the paper's definition the 5 nm rounded design point
+gives **87.7 %**, not 82.4 %: 5.3 points of the 13 between the modal number
+and his ~95 % are the measure, exactly the mechanism §3 named. What he
+integrates and we discard is scattered light still travelling forward
+through his cut 1.1 µm after the tip — 5.8 % of the launched power there,
+decaying with the continuum's own `Im n` (0.05–0.3), 4 % at 2 µm and gone
+a few microns on; it is not power in the slot mode. Two smaller corrections
+run the other way. The modal number itself is `|a|²`, and the slot mode's
+power factor is 0.980, so the physical power in the slot mode at the tip is
+80.8 %, two points below the modal figure — the lossy mode's field is not
+real. And the interference term is small and positive at his cut (+0.8 %),
+so the total is not the incoherent sum. The remaining gap to 95 %, about
+seven points on this grid, is what §7–§8 attributed to the wall staircase
+(4.4 % here, 7.0 % on the FEM mesh) and to the sharp-rectangle geometry;
+§10 measures the first of these on the 1 nm-wall FEM dataset.
+
 ---
 
 ### Reproducing
