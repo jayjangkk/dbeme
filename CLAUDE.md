@@ -43,6 +43,16 @@ python validate_against_direct_eme.py              # DBEME vs uncached EME
 Cold-cache runs solve cross sections (~1.3 s each at `MESH=160`); warm runs do
 no mode solving. Always report both timings when claiming a speed-up.
 
+**Long runs go through `examples/run_solver_job.py <script> [args]`.** This
+machine is a hybrid i9-13900HX, and a detached single-threaded solver job
+(the FEM eigensolve) gets scheduled onto its E-cores at ~7× the time — a
+FEM point took 420 s in the run against 60 s in a shell-spawned process,
+with the same session, priority, affinity and environment. The launcher
+pins the process to the P-cores (logical 0–15), switches power throttling
+off, raises the priority class and caps BLAS at 16 threads. If a run's
+per-point time is far above the standalone solve, compare the main thread's
+CPU time with the wall time before suspecting the code.
+
 ## 2. Units and conventions
 
 | quantity | unit in code | note |
