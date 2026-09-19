@@ -21,7 +21,9 @@ Multi-threaded finite-difference runs spread over all cores and did not show
 it; a single-threaded sparse factorisation is what gets parked.
 
 On another machine give ``--cpus`` its P-cores, or ``--cpus all`` to only
-apply the throttling and priority settings.
+apply the throttling and priority settings.  The process also holds a
+keep-awake request for its lifetime (``keep_awake.py`` does the same for a
+job launched some other way).
 """
 import argparse
 import ctypes
@@ -65,7 +67,13 @@ def main():
         state = PowerThrottlingState(1, 0x1, 0)               # control EXECUTION_SPEED, state 0: throttling off
         ok_throttle = bool(k32.SetProcessInformation(handle, 4, ctypes.byref(state), ctypes.sizeof(state)))
         ok_priority = bool(k32.SetPriorityClass(handle, 0x8000))   # ABOVE_NORMAL_PRIORITY_CLASS
-        print(f"power throttling off: {ok_throttle}; priority above normal: {ok_priority}", flush=True)
+        # and keep the machine awake while the job runs (ES_CONTINUOUS |
+        # ES_SYSTEM_REQUIRED, what a media player holds during playback; the
+        # display may still turn off) - a laptop entering modern standby
+        # freezes the job inside it, which cost a 20 h sweep a day
+        k32.SetThreadExecutionState.restype = ctypes.c_uint32
+        ok_awake = bool(k32.SetThreadExecutionState(0x80000000 | 0x00000001))
+        print(f"power throttling off: {ok_throttle}; priority above normal: {ok_priority}; system kept awake: {ok_awake}", flush=True)
 
     import psutil
 
