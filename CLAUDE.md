@@ -470,7 +470,17 @@ power rode a higher-order branch into cutoff — 99 % lost. Place the target so
 that every physical branch of the path beats the Berenger band in `|n² −
 target²|` (2.3 there: wire 1.2, slot 2.7, Berenger ≈ 3.2), and check the
 stored, *unordered* sets along the path for missing members before trusting
-a cascade (`reports/13` §1).
+a cascade (`reports/13` §1). *The window's bottom edge bites too:* the
+`N`-th continuum member can change between two adjacent points (best
+overlap 0.30), the Hungarian bijection then links it to a stranger, and the
+interface matrix gains a near-null direction — 3.2× the power of a physical
+input at one interface of the 1 nm-wall FEM gap sweep, which the cascade
+reported as 3.6 % reflection and a negative deficit. The scattering route's
+`SingleEME.INTERFACE_RCOND` (1e-2 since 2026-09-20) discards such
+directions; a path whose budget shows reflection or a negative deficit out
+of line with its neighbours should be checked interface by interface
+(`max` over physical inputs of the column power of each interface
+S-matrix) before its number is used.
 
 **5.13b E and H on one grid.** `compute_other_fields` returns E on the
 cell centres and H on the nodes; `PMLModeSolver` zero-padded E to the node

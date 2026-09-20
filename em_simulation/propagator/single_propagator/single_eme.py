@@ -70,7 +70,19 @@ class SingleEME(Propagator):
     #: result is inverted again to build the transfer matrix, and truncating
     #: first makes that inverse rank deficient - measured energy went the wrong
     #: way, 2.8e3 to 2.7e8.  Never enable this without the scattering route.
-    INTERFACE_RCOND = 1e-3
+    #:
+    #: 1e-3 -> 1e-2 on 2026-09-20.  A shift-invert window of ``N`` modes has
+    #: an edge, and at a step where the ``N``-th member changes - one point's
+    #: last continuum mode has no partner at the next (best overlap 0.30) -
+    #: the forced bijection leaves ``O_ab^T + O_ba`` with one singular value
+    #: at 1.1e-3 of the largest, just above the old cutoff; the output-side
+    #: projection then returned 3.2x the power of a physical input at that
+    #: one interface (Kocabas, 1 nm-wall FEM dataset, the 50 nm gap: 3.6 %
+    #: reflected, deficit -1.4 %).  Any cutoff from 2e-3 to 3e-2 repairs it
+    #: (85.5 %, worst interface 1.012) and moves the clean paths by nothing
+    #: to four digits; 1e-2 is an order of magnitude clear of the break and
+    #: still three times below the lossless basis's floor of 0.029.
+    INTERFACE_RCOND = 1e-2
 
     #: Which section's modes the interface continuity equations are projected
     #: on - see :meth:`_calc_transmission_matrix`.  ``"auto"``: ``"input"``
