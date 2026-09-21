@@ -87,6 +87,7 @@ dataset.
 | `Si_plasmonic_slot_1550[_sharp]` | Si wire between gold walls, suspended, lossy PML basis | `w_si` | lateral stand-in for the NTT converter | **shipped** — `reports/12` |
 | `SiO2_kocabas_set2_1550` | Si wire + gold slot, SiO₂-embedded, lossy PML basis | `w_si`, `gap` | Kocabaş converter (arXiv:1801.00833), gap and length sweeps | **shipped** — `reports/13` |
 | `SiO2_kocabas_set2_1550_fem_c20_hs1` | same, rounded corners, FEM mesh, wall axis at 1 nm | `w_si` (5 nm), `half_slot` (1 nm) | the converged Kocabaş numbers; gap sweep | **shipped** — `reports/13` §10 |
+| `Si_ring_coupler_220nm_<1530|1550|1570>[_N6..N30|_c20]` | straight bus + moving ring core, bus fixed (`platforms.BusRingStrips`) | `w1`, `w2`, `gap` (10 nm cell, axis tied to the cell) | bus-ring point coupler of the all-pass ring | **shipped** - `reports/15`; ring side of the coupler is imposed by symmetry, see tasks/11 section 2.1 |
 
 *What a two-axis dataset costs, measured.* `SiO2_kocabas_set2_1550` is
 471 × 347 at a 5 nm cell with 20 modes: **~10 min per cross section**, so the
@@ -549,7 +550,7 @@ at 1550 nm.
 | 2. polarization rotator | ✗ needed | ✗ needed (§5.11) | ✗ needed | – | after §5.11 + §5.12 + §5.14 |
 | 3. rapid adiabatic coupler | ✗ needed | – | ✗ needed (§5.14, §5.15) | – | after §5.12 + §5.14 |
 | 4. plasmonic converter | metal | – | – | ✓ `PMLBackend` (§5.9, §5.16a/b done) | **2-D lateral model shipped** — `reports/12`; the 3-D taper still needs a second geometric axis |
-| 4b. Si-to-slot converter, SiO₂-embedded | metal, 2 axes | – | – | ✓ `PMLBackend`, `FemwellBackend` | **shipped, converged** — `reports/13`; 72.3 % modal with sharp corners; with 20 nm-rounded corners 82.4 % (FD 5 nm) / 80.7 % (FEM, 5 nm wall) / **85.6 % (FEM, 1 nm wall)**, and **91.6 % under Kocabaş's own measure** (total flux at his cut, §9–§10) vs his ~95 % — the rest is a percent of Si staircase and the sharp-rectangle geometry. The first plasmonic device here that is adiabatic (T rises with `L`) |
+| 4b. Si-to-slot converter, SiO₂-embedded | metal, 2 axes | – | – | ✓ `PMLBackend`, `FemwellBackend` | **shipped, converged** — `reports/13`; 72.3 % modal with sharp corners; with 20 nm-rounded corners 82.4 % (FD 5 nm) / 80.7 % (FEM, 5 nm wall) / **85.6 % (FEM, 1 nm wall)**, and **91.6 % under Kocabaş's own measure** (total flux at his cut, §9–§10) vs his ~95 % — the rest is a percent of Si staircase and the sharp-rectangle geometry. Length is the design parameter, the starting gap is not (flat within 1.6 points over 25–150 nm, §4). The first plasmonic device here that is adiabatic (T rises with `L`) |
 
 Build order: **5.12 (coupled pair) → demo 1 → 5.14/5.15 (λ + dispersion) →
 demo 3 → 5.11 (bi-level) → demo 2 → new backend → demo 4.**

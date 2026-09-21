@@ -207,9 +207,81 @@ the paper, in the order they should be tested:
 
 ## 4. Transmission against the Si–gold gap and against taper length
 
+*Rewritten 2026-09-21 on the converged platform of §10 — the finite-element
+mesh with 20 nm-rounded corners and the gold wall stepping 1 nm
+(`SiO2_kocabas_set2_1550_fem_c20_hs1`). The first pass on the sharp-corner
+5 nm grid is kept at the end of the section; its gap dependence turned out
+to be the staircase, not the device.*
+
+![sweeps](output/kocabas_2_sweeps_fem_c20_hs1.png)
+
+### Taper length (gap 75 nm, slot 250 nm; warm cache, 0 s per length)
+
+| `L_taper` | slot mode at the tip | forward Berenger amplitude at the lead-out | reflected |
+|---|---|---|---|
+| 500 nm | 78.3 % (−1.06 dB) | 0.134 | 1.1e-2 |
+| 800 nm | 81.8 % (−0.87 dB) | 0.114 | 2.6e-3 |
+| 1100 nm | 83.5 % (−0.78 dB) | 0.086 | 4.7e-4 |
+| 1400 nm | 84.7 % (−0.72 dB) | 0.066 | 8.5e-4 |
+| **1700 nm (paper)** | **85.6 % (−0.68 dB)** | 0.054 | 2.5e-4 |
+| 2100 nm | 86.1 % (−0.65 dB) | 0.050 | 4.4e-4 |
+| 2500 nm | 86.5 % (−0.63 dB) | 0.049 | 1.8e-4 |
+| 3000 nm | 86.8 % (−0.62 dB) | 0.047 | 2.4e-4 |
+
+Monotonic, flattening beyond ~2 µm, the scattered amplitude falling with
+`L` and the reflection faster: the adiabatic roll-off, with the paper's
+1700 nm again at the knee. The plateau near 87 % is the slot mode's own
+propagation loss over the taper (`L_p` = 33 µm) plus the residual
+staircase of §10 (2.1 % wall, 1.1 % Si), and nothing else — the
+length-independent basis floor of the first pass (§3) is gone.
+
+### Si–gold gap at the taper start (`w_gap`; slot end fixed at 250 nm, `L` = 1700 nm)
+
+`w_gap` sets the Si–gold clearance where the taper starts; at the tip it is
+fixed by the slot at 125 nm, so the parameter chooses how far the gold wall
+travels relative to the Si edge over the taper.
+
+| `w_gap` | clearance along the taper | sections | slot mode at the tip | forward Berenger amplitude | reflected |
+|---|---|---|---|---|---|
+| 25 nm | 25 → 125 nm | 182 | 84.6 % (−0.73 dB) | 0.073 | 3.0e-4 |
+| 50 nm | 50 → 125 nm | 207 | 85.5 % (−0.68 dB) | 0.061 | 1.9e-4 |
+| **75 nm (paper)** | 75 → 125 nm | 232 | **85.6 % (−0.68 dB)** | 0.054 | 2.5e-4 |
+| 100 nm | 100 → 125 nm | 257 | 85.5 % (−0.68 dB) | 0.064 | 6.1e-4 |
+| 125 nm | 125 nm, constant | 282 | 85.7 % (−0.67 dB) | 0.055 | 7.7e-4 |
+| 150 nm | 150 → 125 nm | 307 | 86.2 % (−0.64 dB) | 0.072 | 1.1e-3 |
+
+**Flat to within 1.6 points across the whole range**, and with no interior
+optimum — the paper's 75 nm is not reproduced as one, and neither is any
+other value. The first pass had read a 4.9-point fall from 125 to 25 nm
+and could not tell the physics from its own 5 nm wall steps (the
+sharp-corner section below); with the wall stepping 1 nm the same sweep
+moves by a point, and the ordering is the mild one expected of a mode that
+is barely bound at the wide end: a wall that starts closer (25 nm) perturbs
+the wire mode a little more per step and costs a point, a wall that starts
+farther (150 nm) has more sections and a longer effective transition and
+gains half a point. So at this converter's length the starting gap is not
+a design parameter; the length is. On the paper's own definition (§9) each
+of these would read about six points higher.
+
+**One path needed a fix in the cascade.** The 50 nm sweep first came back
+with 3.6 % reflection and a deficit of −1.4 % — the cascade returning more
+power than launched. At one interface, `(150, 171) → (145, 171)` nm, the
+twentieth mode of the shift-invert window changed identity between the two
+points (a continuum mode with no partner, best overlap 0.30); the tracker's
+forced bijection then left the interface matrix `O_abᵀ + O_ba` with a
+singular value at 1.1e-3 of its largest, just above the scattering route's
+pseudo-inverse cutoff of 1e-3, and the projection returned 3.2× a physical
+input's power through it. Any cutoff from 2e-3 to 3e-2 repairs the path
+(85.5 %, reflection 2e-4) and moves the design and 25 nm paths by nothing
+to four digits; the cutoff is 1e-2 now (`SingleEME.INTERFACE_RCOND`,
+CLAUDE.md §5.13a, `examples/kocabas_interface_passivity.py` for the
+per-interface check). Every number in this section is recomputed under it.
+
+### The first pass — the sharp-corner 5 nm grid (kept for the record)
+
 ![sweeps](output/kocabas_2_sweeps.png)
 
-### Taper length (gap 75 nm, slot 250 nm, warm cache — every length is a new path over the same grid points)
+#### Taper length (gap 75 nm, slot 250 nm, warm cache — every length is a new path over the same grid points)
 
 | `L_taper` | slot mode at the tip | scattered (Berenger) amplitude at the lead-out | reflected |
 |---|---|---|---|
@@ -231,7 +303,7 @@ length-independent part is the staircase and basis loss of §3, and the
 supermode's metal loss grows with `L` (0.957 at 1700 nm) and takes over
 beyond it.
 
-### Si–gold gap at the taper start (`w_gap`; slot end fixed at 250 nm, `L` = 1700 nm)
+#### Si–gold gap at the taper start, first pass
 
 `w_gap` sets the Si–gold clearance where the taper *starts*; the clearance at
 the tip is fixed by the slot at 125 nm. So the parameter really chooses how
@@ -260,7 +332,8 @@ efficiency, the ordering does not contradict it, and the paper's own choice of
 75 nm is not reproduced as an optimum — this model has no interior optimum in
 `w_gap`, exactly as report 12's device had none in length. Testing it properly
 needs the gap axis refined to 2.5 nm and the comparison made at fixed section
-count, which is the same convergence question as §3(i).
+count, which is the same convergence question as §3(i). *(Answered above:
+with the wall at 1 nm the sweep is flat.)*
 
 ## 5. DBEME vs direct EME
 
@@ -317,6 +390,9 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
    back-propagated — is 91.6 % on the same cascade (§9), against his ~95 %.
    What remains is a percent of Si staircase, a percent or two of wall, and
    the sharp-rectangle geometry; no numerical setting of the model is left.
+   On this platform the taper length is the design parameter (78 % at
+   500 nm, 87 % at 3 µm) and the starting gap is not (flat within 1.6
+   points from 25 to 150 nm, §4).
 1. The lossy PML backend runs a two-axis dataset end to end on a device with
    a published geometry, and lands at **72.3 % modal conversion** on the 5 nm
    grid and **78.9 %** on the 2.5 nm one with the paper's sharp corners,
@@ -894,6 +970,13 @@ scheduled onto the E-cores — §8's 739 s per point was 161 s of solve.
 On the finite-difference platform the same 1 nm wall would have needed a
 1 nm grid over the wall strip and the anisotropic-corner fix of §7 — at
 2.5 nm that dataset already cost 83.4 % and twice the unknowns.
+
+**The sweeps on this platform** are in §4: the length curve is the same
+adiabatic roll-off as before, five points higher throughout, and the gap
+sweep is flat (84.6–86.2 % from 25 to 150 nm) where the first pass had
+read a strong dependence — that dependence was the 5 nm wall staircase.
+The gap sweep cost 1 250 new points over 51 h, most of it at half pace
+beside another session's build; the length sweep cost nothing.
 
 ---
 
