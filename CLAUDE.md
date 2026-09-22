@@ -234,6 +234,16 @@ either way.
 by construction. It must be **off** for anything reporting bend loss,
 radiation, or metal loss. Never use `force_passive=True` alone (README
 documents it over-attenuating to 0.63 on a unit-transmission taper).
+*On a lossy basis the interface columns are capped at unit power instead*
+(`SingleEME.INTERFACE_COLUMN_CAP = "auto"`, 2026-09-23): the projection is
+not passive for the discretised continuum (5–16 % gain on a continuum
+input, 83 % of all columns slightly above 1), and a cascade of a few hundred
+interfaces compounds it until the guided channel itself reports more power
+than launched (6.9 for unit input at 311 interfaces; 0.91 at 231). The cap
+is the weakest passivity statement in the basis's own measure; it moves the
+guided channel by 0.3 points and makes long cascades usable (report 13
+§12). A singular-value clip is *not* equivalent — the 2-norm is not power
+in an unconjugated-normalised basis — and cut the guided channel in half.
 
 **5.3 Grid-step scaling of the conversion floor.** The ~1e-4 plateau in
 `taper_4_length_sweep.png` is claimed to be the 20 nm width-staircase floor.

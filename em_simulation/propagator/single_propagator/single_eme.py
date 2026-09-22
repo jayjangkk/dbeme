@@ -6,6 +6,14 @@ from ...geometry.geometry import Geometry
 from ..propagator import Propagator
 
 
+def cap_columns(smatrix):
+    """Scale every column of ``smatrix`` (``(..., m, m)``) whose power
+    ``sum_i |S_ij|^2`` exceeds 1 down to unit power; columns at or below 1 are
+    returned unchanged.  See :attr:`SingleEME.INTERFACE_COLUMN_CAP`."""
+    power = np.sum(np.abs(smatrix) ** 2, axis=-2, keepdims=True)
+    return smatrix / np.sqrt(np.maximum(power, 1.0))
+
+
 class SingleEME(Propagator):
     """
     The simulation algorithm basically follows the thesis "P. Bienstman, “Rigorous and efficient modelling of wavelenght scale photonic components / Peter Bienstman.,” 2001."
@@ -94,6 +102,31 @@ class SingleEME(Propagator):
     #: was validated with it; a lossy basis runs the direct route, where no
     #: inverse of ``T`` is ever formed and the bounded form is safe.
     INTERFACE_PROJECTION = "auto"
+
+    #: Cap every input column of an interface scattering matrix at unit power
+    #: (``sum_i |S_ij|^2 <= 1``; columns above are scaled down, none up).
+    #: ``"auto"``: on for a lossy basis, off for a lossless one.
+    #:
+    #: Why (2026-09-23, report 13 section 12).  On a lossy truncated basis
+    #: the mode-matching projection is not passive for the discretised
+    #: continuum: a Berenger mode of one section is represented on the other
+    #: side by a different set, the two overlaps of the interface differ by
+    #: ~0.2, and the transmission column of such an input carries 5-16 % more
+    #: power than it receives (83 % of all columns exceed 1 slightly; the
+    #: physical columns by at most 0.8 %).  A cascade compounds that: power
+    #: that has leaked into the continuum is re-amplified at every later
+    #: interface, and past a few hundred interfaces the physical channel
+    #: itself reports more power than launched (a 311-interface Kocabas path
+    #: gave 6.9 for unit input, a 231-interface one 0.91).  It is not a
+    #: resonance (round-trip spectral radius < 0.3), not the pseudo-inverse
+    #: cutoff (no effect from 1e-2 to 0.2) and a singular-value clip is wrong
+    #: here (the 2-norm is not power in an unconjugated-normalised basis; it
+    #: cut the guided channel from 85.6 to 54 %).  Capping the columns is the
+    #: weakest statement of passivity in the basis's own measure - no input
+    #: yields more than it carries - and it moves the guided channel by
+    #: 0.3 points on the 231-interface path while making the 311-interface
+    #: one sane (87.3 % with deficit -0.19 -> 85.9 % with +0.09).
+    INTERFACE_COLUMN_CAP = "auto"
 
     #region main functions
     def resolve_method(self, method=None):
@@ -211,7 +244,17 @@ class SingleEME(Propagator):
         interface_Smatrix[:, :self.mode_count, self.mode_count:] = -R21
         interface_Smatrix[:, self.mode_count:, :self.mode_count] = R12
         interface_Smatrix[:, self.mode_count:, self.mode_count:] = T21
+        if self._column_cap_enabled():
+            interface_Smatrix = cap_columns(interface_Smatrix)
         return interface_Smatrix
+
+    def _column_cap_enabled(self):
+        mode = self.INTERFACE_COLUMN_CAP
+        if mode == "auto":
+            return not getattr(self, "_lossless", True)
+        if mode in (True, False):
+            return bool(mode)
+        raise ValueError(f"INTERFACE_COLUMN_CAP must be 'auto', True or False, got {mode!r}")
 
     def _calc_propagation_Smatrix(self, length_ratio=1.0):
         """Propagation in scattering form: the *same* block twice.
