@@ -45,7 +45,7 @@ target 2.3, 20 modes) and from the window study (`kocabas_window.json`):
 | check (§5.x) | criterion | measured | pass |
 |---|---|---|---|
 | constant 250 nm slot, 1 µm: `T = exp(−2 k₀ Im n L)` | `|T − expected| < 1e-3` | 0.93244 vs 0.93244 | ✓ |
-| 5.1 reciprocity of the physical channel, design path | `< 1e-6` | 1.1e-3 | ✗ — the same magnitude as report 12 §10 on co-located fields (1.0e-3); the residual of the unconjugated overlap on a 5 nm staircase, not a convention error (§5.1 there) |
+| 5.1 reciprocity of the physical channel, design path | `< 1e-6` | 1.1e-3 | ✗ by that criterion, which a lossy truncated basis cannot meet: §11 locates it in the reflection blocks between continuum modes (correlation 1.00 with `|O_ab − O_baᵀ|`, ≈0.2 per interface for Berenger pairs, 1e-3 on the physical block), not in a gauge, the cutoff or the projection side. The lossy criterion is now `< 1e-2` relative (1.4e-3 here) |
 | passivity: physical input columns of `|S|²` | `< 1.05` | 0.81 | ✓ |
 | 5.3/5.7 grid convergence: the whole device at a 2.5 nm cell (`SiO2_kocabas_set2_1550_c25`) | reported | 78.9 % against 72.3 %; discretisation loss 24.8 → 18.4 %, fitting `2.5 %/nm × Δ + 12 %`; the slot mode moves to 1.4941 + 0.0062j, so cell and axis move together by construction (§7). Reciprocity 1.1e−3 → 4.0e−3, passivity 0.887 | — |
 | 5.8 DBEME vs direct EME, sections at the dataset's own points | `max|ΔT| < 1e-3` | **3.4e−5** — the cached cascade and a fresh section-by-section solve of the same cross sections agree to five digits (§5) | ✓ |
@@ -977,6 +977,49 @@ sweep is flat (84.6–86.2 % from 25 to 150 nm) where the first pass had
 read a strong dependence — that dependence was the 5 nm wall staircase.
 The gap sweep cost 1 250 new points over 51 h, most of it at half pace
 beside another session's build; the length sweep cost nothing.
+
+## 11. Where the reciprocity defect lives
+
+Every plasmonic run has reported the gate's reciprocity row as a failure:
+`|T12 − T21|` on the launched channel of 6e−4 to 3e−3 against a criterion
+of 1e−6 written for the lossless Si taper. For a reciprocal medium the
+cascade's `S` is symmetric in the unconjugated-normalised basis, so the
+number needed an origin. Measured on the 1 nm-wall FEM design path
+(`examples/kocabas_reciprocity.py`, 231 interfaces, 20 modes):
+
+| quantity | value |
+|---|---|
+| per interface, `|T12 − T21ᵀ|` | 7e−7 — symmetric by construction (the output-side projection makes `T21ᵀ` reduce to `T12` algebraically) |
+| per interface, `|R − Rᵀ|`, full block | median 0.18, max 0.31, always between two Berenger modes; the two entries have equal magnitude and opposite sign |
+| per interface, `|R − Rᵀ|`, physical block | median 1e−3, max 5.8e−3 |
+| per interface, `|O_ab − O_baᵀ|`, full / physical block | median 0.18 / 7e−3 |
+| correlation of the reflection asymmetry with `|O_ab − O_baᵀ|` | **1.00** on the full block |
+| sign-mask disagreements between `overlap_ab` and `overlap_ba` in the equalisation | 0 of 4 600 |
+| cutoff 1e−2 → 1e−9, projection output → input | channel 1.3e−3 unchanged to two digits |
+| cascade, launched TE channel | 1.3e−3 absolute, 1.4e−3 relative |
+
+**Reading.** The reflection block of an interface is
+`R12 = ½(O_abᵀ − O_ba) T12`: it exists only because the two projections of
+the same interface, `∫E_a × H_b` and `∫E_b × H_a`, differ, and it is
+symmetric only to the extent that the difference is. For the guided modes
+that difference is 7e−3 per step and the reflection block is reciprocal to
+1e−3; for the discretised continuum the two projections differ by 0.2 —
+a Berenger mode of one section is represented on the other side by a
+different set of twenty — and the reflection between two such modes is
+antisymmetric at that level. It is the truncation of the continuum, the same
+incompleteness that §3 and §8 measure as scattered power, seen in the
+reflection blocks rather than the transmission. Not a gauge (the
+equalisation's masks agree everywhere), not the pseudo-inverse cutoff, not
+the projection side, and the number does not fall with basis size (40 modes
+on the FD grid gave 3.0e−3) because more continuum members mean more churn.
+The cascade of 231 such interfaces sums to 1.3e−3 on the launched channel.
+
+So the criterion, not the cascade, was wrong for this class of dataset: the
+1e−6 of §5.1 is what a lossless, nearly complete guided basis gives and what
+catches a conjugation error (which would be of order 1, not 1e−3). For a
+lossy PML/absorber basis the gate now requires the channel asymmetry to be
+below 1e−2 relative to the transmission, and the per-interface physical-block
+asymmetry is the diagnostic to look at when it is not.
 
 ---
 

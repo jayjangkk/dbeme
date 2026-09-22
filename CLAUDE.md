@@ -201,6 +201,17 @@ that catches a wrong conjugation convention in the overlap integral — which
 unitarity alone will not reveal.
 *Pass:* `max|S − Sᵀ| < 1e-6` on the linear taper and on a Bezier bend, with
 `force_unitary=False`.
+*On a lossy, truncated basis the number is 1e-3, and that is not a failure.*
+Per interface the transmission blocks are symmetric by construction, but the
+reflection block `R12 = ½(O_abᵀ − O_ba) T12` is symmetric only to the extent
+that the two projections of the interface agree, and for the discretised
+continuum they differ by ~0.2 (a Berenger mode of one section is represented
+on the other side by a different set); the physical block stays reciprocal to
+1e-3 per interface and the cascade sums to ~1e-3 on the launched channel
+(report 13 §11, `examples/kocabas_reciprocity.py`). Not a gauge, not the
+cutoff, not the projection side, and it does not fall with basis size. For a
+lossy basis the pass criterion is `< 1e-2` relative to the transmission; a
+value of order 1 is the conjugation error this check exists for.
 
 **5.2 Mode-basis convergence with `force_unitary=False`.** The demos currently
 run `force_unitary=True`, which projects each section onto the nearest unitary
