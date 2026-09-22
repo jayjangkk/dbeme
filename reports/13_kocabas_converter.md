@@ -217,16 +217,19 @@ to be the staircase, not the device.*
 
 ### Taper length (gap 75 nm, slot 250 nm; warm cache, 0 s per length)
 
+*(Numbers restated 2026-09-23 under the interface column cap of §12, which
+moves every entry by −0.2 to −0.3 points.)*
+
 | `L_taper` | slot mode at the tip | forward Berenger amplitude at the lead-out | reflected |
 |---|---|---|---|
-| 500 nm | 78.3 % (−1.06 dB) | 0.134 | 1.1e-2 |
-| 800 nm | 81.8 % (−0.87 dB) | 0.114 | 2.6e-3 |
-| 1100 nm | 83.5 % (−0.78 dB) | 0.086 | 4.7e-4 |
-| 1400 nm | 84.7 % (−0.72 dB) | 0.066 | 8.5e-4 |
-| **1700 nm (paper)** | **85.6 % (−0.68 dB)** | 0.054 | 2.5e-4 |
-| 2100 nm | 86.1 % (−0.65 dB) | 0.050 | 4.4e-4 |
-| 2500 nm | 86.5 % (−0.63 dB) | 0.049 | 1.8e-4 |
-| 3000 nm | 86.8 % (−0.62 dB) | 0.047 | 2.4e-4 |
+| 500 nm | 80.2 % (-0.96 dB) | 0.089 | 5.4e-03 |
+| 800 nm | 81.9 % (-0.87 dB) | 0.071 | 1.1e-03 |
+| 1100 nm | 83.7 % (-0.77 dB) | 0.058 | 1.9e-04 |
+| 1400 nm | 84.6 % (-0.73 dB) | 0.050 | 4.2e-04 |
+| **1700 nm (paper)** | **85.3 % (-0.69 dB)** | 0.046 | 2.7e-04 |
+| 2100 nm | 85.9 % (-0.66 dB) | 0.045 | 2.3e-04 |
+| 2500 nm | 86.3 % (-0.64 dB) | 0.044 | 1.4e-04 |
+| 3000 nm | 86.6 % (-0.62 dB) | 0.041 | 1.6e-04 |
 
 Monotonic, flattening beyond ~2 µm, the scattered amplitude falling with
 `L` and the reflection faster: the adiabatic roll-off, with the paper's
@@ -243,14 +246,14 @@ travels relative to the Si edge over the taper.
 
 | `w_gap` | clearance along the taper | sections | slot mode at the tip | forward Berenger amplitude | reflected |
 |---|---|---|---|---|---|
-| 25 nm | 25 → 125 nm | 182 | 84.6 % (−0.73 dB) | 0.073 | 3.0e-4 |
-| 50 nm | 50 → 125 nm | 207 | 85.5 % (−0.68 dB) | 0.061 | 1.9e-4 |
-| **75 nm (paper)** | 75 → 125 nm | 232 | **85.6 % (−0.68 dB)** | 0.054 | 2.5e-4 |
-| 100 nm | 100 → 125 nm | 257 | 85.5 % (−0.68 dB) | 0.064 | 6.1e-4 |
-| 125 nm | 125 nm, constant | 282 | 85.7 % (−0.67 dB) | 0.055 | 7.7e-4 |
-| 150 nm | 150 → 125 nm | 307 | 86.2 % (−0.64 dB) | 0.072 | 1.1e-3 |
+| 25 nm | 25 → 125 nm | 182 | 84.4 % (-0.74 dB) | 0.067 | 1.9e-04 |
+| 50 nm | 50 → 125 nm | 207 | 85.2 % (-0.69 dB) | 0.055 | 2.2e-04 |
+| **75 nm (paper)** | 75 → 125 nm | 232 | **85.3 % (-0.69 dB)** | 0.046 | 2.7e-04 |
+| 100 nm | 100 → 125 nm | 257 | 85.3 % (-0.69 dB) | 0.041 | 4.9e-04 |
+| 125 nm | 125 → 125 nm, constant | 282 | 85.4 % (-0.69 dB) | 0.033 | 5.8e-04 |
+| 150 nm | 150 → 125 nm | 307 | 85.2 % (-0.69 dB) | 0.029 | 6.5e-04 |
 
-**Flat to within 1.6 points across the whole range**, and with no interior
+**Flat to within 1.0 points across the whole range**, and with no interior
 optimum — the paper's 75 nm is not reproduced as one, and neither is any
 other value. The first pass had read a 4.9-point fall from 125 to 25 nm
 and could not tell the physics from its own 5 nm wall steps (the
@@ -381,15 +384,17 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
 
 **What this report establishes.**
 
-0. **The converged answer is 85.6 % modal, 91.6 % under the paper's
-   measure** (§8–§10): with the gold corners rounded 20 nm, a
-   boundary-conforming finite-element mesh with the gold wall stepping
-   1 nm gives 85.6 % at the tip; the 5 nm wall had cost 7 % (80.7 %), and
-   the 5 nm finite-difference grid sits at 82.4 % (20 modes) / 82.9 % (40).
-   The paper's quantity — total forward flux 1100 nm past the tip,
-   back-propagated — is 91.6 % on the same cascade (§9), against his ~95 %.
-   What remains is a percent of Si staircase, a percent or two of wall, and
-   the sharp-rectangle geometry; no numerical setting of the model is left.
+0. **The converged answer is 87 ± 1 % modal, 89–91 % under the paper's
+   measure** (§8–§12): with the gold corners rounded 20 nm, a
+   boundary-conforming finite-element mesh, and the taper's z-steps taken to
+   0.5 nm for the gold wall and 2.5 nm for the Si width, the design point is
+   87.0 % at the tip (85.3 % at 1 nm wall steps, 80.7 % at 5 nm; 82.4 % on
+   the 5 nm finite-difference grid). The z-step terms floor at ~1 % each in
+   the continuum's projection error rather than vanishing (§12). The paper's
+   quantity — total forward flux 1100 nm past the tip, back-propagated — is
+   90.8–89.1 % on the two finest cascades (§9, §12), the spread being the
+   continuum term, against his ~95 %; what remains is his sharp-rectangle
+   geometry, and no numerical setting of the model is left.
    On this platform the taper length is the design parameter (78 % at
    500 nm, 87 % at 3 µm) and the starting gap is not (flat within 1.6
    points from 25 to 150 nm, §4).
@@ -937,7 +942,10 @@ averaged, §8). 247 path points, 5.0 h; 232 sections.
 |---|---|---|---|---|---|---|---|
 | FD 5 nm, rounded, 20 modes (§7) | 82.4 % | 0.943 | 4.4 % | — | 1.4 % | 87.7 % | 6.9e−4 |
 | FEM, wall 5 nm (§8) | 80.7 % | 0.923 | 7.0 % | 1.0 % | 0.5 % | — | 6.1e−4 |
-| **FEM, wall 1 nm** | **85.6 % (−0.68 dB)** | 0.969 | **2.1 %** | 1.1 % | 0.4 % | **91.6 %** | 1.3e−3 |
+| **FEM, wall 1 nm** | **85.3 % (-0.69 dB)** | 0.969 | **2.1 %** | 1.1 % | 0.4 % | **90.8 %** | 9.1e-04 |
+
+*(This row restated under the column cap of §12: the run's own numbers were
+85.6 %, 91.6 % and 1.3e−3.)*
 
 **The staircase scales with the step, as a staircase should.** Five times
 finer wall steps cut the wall's mismatch from 7.0 to 2.1 % (0.17 / 0.73 /
@@ -950,13 +958,13 @@ monotonic, 78.3 % at 500 nm to 86.8 % at 3 µm. Extrapolating the two wall
 steps linearly to zero puts the wall-free number near 87 %; the remaining
 Si steps would be worth another point at 1 nm.
 
-**Under the paper's own measure the design point is 91.6 %.** §9's
+**Under the paper's own measure the design point is 90.8 %.** §9's
 calculation on this dataset (the re-solved end sections reproduce the stored
-overlap to 3e−11; the FEM backend's absorber lies outside the returned
+overlap to 1e−11; the FEM backend's absorber lies outside the returned
 window, so the whole grid is physical and the slot mode's power factor is
-1.001): total forward flux at his 1100 nm cut, back-propagated, 91.6 %, of
-which 82.9 % is the slot mode, 4.5 % forward continuum light still crossing
-the cut, and +1.2 % interference. Against ~95 %, what is left is 3–4 points:
+1.001): total forward flux at his 1100 nm cut, back-propagated, 90.8 %, of
+which 85.4 % is the slot mode, 4.1 % forward continuum light still crossing
+the cut, and +1.3 % interference. Against ~95 %, what is left is 3–4 points:
 a percent of Si staircase, a percent or two of wall, and the geometry — the
 paper's sharp rectangles, which no method converges (§7), against the 20 nm
 arcs here. There is no numerical setting of this model left to turn.
@@ -1020,6 +1028,83 @@ catches a conjugation error (which would be of order 1, not 1e−3). For a
 lossy PML/absorber basis the gate now requires the channel asymmetry to be
 below 1e−2 relative to the transmission, and the per-interface physical-block
 asymmetry is the diagnostic to look at when it is not.
+
+## 12. The last two z-steps, and a cap the cascade needed
+
+Two more datasets take the longitudinal discretisation of the taper — the
+parameter-axis steps, one cross section per grid point — past §10: the gold
+wall stepping **0.5 nm** (`SiO2_kocabas_set2_1550_fem_c20_hs0.5`, 424
+points, 382 sections) and the Si width stepping **2.5 nm** with the wall at
+1 nm (`..._fem_c20_hs1_w2.5`, 349 points, 312 sections). The cross-sectional
+mesh is unchanged; only the number of interfaces grows.
+
+**A cascade of 311 interfaces returned more power than it received.** The
+2.5 nm-Si path came back at 87.3 % with a deficit of −0.19 and a lumped
+passivity of 6.9 for unit input on the guided channel. Every interface was
+passive for its physical inputs (≤ 1.006) and the round-trip spectral radius
+of the star product never exceeded 0.3, so it was neither a membership break
+(§4) nor a resonance. It was compounding: on a lossy truncated basis the
+projection is not passive for the discretised continuum — a continuum
+input's transmission column carries 5–16 % more power than it receives,
+83 % of all columns exceed unit power slightly, the physical ones by at most
+0.8 % — and power that has leaked into the continuum is re-amplified at
+every subsequent interface. Eighty Si steps stayed under the threshold
+(0.91 at 231 interfaces); 160 did not. The pseudo-inverse cutoff has no
+effect on it (identical from 1e−2 to 0.2), and the obvious remedy is wrong:
+clipping each interface matrix's singular values at 1 cut the guided channel
+from 85.6 to 54 %, because the 2-norm is not power in an
+unconjugated-normalised basis. What is right, and minimal, is to cap every
+input column of every interface matrix at unit power — the weakest statement
+of passivity in the basis's own measure, no input yields more than it
+carries (`SingleEME.INTERFACE_COLUMN_CAP`, on for lossy bases, off for
+lossless ones where no column exceeds 1). It moves the 231-interface design
+point by −0.26 (85.6 → 85.3 %) and makes the 311-interface one sane
+(85.9 % with a deficit of +0.09). Every number of §4, §10 and this section
+is under the cap; §7–§9 keep the uncapped values they were written with,
+which the cap would move by a few tenths.
+
+**The extrapolation.**
+
+| wall step | Si step | sections | at the tip | `A` | wall mismatch | Si mismatch | into Berenger | paper's measure (§9) |
+|---|---|---|---|---|---|---|---|---|
+| 5 nm | 5 nm | 112 | 80.7 % (§8, uncapped) | 0.923 | 7.0 % | 1.0 % | 0.5 % | — |
+| 1 nm | 5 nm | 232 | 85.3 % | 0.969 | 2.07 % | 1.10 % | 0.42 % | 90.8 % |
+| **0.5 nm** | 5 nm | 382 | **87.0 %** | 0.973 | 1.64 % | 1.11 % | 0.48 % | **89.1 %** |
+| 1 nm | **2.5 nm** | 312 | 85.9 % | 0.967 | 2.04 % | 1.36 % | 0.27 % | — |
+
+The wall term is not a staircase all the way down: 7.0 → 2.1 → 1.6 % for
+5 → 1 → 0.5 nm steps, a factor 3.4 for the first ×5 and 1.3 for the next
+×2, so it floors near 1.2 % as the step vanishes. The Si term does not fall
+at all: 1.10 % at 5 nm, 1.36 % at 2.5 nm — twice the interfaces, each
+costing a little less than half. What both floors are is the same thing §11
+found in the reflection blocks: each interface between two cross sections
+of a truncated continuum costs of order 0.01 % of the launched power in
+projection error, whatever the step, so past a certain refinement the
+mismatch counts interfaces rather than step size. The cascaded tip number
+still rises (85.3 → 87.0 % for the wall, 85.3 → 85.9 % for the Si) because the
+first-order staircase is still shrinking faster than the floor grows; but a
+0.25 nm wall or a 1.25 nm Si step would gain half a point at most and is at
+the floor. **The model's zero-step answer is 87 ± 1 % modal.**
+
+**On the paper's measure the two finest cascades give 90.8 % (1 nm wall) and
+89.1 % (0.5 nm wall)** — the finer one *lower*, although its modal number is
+higher, because the measure adds the forward continuum light at his cut
+(4.1 % against 1.6 %) and that is precisely the part of the field the
+cap trims, more in a longer cascade. The slot mode carries 87.0 % at the
+cut on the finest path, the interference term is +0.5 %. So the honest
+statement on his measure is **89–91 %**, the spread being the continuum
+term's dependence on how the truncated basis is regularised, not on the
+device. The four to six points that remain are inside what the paper's own
+calculation can claim: its geometry is a sharp rectangle, which no method
+converges (§7), on a finite mesh of its own.
+There is no numerical setting of this model left that is worth a day of
+compute, and further agreement would be agreement between two
+discretisations of a non-convergent corner. The next check that would mean
+something is an independent propagation method on this rounded geometry.
+
+*Cost.* 773 new points over two runs of 5–6 h in parallel on the P-cores,
+sharing the machine with another session's build; the re-evaluations under
+the cap took seconds.
 
 ---
 

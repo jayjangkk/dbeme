@@ -416,10 +416,11 @@ with the paper's sharp gold corners, and **82.4 %** once they are rounded by
 20 nm on the same grid (report 13 §7: the sharp wedge's singular field,
 regularised by a 5 nm grid, was most of what looked like a basis floor) —
 and that number is converged: 40 modes give 82.9 %, the finite-element mesh
-80.7 % with the wall still stepping 5 nm and **85.6 %** with it stepping
-1 nm (§8, §10) — and under the paper's own measure, total forward flux
-1100 nm past the tip back-propagated, computed from the same cascade
-(§9), **91.6 %**, where the paper reports ~95 %; on that platform the
+80.7 % with the wall still stepping 5 nm, 85.3 % at 1 nm and **87.0 %** at
+0.5 nm, where the z-step terms floor (§8, §10, §12) — and under the paper's
+own measure, total forward flux 1100 nm past the tip back-propagated,
+computed from the same cascade (§9, §12), **89–91 %**, where the paper reports
+~95 %; on that platform the
 gap sweep is flat (84.6–86.2 % over 25–150 nm) and only the length matters; the deficit is 0.22 dB of
 staircase mismatch, 0.19 dB of the supermode's own metal loss, and amplitude
 scattered into the Berenger set. Two results matter more than the number.
