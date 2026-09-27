@@ -133,7 +133,7 @@ non-degenerate mode `m = 1` and that is just `{±1}`, which `_pin_gauge` fully
 fixes; for an `m`-fold degeneracy it is *continuous*. ARPACK then returns an
 arbitrary rotation within the subspace.
 
-This was predicted to bite at "the coupler anti-crossing", and it did. On the
+This was predicted to bite at "the coupler anti-crossing", and it did. On a
 coupled Si pair, two modes at `Δn = 0.0101` had a **self**-overlap
 `|⟨E₄,H₅⟩| = 0.0745`, so `O_aa ≠ I` and a **constant-width** guide — where the
 answer must be `T = 1` exactly — transmitted **1.59**.

@@ -112,13 +112,12 @@ class ConstantIndex(Material):
 class TabulatedIndex(Material):
     """A measured ``(wavelength, n)`` table, interpolated linearly.
 
-    For index data that exists as *numbers from the process owner* rather than
-    as a published fit: the platform document §5 gives Si (Palik, as
-    sampled in the owner's Lumerical database) and SiO2 (SF_SIO2, measured
-    in-house) exactly this way, and says of the silicon table that it "exists to
-    match the reference solver, not to be smooth" - a one-term Sellmeier through
-    those nine points misses one of them by 0.005, which is larger than the
-    discrepancy the material was corrected to explain.
+    For index data that exists as *numbers from a process owner* rather than
+    as a published fit - silicon as sampled from Palik in a Lumerical material
+    database, an oxide measured in-house.  Such a table "exists to match the
+    reference solver, not to be smooth": a one-term Sellmeier through nine such
+    points missed one of them by 0.005, larger than the discrepancy the
+    material was corrected to explain.
 
     Linear interpolation, not a spline, for the same reason: the table is the
     specification.

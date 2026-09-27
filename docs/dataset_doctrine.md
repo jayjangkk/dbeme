@@ -21,7 +21,7 @@ dataset.
 | `Si_plasmonic_slot_1550[_sharp]` | Si wire between gold walls, suspended, lossy PML basis | `w_si` | lateral stand-in for the NTT converter | **shipped** — `reports/12` |
 | `SiO2_kocabas_set2_1550` | Si wire + gold slot, SiO₂-embedded, lossy PML basis | `w_si`, `gap` | Kocabaş converter (arXiv:1801.00833), gap and length sweeps | **shipped** — `reports/13` |
 | `SiO2_kocabas_set2_1550_fem_c20_hs1` | same, rounded corners, FEM mesh, wall axis at 1 nm | `w_si` (5 nm), `half_slot` (1 nm) | the converged Kocabaş numbers; gap sweep | **shipped** — `reports/13` §10 |
-| `Si_ring_coupler_220nm_<1530|1550|1570>[_N6..N30|_c20]` | straight bus + moving ring core, bus fixed (`platforms.BusRingStrips`) | `w1`, `w2`, `gap` (10 nm cell, axis tied to the cell) | bus-ring point coupler of the all-pass ring | **shipped** - `reports/15`; ring side of the coupler is imposed by symmetry, see tasks/11 section 2.1 |
+| `Si_ring_coupler_220nm_<1530|1550|1570>[_N6..N30|_c20]` | straight bus + moving ring core, bus fixed (`platforms.BusRingStrips`) | `w1`, `w2`, `gap` (10 nm cell, axis tied to the cell) | bus-ring point coupler of the all-pass ring | **shipped** - `reports/16`; ring side of the coupler is imposed by symmetry, see tasks/11 section 2.1 |
 
 *What a two-axis dataset costs, measured.* `SiO2_kocabas_set2_1550` is
 471 × 347 at a 5 nm cell with 20 modes: **~10 min per cross section**, so the

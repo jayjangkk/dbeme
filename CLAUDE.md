@@ -29,13 +29,12 @@ implication. Reference lists only when they add something.
   `data_updater` or the geometry classes.
 * Debugging style: identify the root cause, then propose the **minimal patch**.
   Do not rewrite a module unless asked.
-* **Nothing platform-specific under `dbeme/`, `datasets/<generic>`,
-  `examples/`, `tests/`.** A foundry stack - thicknesses, indices, sidewall
-  angles, GDS layers - lives in `studies/`, the platform datasets and
-  the platform document; a test that needs it goes to
-  `studies/<slug>/tests/`. These trees become the public repository (task 16).
-* Before changing `dbeme/`, commit or `git tag pre_<label>`. The
-  snapshots `backups/` used to hold are the `backup/<name>` tags.
+* **Nothing platform-specific in this repository.** A foundry stack -
+  thicknesses, indices, sidewall angles, GDS layers - and the devices built on
+  it belong in a separate, private repository that uses this one as a
+  submodule; so does any test that needs such a stack.
+* Before changing `dbeme/`, commit or `git tag pre_<label>`, so the previous
+  solver can always be restored.
 
 ## 1. Commands
 
@@ -63,9 +62,8 @@ off, raises the priority class and caps BLAS at 16 threads. If a run's
 per-point time is far above the standalone solve, compare the main thread's
 CPU time with the wall time before suspecting the code.
 
-Solved paths are cached in `cache/paths/<slug>_paths/` (ignored by git; set
-`DBEME_CACHE_DIR` to move it), resolved by `studies/cache.py::path_store`.
-`scripts/warm_check.py <script> [args]` runs a study and counts its path and
+Solved paths that studies cache live under `cache/` (ignored by git).
+`scripts/warm_check.py <script> [args]` runs a script and counts its path and
 mode solves - a warm rerun must show zero path solves.
 
 ## 2. Units and conventions
@@ -93,8 +91,7 @@ unchanged, so "§5.13a" or "CLAUDE.md §5.2" in older text means the file below.
 | 3 | `docs/dataset_doctrine.md` | building or extending a dataset: one per cross-section family, cost control, grids on metal edges |
 | 4-5 | `docs/validation_backlog.md` | before reporting any number: what is validated, and the §5.x checks with pass criteria (`force_unitary`, lossy-basis caveats, gauge, tracking) |
 | 6-8 | `docs/demo_plan.md` | writing a demo or report: capability matrix, comparison protocol, report template |
-| 9 | `docs/references.md` | citing: method, device and material references; what `references/` holds |
+| 9 | `docs/references.md` | citing: method, device and material references |
 
-Platform of the tape-out work: the platform document (private).
 A device task is `tasks/<nn>_<name>.md` and its write-up `reports/<nn>_<name>.md`;
 the numbers of the two series do not match - the task file names its report.

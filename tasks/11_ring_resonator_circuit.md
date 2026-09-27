@@ -290,7 +290,7 @@ and `Q_intrinsic(R)`.
 | DBEME vs direct EME | `max|ΔT| < 1e-3`, timings recorded |
 | PML convergence | loss holds to 5 % under the three perturbations |
 
-### Phase 2 — done 2026-09-20 (measured; full tables in `reports/15` §1)
+### Phase 2 — done 2026-09-20 (measured; full tables in `reports/16` §1)
 
 Datasets `Si_ring_coupler_220nm_{1530,1550,1570}` (N = 6, 10 nm cells) plus
 `_N6/_N12/_N20/_N30` and `_c20`; `reports/output/ring/coupler_*.json`,
@@ -322,7 +322,7 @@ width. Report written: `reports/16_ring_resonator.md`.
 
 CMT ✓ (5 % at R = 10 µm; 14 % at R = 5 µm / 200 nm), direct EME ✓, slicing ✓,
 gradient check ✓ (`gradient_check.json`, ≤ 3e-4 on κ²). The Lumerical table
-(`reports/15` §5.2) and the literature table (§5.3) carry the DBEME column
+(`reports/16` §5.2) and the literature table (§5.3) carry the DBEME column
 and empty reference columns; scripts for Lumerical belong under
 `studies/ring/lumerical/`.
 

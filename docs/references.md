@@ -35,13 +35,13 @@ Material data
 * H. H. Li, *J. Phys. Chem. Ref. Data* **9**, 561 (1980) — Si dispersion.
 * I. H. Malitson, *J. Opt. Soc. Am.* **55**, 1205 (1965) — SiO2 dispersion.
 
-### Local copies in `references/`
+### Papers kept as local copies
 
-Not redistributable; the list is what to fetch.
+Not redistributed; the list says what each local file is and where to fetch it.
 
 | file | reference |
 |---|---|
-| `references/10.1515_nanoph-2025-0288.pdf` | Choi, Kim, Sohn, *Rapid adiabatic couplers with arbitrary split ratios for broadband DWDM interleaver application*, *Nanophotonics* **14**, 3089 (2025), doi:10.1515/nanoph-2025-0288 |
-| `references/FargasCabanillas_bu_0017E_17256.pdf` | J. M. Fargas Cabanillas, *Rapid adiabatic devices enabling integrated electronic-photonic quantum systems on chip*, PhD thesis, Boston University (Popović group) - OpenBU record bu_0017E_17256 |
-| `references/kocabas_1801.00833.pdf` (+ `.txt`, the extracted text) | S. E. Kocabaş, *The effect of metal thickness on Si wire to plasmonic slot waveguide mode conversion*, arXiv:1801.00833 (2017) |
-| `references/ntttechnical.pdf` | M. Ono, H. Taniyama, E. Kuramochi, K. Nozaki, M. Notomi, *Toward application of plasmonic waveguides to optical devices*, NTT Technical Review **16**(7) (2018), https://www.ntt-review.jp/archive/ntttechnical.php?contents=ntr201807fa3.html |
+| `10.1515_nanoph-2025-0288.pdf` | Choi, Kim, Sohn, *Rapid adiabatic couplers with arbitrary split ratios for broadband DWDM interleaver application*, *Nanophotonics* **14**, 3089 (2025), doi:10.1515/nanoph-2025-0288 |
+| `FargasCabanillas_bu_0017E_17256.pdf` | J. M. Fargas Cabanillas, *Rapid adiabatic devices enabling integrated electronic-photonic quantum systems on chip*, PhD thesis, Boston University (Popović group) - OpenBU record bu_0017E_17256 |
+| `kocabas_1801.00833.pdf` (+ `.txt`, the extracted text) | S. E. Kocabaş, *The effect of metal thickness on Si wire to plasmonic slot waveguide mode conversion*, arXiv:1801.00833 (2017) |
+| `ntttechnical.pdf` | M. Ono, H. Taniyama, E. Kuramochi, K. Nozaki, M. Notomi, *Toward application of plasmonic waveguides to optical devices*, NTT Technical Review **16**(7) (2018), https://www.ntt-review.jp/archive/ntttechnical.php?contents=ntr201807fa3.html |
