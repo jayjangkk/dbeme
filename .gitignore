@@ -1,12 +1,17 @@
+# Environments and tool caches
 .venv/
+.venv-gds/
+.venv-circuit/
 __pycache__/
 *.pyc
-examples/output/
+.pytest_cache/
 
-# Dataset caches are regenerable but expensive; keep them. They stay small
-# (~700 kB for the ~140 points the demos visit) because only the parameter
-# points a device actually uses are ever computed.
-.venv-gds/
+# Regenerable outputs
+examples/output/
+*.err
+# Run logs under reports/output/.  The ones already tracked stay tracked
+# (reports cite them); a new log that a report cites must be added with -f.
+reports/output/**/*.log
 
 # Snapshots of em_simulation/ before task 16; each one is a backup/<name> tag.
 backups/
@@ -14,3 +19,6 @@ backups/
 # Solved-path caches (task 16, step 0.3): regenerable, resolved by studies/cache.py
 # (DBEME_CACHE_DIR, default cache/paths).
 cache/
+
+# Datasets under datasets/ are regenerable but expensive, so they ARE tracked.
+# They stay small because only the parameter points a device visits are solved.
