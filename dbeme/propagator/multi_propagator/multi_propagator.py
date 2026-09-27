@@ -6,7 +6,11 @@ import ray
 from scipy.integrate import dblquad
 from multiprocessing import Pool
 from copy import deepcopy
-from IPython.display import clear_output
+try:
+    from IPython.display import clear_output
+except ImportError:     # outside a notebook the progress lines simply stay
+    def clear_output(wait=False):
+        """IPython's notebook-output clear; a no-op without IPython."""
 
 from ... import matrix_calculation_tool as mct
 

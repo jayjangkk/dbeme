@@ -16,6 +16,7 @@ import os
 
 import numpy as np
 
+from ..data_updater.dataset_roots import resolve_dataset_dir
 from ..fde.assemble import assemble, overlap_matrix, prop_axis_index
 
 
@@ -36,6 +37,7 @@ class DataExtractor:
     """
 
     def __init__(self, data_directory, backend=None, is_testmode=False, cache_size=256):
+        data_directory = resolve_dataset_dir(data_directory)
         self.data_directory = data_directory
         self.is_testmode = is_testmode
 

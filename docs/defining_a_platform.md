@@ -79,3 +79,9 @@ simulate bends only one way.
 only meaningful if both are sampled on the same `(x, y)` mesh, so the solve
 window is chosen once for the widest cross section in the sweep and never
 changes. `EmepyFDE` raises if the grid ever moves.
+
+**Datasets in more than one place.** A project that keeps its own datasets
+next to a checkout of this package sets `DBEME_DATASET_ROOTS` to both
+directories (`os.pathsep`-separated); a dataset is then opened by name from
+whichever root holds it, and a name held by two roots raises
+(`dbeme/data_updater/dataset_roots.py`).

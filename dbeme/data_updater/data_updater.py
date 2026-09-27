@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from . import overlap_calculation_tool as oct
 from .dataset_identity import fingerprint, verify
+from .dataset_roots import resolve_dataset_dir
 from ..fde.assemble import assemble, overlap_matrix, prop_axis_index
 
 # ray.init(object_store_memory=2e9, ignore_reinit_error=True)
@@ -61,6 +62,7 @@ class DataUpdater:
 
     def __init__(self, data_directory, backend=None, is_testmode=False, cache_size=4):
         """Build the updater, load dataset metadata and attach a mode solver."""
+        data_directory = resolve_dataset_dir(data_directory)
         self.data_directory = data_directory
         self._is_testmode = is_testmode
 

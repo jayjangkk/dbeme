@@ -13,7 +13,9 @@ ends:
   its ports; those are not cached by design, so this count is reported, not
   required to be 0.
 
-The script runs as ``__main__`` with ``sys.argv`` set, from the repo root.
+The script runs as ``__main__`` with ``sys.argv`` set, in the current
+directory - run it from the root of the repository the script belongs to
+(this one, or a project that has it as a submodule).
 """
 
 import collections
@@ -58,7 +60,6 @@ def main():
     script = sys.argv[1]
     install()
     sys.argv = sys.argv[1:]
-    os.chdir(ROOT)
     start = time.time()
     status = 0
     try:
