@@ -1,0 +1,63 @@
+{
+ "model": {
+  "neff": 2.4467,
+  "ng": 4.178,
+  "R_um": 10.0,
+  "loss_db_per_cm": 4.4,
+  "r": 0.98
+ },
+ "closed_form": {
+  "Q_loaded": 22751.42361802127,
+  "FWHM_m": 6.812760493687323e-11,
+  "tau_energy_s": 1.8721459541647168e-11
+ },
+ "sax": {
+  "lambda_res_um": 1.551659,
+  "T_min": 0.5296781477427858
+ },
+ "circulax": {
+  "circulax": "0.2.3",
+  "compiled": true,
+  "sys_size": 6,
+  "port_map": {
+   "GND,p1": 0,
+   "load_out,p2": 0,
+   "src_in,p2": 0,
+   "arc,o1": 1,
+   "cp,o4": 1,
+   "arc,o2": 2,
+   "cp,o3": 2,
+   "cp,o1": 3,
+   "src_in,p1": 3,
+   "cp,o2": 4,
+   "load_out,p1": 4,
+   "src_in,i_src": 5
+  },
+  "dc_sweep": {
+   "points": 2201,
+   "max_abs_T_error": 8.233690396153293e-10,
+   "max_phase_error_rad": 1.250939104198107e-09,
+   "T_min_circulax": 0.5299700206195044,
+   "lambda_res_circulax_um": 1.55166
+  },
+  "transient": {
+   "ran": true,
+   "note": "S-matrix components are memoryless; the arc is the OpticalDelayLine plugin"
+  },
+  "ring_down": {
+   "8": {
+    "tau_fit_s": 1.87492627740702e-11,
+    "tau_E_s": 1.8721459541647168e-11,
+    "ratio": 1.0014850996184983,
+    "Q_from_ringdown": 22760.85029652963
+   },
+   "16": {
+    "tau_fit_s": 1.873557106116423e-11,
+    "tau_E_s": 1.8721459541647168e-11,
+    "ratio": 1.0007537617185065,
+    "Q_from_ringdown": 22744.229108192198
+   }
+  },
+  "ring_down_gate": "met: tau from the decay vs Q lambda / (2 pi c), see ring_down"
+ }
+}

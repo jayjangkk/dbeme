@@ -845,3 +845,113 @@ def kocabas_converter_dataset_info(
         cladding=sio2,
         backend_factory=backend,
     )
+
+
+# ------------------------------------------------------ bus-ring point coupler
+
+
+class BusRingStrips(CoupledStrips):
+    """Two identical strips where only the *second* one moves with ``gap``.
+
+    ``CoupledStrips`` centres the pair on the mid-gap, so a gap step shifts
+    both cores by half the step and the bus mode is scattered at every EME
+    interface by a translation that never happens in the device.  For a
+    straight bus beside a ring, the bus is fixed and the ring's inner edge
+    walks away with the gap.  Here the bus sits at
+    ``(-c - w1, -c)`` with ``c = (gap_max + w2 - w1) / 2``, chosen so the
+    widest layout is centred in the window, and the ring at
+    ``(-c + gap, -c + gap + w2)``.  Part of the fingerprint.
+    """
+
+    def __init__(self, gap_max, **kwargs):
+        super().__init__(**kwargs)
+        self.gap_max = float(gap_max)
+
+    def _bus_edge(self, params):
+        w1 = float(params["w1"])
+        w2 = float(params.get("w2", self.w2 if self.w2 is not None else w1))
+        return -0.5 * (self.gap_max + w2 - w1)
+
+    def edges(self, params):
+        w1 = float(params["w1"])
+        w2 = float(params.get("w2", self.w2 if self.w2 is not None else w1))
+        gap = float(params.get("gap", self.gap))
+        c = self._bus_edge(params)
+        return ((c - w1, c), (c + gap, c + gap + w2))
+
+    def gap_centre(self, params):
+        """``x`` of the mid-gap, the cut for :meth:`power_fractions`."""
+        return self._bus_edge(params) + 0.5 * float(params.get("gap", self.gap))
+
+    def fingerprint(self):
+        return super().fingerprint() + f"|bus_fixed:gap_max={self.gap_max:.6g}"
+
+    def default_window(self, max_params):
+        w1 = float(max_params["w1"])
+        w2 = float(max_params.get("w2", self.w2 if self.w2 is not None else w1))
+        half_width = 0.5 * (w1 + self.gap_max + w2) + 1.3e-6
+        y_half = 0.5 * self.thickness + 0.69e-6
+        return half_width, -y_half, y_half
+
+
+def ring_coupler_dataset_info(wavelength=1.55e-6, mode_numbers=6, cell=10e-9,
+                              fine_step=10e-9, coarse_step=20e-9,
+                              widths=(480e-9, 500e-9, 520e-9), gap_max=0.7e-6):
+    """Straight bus beside a ring, in the straight frame - `tasks/11` §2.1.
+
+    Axes ``w1``, ``w2`` (three values, so width sensitivity is one path away)
+    and ``gap`` from 100 nm to ``gap_max``: ``fine_step`` up to 400 nm,
+    ``coarse_step`` beyond.  The gap ends at 0.7 µm: the even/odd splitting
+    of two 500 nm strips is 1.5e-4 there (decay 8/µm), the coupling left
+    beyond is ~1e-6 in power, and the supermodes are still resolved.
+
+    **Mode count.**  The ring is the guide that moves, and a fixed-grid EME
+    can only carry the field displaced at each interface if the basis holds
+    it: with six modes 1.4 % of the ring-side power was discarded at *every*
+    50 nm step and the loss grew linearly with the step count (2026-09-20).
+    Take ``mode_numbers`` from the convergence study
+    (`studies/ring/mode_convergence.sh`), not from habit.
+
+    **The gap axis is tied to the cell.**  With 20 nm cells and 10 nm gap
+    steps, alternate points had the ring edges mid-cell and its index aliased
+    by 1e-3 - larger than the coupling splitting - so the tracked branches
+    zig-zagged along the path (measured 2026-09-20).  The default is a 10 nm
+    cell (mesh 464 over the 4.64 um window, 160 rows) with 10 nm fine steps,
+    so every gap point has both ring edges on cell boundaries; the bus at
+    (-1.0, -0.5) um is on boundaries too.  A 20 nm cell needs 20 nm steps
+    (cell=20e-9, fine_step=20e-9, coarse_step=40e-9).
+    """
+    gap_max = float(gap_max)
+
+    def cross_section(core, cladding, wl, names):
+        return BusRingStrips(
+            gap_max=gap_max,
+            thickness=THICKNESS,
+            gap=200e-9,
+            core=core,
+            cladding=cladding,
+            swept_parameters=names,
+            reference_wavelength=wl,
+        )
+
+    parameters = {
+        "w1": np.round(np.asarray(widths, dtype=float), 12),
+        "w2": np.round(np.asarray(widths, dtype=float), 12),
+        "gap": axis(nm(100, 400, fine_step * 1e9), nm(400, gap_max * 1e9 + 1, coarse_step * 1e9)),
+    }
+    w_max = float(max(widths))
+    half_width = 0.5 * (w_max + gap_max + w_max) + 1.3e-6
+    mesh = int(round(2.0 * half_width / cell))
+    if abs(mesh * cell - 2.0 * half_width) > 1e-12:
+        raise ValueError(f"cell {cell} does not divide the window {2 * half_width}")
+    return _make_dataset_info(
+        name="Bus-ring point coupler: 2 x fully etched 220 nm Si strips, bus fixed",
+        description="overlap, neff and TE_pol for a straight bus beside a ring arc",
+        wavelength=wavelength,
+        parameters=parameters,
+        parameter_names=("w1", "w2", "gap"),
+        cross_section_factory=cross_section,
+        window=(half_width, -0.8e-6, 0.8e-6),
+        mode_numbers=mode_numbers,
+        mesh=mesh,
+    )

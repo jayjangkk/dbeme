@@ -1,0 +1,7 @@
+DBEME ring: R = 10.0 um, gap 150 nm -> gamma = 0.9823 (kappa^2 0.0350); n_g 4.175; loss 14.4 dB/cm (rough 4.4 + FCA) -> a = 0.9896
+  EO at 1.0 V reverse: dn/dV 7.65e-05/V = 28.4 pm/V, alpha1 7.28e-04/V, C_j 14.4 fF, R_s 50.0 Ohm -> RC 0.72 ps
+  lifetimes: tau_e 49.9 ps, tau_l 84.9 ps, tau 31.4 ps; Q_L 19104, optical f_3dB 5.06 GHz
+  1. optical step: energy decay 16.14 ps = tau/2 with tau = 32.28 ps vs t-CMT tau 31.44 ps (ratio 1.0266)
+  2. EO -3 dB: transient 9.572181410251702 GHz, analytic 8.61390983827592 GHz; RC pole 221 GHz
+  3. eyes: {'10.6_GBaud': {'T_bit_over_tau': 3.0, 'eye_opening': 0.4432238203276244, 'high_mean': 0.6302319906549976, 'low_mean': 0.081480488017548}, '21.2_GBaud': {'T_bit_over_tau': 1.5, 'eye_opening': 0.21863150229807027, 'high_mean': 0.7382506246660929, 'low_mean': 0.1372626456979544}}
+wrote C:\Users\Jay\Projects\DBEME\reports\output\mrm\mrm_results.json

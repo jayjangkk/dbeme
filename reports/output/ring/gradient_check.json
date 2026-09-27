@@ -1,0 +1,114 @@
+{
+ "radius_um": 10.0,
+ "gaps_nm": [
+  150,
+  200,
+  250,
+  300,
+  350,
+  400
+ ],
+ "kappa2_at_grid": [
+  0.030340170361293484,
+  0.012483059564397454,
+  0.0052095736298888515,
+  0.0021854258910804893,
+  0.0009162533279309298,
+  0.00038430798229837206
+ ],
+ "grid_finite_difference_per_nm": [
+  -0.0003571422159379206,
+  -0.0002513059673140463,
+  -0.00010297633673316965,
+  -4.293320301957922e-05,
+  -1.8011179087821173e-05,
+  -1.0638906912651155e-05
+ ],
+ "rows": [
+  {
+   "gap_nm": 160.0,
+   "quantity": "kappa2",
+   "jax_grad_per_nm": -0.00044769041742845095,
+   "finite_diff_per_nm": -0.00044769552582235583,
+   "rel_diff": 1.14104198282874e-05
+  },
+  {
+   "gap_nm": 160.0,
+   "quantity": "extinction_dB",
+   "jax_grad_per_nm": 0.0660931753158777,
+   "finite_diff_per_nm": 0.06610209021617997,
+   "rel_diff": 0.00013486563394753183
+  },
+  {
+   "gap_nm": 206.0,
+   "quantity": "kappa2",
+   "jax_grad_per_nm": -0.00019616093983405394,
+   "finite_diff_per_nm": -0.00019616813219590183,
+   "rel_diff": 3.6664272465546334e-05
+  },
+  {
+   "gap_nm": 206.0,
+   "quantity": "extinction_dB",
+   "jax_grad_per_nm": 0.19684700117496975,
+   "finite_diff_per_nm": 0.19689972124847355,
+   "rel_diff": 0.000267750879328384
+  },
+  {
+   "gap_nm": 252.0,
+   "quantity": "kappa2",
+   "jax_grad_per_nm": -8.657322493362334e-05,
+   "finite_diff_per_nm": -8.657607179740102e-05,
+   "rel_diff": 3.2882801432148646e-05
+  },
+  {
+   "gap_nm": 252.0,
+   "quantity": "extinction_dB",
+   "jax_grad_per_nm": -1.2510097332210024,
+   "finite_diff_per_nm": -1.2594017092280634,
+   "rel_diff": 0.006663462456474477
+  },
+  {
+   "gap_nm": 298.0,
+   "quantity": "kappa2",
+   "jax_grad_per_nm": -3.8854876822517185e-05,
+   "finite_diff_per_nm": -3.8856696844731314e-05,
+   "rel_diff": 4.683934461545905e-05
+  },
+  {
+   "gap_nm": 298.0,
+   "quantity": "extinction_dB",
+   "jax_grad_per_nm": -0.13719040019137002,
+   "finite_diff_per_nm": -0.1372063767366094,
+   "rel_diff": 0.00011644171079637174
+  },
+  {
+   "gap_nm": 344.0,
+   "quantity": "kappa2",
+   "jax_grad_per_nm": -1.7593246342676766e-05,
+   "finite_diff_per_nm": -1.7594021913818316e-05,
+   "rel_diff": 4.4081515036691295e-05
+  },
+  {
+   "gap_nm": 344.0,
+   "quantity": "extinction_dB",
+   "jax_grad_per_nm": -0.05483969834792651,
+   "finite_diff_per_nm": -0.05484062170374404,
+   "rel_diff": 1.6837077860207348e-05
+  },
+  {
+   "gap_nm": 390.0,
+   "quantity": "kappa2",
+   "jax_grad_per_nm": -7.747068055524834e-06,
+   "finite_diff_per_nm": -7.747315251429649e-06,
+   "rel_diff": 3.1907299082630445e-05
+  },
+  {
+   "gap_nm": 390.0,
+   "quantity": "extinction_dB",
+   "jax_grad_per_nm": -0.02124778662704724,
+   "finite_diff_per_nm": -0.021244112977278795,
+   "rel_diff": 0.00017292554282570584
+  }
+ ],
+ "note": "gradients are of the gap interpolant over the cached grid; the mode solver is not differentiated"
+}

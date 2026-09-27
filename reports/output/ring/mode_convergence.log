@@ -1,0 +1,29 @@
+== N=6
+power throttling off: True; priority above normal: True; system kept awake: True
+affinity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; BLAS threads 16
+Si_ring_coupler_220nm_1550_N6: 0 points cached, N=6, lambda=1550 nm
+  g0=400 nm R=10 um: 32 sections, |t|^2=0.99958 |k|^2=0.00038 sum=0.99998 recip(TE0)=2.7e-07 refl=9.8e-06 s=+1 busfrac=1.000
+    build 411.3 s (16 new points), warm 0.00 s
+wrote C:/Users/Jay/Projects/DBEME/reports/output/ring/conv_N6.json
+== N=12
+power throttling off: True; priority above normal: True; system kept awake: True
+affinity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; BLAS threads 16
+Si_ring_coupler_220nm_1550_N12: 0 points cached, N=12, lambda=1550 nm
+  g0=400 nm R=10 um: 32 sections, |t|^2=0.99958 |k|^2=0.00039 sum=0.99998 recip(TE0)=1.8e-05 refl=4.9e-05 s=+1 busfrac=1.000
+    build 960.2 s (16 new points), warm 0.01 s
+wrote C:/Users/Jay/Projects/DBEME/reports/output/ring/conv_N12.json
+== N=20
+power throttling off: True; priority above normal: True; system kept awake: True
+affinity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; BLAS threads 16
+Si_ring_coupler_220nm_1550_N20: 0 points cached, N=20, lambda=1550 nm
+  g0=400 nm R=10 um: 32 sections, |t|^2=0.99960 |k|^2=0.00039 sum=1.00000 recip(TE0)=9.1e-06 refl=4.2e-05 s=+1 busfrac=1.000
+    build 1668.0 s (16 new points), warm 0.01 s
+wrote C:/Users/Jay/Projects/DBEME/reports/output/ring/conv_N20.json
+== N=30
+power throttling off: True; priority above normal: True; system kept awake: True
+affinity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; BLAS threads 16
+Si_ring_coupler_220nm_1550_N30: 0 points cached, N=30, lambda=1550 nm
+  g0=400 nm R=10 um: 32 sections, |t|^2=11247.63527 |k|^2=4621.93806 sum=95585.94265 recip(TE0)=1.0e+02 refl=3.4e+06 s=+1 busfrac=1.000
+    build 2875.1 s (16 new points), warm 0.01 s
+wrote C:/Users/Jay/Projects/DBEME/reports/output/ring/conv_N30.json
+CONVERGENCE DONE

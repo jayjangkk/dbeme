@@ -1,0 +1,8 @@
+power throttling off: True; priority above normal: True; system kept awake: True
+affinity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; BLAS threads 16
+Si_ring_coupler_220nm_1550_c20: 0 points cached, N=6, lambda=1550 nm
+  g0=200 nm R=10 um: 36 sections, |t|^2=0.98377 |k|^2=0.01338 sum=0.99777 recip(TE0)=5.3e-06 refl=9.8e-05 s=+1 busfrac=1.000
+    build 46.2 s (18 new points), warm 0.00 s
+  g0=300 nm R=10 um: 26 sections, |t|^2=0.99722 |k|^2=0.00237 sum=0.99968 recip(TE0)=4.9e-06 refl=1.0e-04 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.00 s
+wrote C:/Users/Jay/Projects/DBEME/reports/output/ring/coupler_1550_c20.json

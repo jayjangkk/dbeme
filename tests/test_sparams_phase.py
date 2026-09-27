@@ -16,12 +16,17 @@ sys.path.insert(0, ROOT)
 from studies.tapeout.sparams_phase import (  # noqa: E402
     C_LIGHT,
     aligned_gradient,
+    cascade,
     dominant_delay,
     gauge_chain,
     match,
+    port_signs,
+    propagate_into,
     reconstruct,
     reorder_interface,
     sign_interface,
+    smoothstep,
+    star,
 )
 
 
@@ -158,3 +163,84 @@ def test_dominant_delay_is_the_single_branch_sum_when_power_stays_put(branch):
     assert phase == pytest.approx(np.sum(2 * np.pi / lam * neff[:sections, branch] * dz))
     expect = np.sum((neff[:sections, branch] - lam * dn[:sections, branch]) * dz) / C_LIGHT
     assert tau == pytest.approx(expect)
+
+
+def _random_smatrix(rng, n, scale=0.3):
+    return scale * (rng.normal(size=(2 * n, 2 * n)) + 1j * rng.normal(size=(2 * n, 2 * n)))
+
+
+def test_star_is_the_reference_product_batched():
+    """The frequency-grid cascade must be the propagator's own algebra."""
+    from em_simulation.matrix_calculation_tool import _redheffer_star_product
+
+    rng = np.random.default_rng(5)
+    n = 3
+    a = np.stack([_random_smatrix(rng, n) for _ in range(4)])
+    b = np.stack([_random_smatrix(rng, n) for _ in range(4)])
+    got = star(a, b)
+    for f in range(4):
+        assert np.allclose(got[f], _redheffer_star_product(a[f], b[f]), rtol=0, atol=1e-12)
+    assert np.allclose(star(a[0], b)[2], _redheffer_star_product(a[0], b[2]),
+                       rtol=0, atol=1e-12)
+
+
+def test_propagate_into_is_propagation_starred_with_the_interface():
+    from em_simulation.matrix_calculation_tool import _redheffer_star_product
+
+    rng = np.random.default_rng(9)
+    n = 4
+    interface = _random_smatrix(rng, n)
+    phase = np.exp(1j * rng.uniform(-np.pi, np.pi, size=(3, n)))
+    got = propagate_into(interface, phase)
+    for f in range(3):
+        prop = np.zeros((2 * n, 2 * n), dtype=complex)
+        prop[:n, :n] = np.diag(phase[f])
+        prop[n:, n:] = np.diag(phase[f])
+        assert np.allclose(got[f], _redheffer_star_product(prop, interface),
+                           rtol=0, atol=1e-12)
+
+
+def test_cascade_is_the_propagators_section_order():
+    """``prop_0, interface_0, prop_1, ...`` - `_find_Smatrix_new_length`'s order."""
+    from em_simulation.matrix_calculation_tool import _redheffer_star_product
+
+    rng = np.random.default_rng(13)
+    n, sections, freqs = 3, 6, 2
+    interfaces = np.stack([_random_smatrix(rng, n, 0.2) + np.eye(2 * n)
+                           for _ in range(sections)])
+    phases = np.exp(1j * rng.uniform(-np.pi, np.pi, size=(freqs, sections, n)))
+    got = cascade(interfaces, phases)
+    for f in range(freqs):
+        lumped = None
+        for k in range(sections):
+            prop = np.zeros((2 * n, 2 * n), dtype=complex)
+            prop[:n, :n] = np.diag(phases[f, k])
+            prop[n:, n:] = np.diag(phases[f, k])
+            lumped = prop if lumped is None else _redheffer_star_product(lumped, prop)
+            lumped = _redheffer_star_product(lumped, interfaces[k])
+        assert np.allclose(got[f], lumped, rtol=0, atol=1e-10)
+
+
+def test_smoothstep_is_flat_at_both_ends():
+    assert np.allclose(smoothstep([-0.5, 0.0, 0.5, 1.0, 1.5]), [0.0, 0.0, 0.5, 1.0, 1.0])
+    assert smoothstep(1e-6) < 1e-11
+    assert 1.0 - smoothstep(1.0 - 1e-6) < 1e-11
+
+
+def test_port_signs_recovers_row_and_column_flips():
+    """Two snapshots of one device: port-mode signs flipped, plus a small real change.
+
+    Rows 1 and 3 hold only weak entries, as a TM output row does on the SiSNPRS.
+    """
+    rng = np.random.default_rng(17)
+    freqs = 40
+    magnitude = np.array([[1.0, 1e-2], [1e-3, 3e-2], [2e-2, 1.0], [1e-3, 5e-3]])
+    reference = magnitude * np.exp(1j * rng.uniform(-np.pi, np.pi, size=(freqs, 4, 2)))
+    row_flip = np.array([1.0, -1.0, 1.0, -1.0])
+    col_flip = np.array([-1.0, -1.0])
+    drift = np.exp(1j * rng.normal(scale=0.05, size=reference.shape))
+    other = reference * drift * row_flip[None, :, None] * col_flip[None, None, :]
+    rows, cols, score = port_signs(reference, other)
+    assert cols[0] == 1.0 and score > 0
+    assert np.array_equal(rows[:, None] * cols[None, :],
+                          row_flip[:, None] * col_flip[None, :])

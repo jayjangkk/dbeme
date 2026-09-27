@@ -1,0 +1,111 @@
+== --dataset Si_ring_coupler_220nm_1550 --radius-um 10 --gaps 150,200,250,300,350,400 --out /c/Users/Jay/Projects/DBEME/reports/output/ring/coupler_1550.json --slicing --direct 300
+power throttling off: True; priority above normal: True; system kept awake: True
+affinity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; BLAS threads 16
+Si_ring_coupler_220nm_1550: 17 points cached, N=6, lambda=1550 nm
+  g0=150 nm R=10 um: 82 sections, |t|^2=0.96496 |k|^2=0.03034 sum=0.99692 recip(TE0)=1.3e-06 refl=1.9e-05 s=+1 busfrac=1.000
+    build 776.2 s (24 new points), warm 0.01 s
+  g0=200 nm R=10 um: 72 sections, |t|^2=0.98574 |k|^2=0.01248 sum=0.99883 recip(TE0)=1.2e-06 refl=8.7e-06 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=250 nm R=10 um: 62 sections, |t|^2=0.99412 |k|^2=0.00521 sum=0.99955 recip(TE0)=1.5e-06 refl=9.2e-06 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=300 nm R=10 um: 52 sections, |t|^2=0.99756 |k|^2=0.00219 sum=0.99983 recip(TE0)=8.1e-07 refl=2.9e-06 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=350 nm R=10 um: 42 sections, |t|^2=0.99899 |k|^2=0.00092 sum=0.99994 recip(TE0)=6.4e-07 refl=9.2e-06 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=400 nm R=10 um: 32 sections, |t|^2=0.99958 |k|^2=0.00038 sum=0.99998 recip(TE0)=2.7e-07 refl=9.8e-06 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.00 s
+  slicing: 82 vs 83 sections, d|k|^2 = 2.90e-06
+  direct EME (52 solves, 531 s): |k|^2 0.00213 vs dataset 0.00219
+wrote C:/Users/Jay/Projects/DBEME/reports/output/ring/coupler_1550.json
+== --dataset Si_ring_coupler_220nm_1530 --radius-um 10 --gaps 150,200,250,300,350,400 --out /c/Users/Jay/Projects/DBEME/reports/output/ring/coupler_1530.json
+power throttling off: True; priority above normal: True; system kept awake: True
+affinity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; BLAS threads 16
+Si_ring_coupler_220nm_1530: 0 points cached, N=6, lambda=1530 nm
+  g0=150 nm R=10 um: 82 sections, |t|^2=0.97043 |k|^2=0.02558 sum=0.99745 recip(TE0)=2.2e-07 refl=1.4e-05 s=+1 busfrac=1.000
+    build 1209.7 s (41 new points), warm 0.01 s
+  g0=200 nm R=10 um: 72 sections, |t|^2=0.98824 |k|^2=0.01029 sum=0.99905 recip(TE0)=3.5e-07 refl=1.4e-05 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=250 nm R=10 um: 62 sections, |t|^2=0.99525 |k|^2=0.00420 sum=0.99964 recip(TE0)=9.4e-07 refl=1.5e-05 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=300 nm R=10 um: 52 sections, |t|^2=0.99807 |k|^2=0.00173 sum=0.99987 recip(TE0)=6.3e-07 refl=7.7e-07 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=350 nm R=10 um: 42 sections, |t|^2=0.99922 |k|^2=0.00071 sum=0.99995 recip(TE0)=4.3e-07 refl=1.2e-05 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=400 nm R=10 um: 32 sections, |t|^2=0.99968 |k|^2=0.00029 sum=0.99998 recip(TE0)=4.1e-07 refl=2.2e-05 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.00 s
+wrote C:/Users/Jay/Projects/DBEME/reports/output/ring/coupler_1530.json
+== --dataset Si_ring_coupler_220nm_1570 --radius-um 10 --gaps 150,200,250,300,350,400 --out /c/Users/Jay/Projects/DBEME/reports/output/ring/coupler_1570.json
+power throttling off: True; priority above normal: True; system kept awake: True
+affinity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; BLAS threads 16
+Si_ring_coupler_220nm_1570: 0 points cached, N=6, lambda=1570 nm
+  g0=150 nm R=10 um: 82 sections, |t|^2=0.95860 |k|^2=0.03588 sum=0.99631 recip(TE0)=2.3e-06 refl=1.1e-05 s=+1 busfrac=1.000
+    build 1304.5 s (41 new points), warm 0.01 s
+  g0=200 nm R=10 um: 72 sections, |t|^2=0.98277 |k|^2=0.01509 sum=0.99856 recip(TE0)=2.2e-06 refl=1.6e-05 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=250 nm R=10 um: 62 sections, |t|^2=0.99274 |k|^2=0.00643 sum=0.99944 recip(TE0)=1.7e-06 refl=7.7e-06 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=300 nm R=10 um: 52 sections, |t|^2=0.99692 |k|^2=0.00276 sum=0.99978 recip(TE0)=9.4e-07 refl=1.7e-05 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=350 nm R=10 um: 42 sections, |t|^2=0.99870 |k|^2=0.00118 sum=0.99992 recip(TE0)=8.9e-07 refl=7.2e-06 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=400 nm R=10 um: 32 sections, |t|^2=0.99945 |k|^2=0.00051 sum=0.99997 recip(TE0)=6.6e-07 refl=3.1e-06 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+wrote C:/Users/Jay/Projects/DBEME/reports/output/ring/coupler_1570.json
+== --dataset Si_ring_coupler_220nm_1550 --radius-um 5 --gaps 200,300 --out /c/Users/Jay/Projects/DBEME/reports/output/ring/coupler_1550_R5.json
+power throttling off: True; priority above normal: True; system kept awake: True
+affinity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; BLAS threads 16
+Si_ring_coupler_220nm_1550: 41 points cached, N=6, lambda=1550 nm
+  g0=200 nm R=5 um: 72 sections, |t|^2=0.99269 |k|^2=0.00602 sum=0.99943 recip(TE0)=2.5e-06 refl=2.8e-05 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+  g0=300 nm R=5 um: 52 sections, |t|^2=0.99877 |k|^2=0.00106 sum=0.99992 recip(TE0)=2.0e-06 refl=1.8e-05 s=+1 busfrac=1.000
+    build 0.0 s (0 new points), warm 0.01 s
+wrote C:/Users/Jay/Projects/DBEME/reports/output/ring/coupler_1550_R5.json
+== --dataset Si_ring_coupler_220nm_1550_c20 --radius-um 10 --gaps 200 --out /c/Users/Jay/Projects/DBEME/reports/output/ring/coupler_1550_c20.json
+power throttling off: True; priority above normal: True; system kept awake: True
+affinity: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; BLAS threads 16
+Traceback (most recent call last):
+  File "C:\Users\Jay\Projects\DBEME\examples\run_solver_job.py", line 91, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\Jay\Projects\DBEME\examples\run_solver_job.py", line 87, in main
+    runpy.run_path(script, run_name="__main__")
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 287, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\Jay\Projects\DBEME\studies\ring\build_coupler.py", line 282, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\Jay\Projects\DBEME\studies\ring\build_coupler.py", line 213, in main
+    du = DataUpdater(dataset)
+  File "C:\Users\Jay\Projects\DBEME\em_simulation\data_updater\data_updater.py", line 97, in __init__
+    verify(
+    ~~~~~~^
+        data_directory,
+        ^^^^^^^^^^^^^^^
+        fingerprint(self.data_info, self.backend),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        has_cached_data=bool(self.neff),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Jay\Projects\DBEME\em_simulation\data_updater\dataset_identity.py", line 149, in verify
+    raise DatasetIdentityError(
+    ...<6 lines>...
+    )
+em_simulation.data_updater.dataset_identity.DatasetIdentityError: the cached dataset in C:\Users\Jay\Projects\DBEME\datasets\Si_ring_coupler_220nm_1550_c20 was built for a different problem:
+  cross_section:
+      cached: BusRingStrips|t=2.2e-07|pyoptik:main/Si/Li-293K|pyoptik:main/SiO2/Malitson|pyoptik:main/SiO2/Malitson|bus_fixed:gap_max=1e-06
+      now:    BusRingStrips|t=2.2e-07|pyoptik:main/Si/Li-293K|pyoptik:main/SiO2/Malitson|pyoptik:main/SiO2/Malitson|bus_fixed:gap_max=7e-07
+  mesh:
+      cached: [232, 80]
+      now:    [217, 80]
+  parameter_grid:
+      cached: {'gap': {'count': 31, 'max': 1e-06, 'min': 1e-07, 'sum': 1.48e-05}, 'w1': {'count': 3, 'max': 5.2e-07, 'min': 4.8e-07, 'sum': 1.5e-06}, 'w2': {'count': 3, 'max': 5.2e-07, 'min': 4.8e-07, 'sum': 1.5e-06}}
+      now:    {'gap': {'count': 23, 'min': 1e-07, 'max': 6.8e-07, 'sum': 7.92e-06}, 'w1': {'count': 3, 'min': 4.8e-07, 'max': 5.2e-07, 'sum': 1.5e-06}, 'w2': {'count': 3, 'min': 4.8e-07, 'max': 5.2e-07, 'sum': 1.5e-06}}
+  window_m:
+      cached: [2.32e-06, -8e-07, 8e-07]
+      now:    [2.17e-06, -8e-07, 8e-07]
+
+Stored effective indices and overlaps are only valid for the exact cross section, wavelength, mesh, window and grid they were solved on. Delete the .pkl files (and this fingerprint.json) to regenerate, or point DataUpdater at a different dataset directory.
+CAMPAIGN DONE

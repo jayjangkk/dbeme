@@ -1,0 +1,42 @@
+{
+  "basis_convention": 2,
+  "cross_section": "BusRingStrips|t=2.2e-07|pyoptik:main/Si/Li-293K|pyoptik:main/SiO2/Malitson|pyoptik:main/SiO2/Malitson|bus_fixed:gap_max=7e-07",
+  "mesh": [
+    434,
+    160
+  ],
+  "mode_numbers": 6,
+  "parameter_grid": {
+    "gap": {
+      "count": 46,
+      "max": 7e-07,
+      "min": 1e-07,
+      "sum": 1.615e-05
+    },
+    "w1": {
+      "count": 3,
+      "max": 5.2e-07,
+      "min": 4.8e-07,
+      "sum": 1.5e-06
+    },
+    "w2": {
+      "count": 3,
+      "max": 5.2e-07,
+      "min": 4.8e-07,
+      "sum": 1.5e-06
+    }
+  },
+  "parameter_names": [
+    "w1",
+    "w2",
+    "gap"
+  ],
+  "solver": "EmepyFDE",
+  "thickness_m": 2.2e-07,
+  "wavelength_m": 1.53e-06,
+  "window_m": [
+    2.17e-06,
+    -8e-07,
+    8e-07
+  ]
+}
