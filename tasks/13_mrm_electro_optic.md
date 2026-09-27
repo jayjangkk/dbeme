@@ -3,7 +3,7 @@
 **Prompt to start with:**
 
 > Read `CLAUDE.md`, `tasks/11` (Phases 1–5 status) and this file; the
-> report is `reports/16_MRM.md`.
+> report is `reports/16_1_MRM.md`.
 
 ## Why
 
@@ -46,7 +46,7 @@ junction position and `R_s` are declared inputs, stated in the report.
 | EO response: transient vs harmonic balance vs analytic | 0.5 dB to the −3 dB point |
 | eye at `T_bit = 3 tau` open, at `1.5 tau` visibly closing | qualitative |
 
-## Status 2026-09-20 — done; `reports/16_MRM.md`
+## Status 2026-09-20 — done; `reports/16_1_MRM.md`
 
 Gate measured: 28.4 pm/V, V_π·L 1.01 V·cm at 1 V ✓; lifetime 2.7 %
 (marginal; energy decays with `τ/2`, the t-CMT `τ` being the amplitude

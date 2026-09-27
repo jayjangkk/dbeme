@@ -316,7 +316,7 @@ and the ring transmitted 1.66 before this. sax vs closed form on the DBEME
 coupler: Q within 1–5 % at every gap (the residual is `‖t(λ)‖` moving
 between 1550 nm and the dip). Results: FSR 9.151 nm, Q_i 1.66e5, critical
 gap 247 nm, 27 dB extinction at 250 nm, 0.57 nm resonance shift per nm of
-width. Report written: `reports/15_ring_resonator.md`.
+width. Report written: `reports/16_ring_resonator.md`.
 
 ### Phase 4 — internal rows done, Lumerical and literature rows left blank for Jae
 
@@ -337,7 +337,7 @@ without it no spectrum is reported.
 Then `examples/demo_ring_resonator.py`: through/drop vs λ, FSR, loaded and
 intrinsic Q, extinction vs gap with the critical-coupling gap marked,
 resonance shift vs width (sensitivity, not absolute position), timings.
-The report (`reports/15_ring_resonator.md`, template CLAUDE.md §8) is
+The report (`reports/16_ring_resonator.md`, template CLAUDE.md §8) is
 written **after the Phase 4 gate**, because §7 protocol C forbids a report
 without its literature table.
 
