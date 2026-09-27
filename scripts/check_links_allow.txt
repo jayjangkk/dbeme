@@ -11,6 +11,5 @@ studies/ring/lumerical/                           # tasks/11, reports/16 section
 dbeme/circuit/roundtrip.py                        # tasks/12 section 3.1: planned module, not built
 
 # Task 16, Phase 1 - created when that phase runs
-scripts/public_paths.txt                          # tasks/16 step 1.1
 datasets/__init__                                 # tasks/16 step 1.6, a guess at where dataset names resolve
 dbeme/CLAUDE.md                                   # tasks/16 step 1.6: the public repo's CLAUDE.md inside the private repo's submodule

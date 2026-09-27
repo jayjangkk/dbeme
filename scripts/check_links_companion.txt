@@ -1,0 +1,17 @@
+# Cited by the public documents but outside the public tree: kept in the
+# private companion repository, or generated locally (examples/output/).
+# Written by: scripts/check_links.py --keep scripts/public_paths.txt --write-companion
+examples/output/
+references/
+references/FargasCabanillas_bu_0017E_17256.pdf
+references/ntttechnical.pdf
+reports/07_sirac_optimization.md
+reports/17
+reports/output/tapeout/sipr_sparams.csv
+reports/output/tapeout/sisnprs_smatrix.json
+studies/sirac/optimize.py
+studies/sirac/run_bend_loss.py
+studies/tapeout/provenance.py
+studies/tapeout/run_sparams.py
+studies/tapeout/sparams_phase.py
+tasks/14
