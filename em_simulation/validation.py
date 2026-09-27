@@ -35,18 +35,31 @@ class Check:
         return f"{self.name:34s} {self.criterion:22s} {self.measured:10.3e}  {mark}{tail}"
 
 
-def lumped_smatrix(geometry, force_unitary=False, force_passive=False):
+def lumped_smatrix(geometry, force_unitary=False, force_passive=False,
+                   length=None, method=None):
     """The single scattering matrix of a whole device.
 
     :param geometry: A :class:`~em_simulation.geometry.geometry.Geometry`.
     :param force_unitary: Project each section onto the nearest unitary matrix.
         Leave **off** for anything measuring truncation error - the projection
         hides exactly what is being measured.
+    :param length: Re-cascade at this total length (``None``: as built).
+    :param method: S-matrix route, ``"direct"`` or ``"transfer"``
+        (``None``: the propagator's ``SMATRIX_METHOD``).  A lossy or
+        many-mode basis needs ``"direct"`` (`reports/06` §8).
     :returns: ``(2N, 2N)`` complex array.
     """
     eme = EME(geometry, force_passive=force_passive, force_unitary=force_unitary)
-    eme.calc_Smatrix()
-    smatrix = eme.propagator.smatrix
+    if method is None:
+        eme.calc_Smatrix()
+    else:
+        eme.propagator.calc_Smatrix(method=method)
+    if length is None:
+        smatrix = eme.propagator.smatrix
+    elif method is None:
+        smatrix = eme.propagator._find_Smatrix_new_length(length)
+    else:
+        smatrix = eme.propagator._find_Smatrix_new_length(length, method=method)
     lumped = smatrix[0]
     for i in range(1, len(smatrix)):
         lumped = mct._redheffer_star_product(lumped, smatrix[i])

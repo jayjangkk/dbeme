@@ -15,7 +15,7 @@ a path device's length and longitudinal shape can be Adam variables *in the
 same graph* as a sax circuit (a RAC's section-II length inside the
 interleaver's loss).  :meth:`CascadeJnp.from_path` takes the matrices
 straight from the production propagator, so the two cannot drift apart;
-`tests/test_cascade_jnp.py` asserts the S-matrix equals `lumped_smatrix`
+`tests/test_cascade_jnp_public.py` asserts the S-matrix equals `lumped_smatrix`
 and the gradient equals finite differences.
 """
 

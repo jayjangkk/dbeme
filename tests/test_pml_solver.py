@@ -417,7 +417,7 @@ def test_colocated_constant_guide_transmits_unity():
     """
     from em_simulation import DataExtractor, DirectParametricPath
     from em_simulation.fde.pml import PMLBackend
-    from studies.sirac.device import lumped_smatrix
+    from em_simulation.validation import lumped_smatrix
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     length = 20e-6
@@ -436,7 +436,7 @@ def test_colocated_constant_guide_transmits_unity():
         path = DirectParametricPath(extractor, const, total_length=length, resolution=20)
         path._verbose = False
         path.calc_output_data()
-        S = lumped_smatrix(path, length)
+        S = lumped_smatrix(path, length=length, method="direct")
         n = S.shape[0] // 2
         neff = np.asarray(path.output_data["neff"][0][:n])
         guided = np.flatnonzero(np.abs(neff.imag) < 1e-6)
