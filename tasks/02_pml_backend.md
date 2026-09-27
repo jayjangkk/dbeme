@@ -7,7 +7,7 @@
 > until the Airy validator reproduces analytic bend loss. Report the
 > convergence table at the Phase 1 gate.
 
-Conventions are in `CLAUDE.md`; §5.x refers to its validation backlog.
+Conventions are in `docs/validation_backlog.md`; §5.x refers to its validation backlog.
 Prerequisite: none. This is independent of `tasks/01_coupled_pair.md` and can
 run in either order — but 01 is the higher priority, because no demo's primary
 figure of merit needs radiation loss.

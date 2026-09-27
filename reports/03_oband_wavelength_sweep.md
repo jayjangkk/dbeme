@@ -42,7 +42,7 @@ obvious move and it is the wrong one. Overlaps are only ever used between
 adjacent points *on a propagation path*, and light never propagates from one
 wavelength to another, so every λ-neighbour overlap the grid computed would be
 physically meaningless — two extra mode solves per point, bought for nothing.
-One dataset per wavelength plus a sweep helper, which is what `CLAUDE.md` §5.14
+One dataset per wavelength plus a sweep helper, which is what `docs/validation_backlog.md` §5.14
 already recommends.
 
 That is now a configuration change rather than code. `em_simulation/platforms.py`

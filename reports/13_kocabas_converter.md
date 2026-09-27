@@ -277,7 +277,7 @@ pseudo-inverse cutoff of 1e-3, and the projection returned 3.2× a physical
 input's power through it. Any cutoff from 2e-3 to 3e-2 repairs the path
 (85.5 %, reflection 2e-4) and moves the design and 25 nm paths by nothing
 to four digits; the cutoff is 1e-2 now (`SingleEME.INTERFACE_RCOND`,
-CLAUDE.md §5.13a, `examples/kocabas_interface_passivity.py` for the
+docs/validation_backlog.md §5.13a, `examples/kocabas_interface_passivity.py` for the
 per-interface check). Every number in this section is recomputed under it.
 
 ### The first pass — the sharp-corner 5 nm grid (kept for the record)
@@ -423,7 +423,7 @@ grid points solves nothing new. A direct EME pays ~9 900 s for each of them.
    shift-invert lossy solver.** With the target at 1.9 the wire's TE
    fundamental left the 16 nearest eigenvalues part-way along the path, the
    tracker linked a first-vertical-order branch instead, and the cascade read
-   −20 dB — a plausible-looking wrong answer, not a crash. CLAUDE.md §5.13a
+   −20 dB — a plausible-looking wrong answer, not a crash. docs/validation_backlog.md §5.13a
    now states the rule; §1 records the evidence.
 
 **Limits.**
@@ -494,7 +494,7 @@ matters.
 **But the per-step loss itself is not converged, and the eigenvalue hides
 that.** The same 5 nm step costs 1.58e−4 on the 5 nm grid and 2.36e−4 on the
 2.5 nm one — 50 % apart — while `n_eff` between the two grids moves 0.076 %.
-That is CLAUDE.md §5.7 in one line: overlaps converge more slowly than
+That is docs/validation_backlog.md §5.7 in one line: overlaps converge more slowly than
 eigenvalues, and it is the overlap the method rests on. The *ratio* above is
 measured within one grid and is therefore the trustworthy number; the
 absolute per-step loss is good to about a factor 1.5.
@@ -585,7 +585,7 @@ fab-faithful comparison should sweep `w_end` rather than assume zero.
 
 ### Refining where the edge moves, not everywhere
 
-The piecewise-refined grid (`PMLModeSolver(refine_x=)`, CLAUDE.md §3) makes
+The piecewise-refined grid (`PMLModeSolver(refine_x=)`, docs/dataset_doctrine.md §3) makes
 it possible to refine one strip of the cross section and leave the rest at
 5 nm. Two strips were tried, in the order the evidence suggested them.
 

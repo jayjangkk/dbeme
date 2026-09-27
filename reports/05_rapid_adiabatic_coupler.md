@@ -367,7 +367,7 @@ cuts off at **n = 1.444**, not 1.0, so a 6-mode solve returns three bound modes
 and three sub-cutoff modes whose fields are set by the simulation window. Two of
 those sit at `n_eff` = 1.19 and 1.17 — a **near-degenerate pair**.
 
-This is the first concrete instance of the open item in `CLAUDE.md` §5.6.
+This is the first concrete instance of the open item in `docs/validation_backlog.md` §5.6.
 `_pin_gauge` fixes one global phase *per mode*, which is enough for a
 non-degenerate mode — power normalisation collapses the gauge group to `{±1}`
 and the sign convention finishes the job — but a degenerate subspace has a

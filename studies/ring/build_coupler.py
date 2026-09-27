@@ -16,7 +16,7 @@ fields, so the result is the 4-port coupler in the port convention of
 ``em_simulation.circuit.waveguide.ideal_coupler`` (o1 bus in, o2 bus through,
 o3 ring in, o4 ring out).
 
-Sanity checks per gap (`CLAUDE.md` §5): reciprocity ``max|S - S^T|`` on the
+Sanity checks per gap (`docs/validation_backlog.md` §5): reciprocity ``max|S - S^T|`` on the
 guided block, power conservation, reflection, power leaving on any other
 guided branch.  Optional: direct (uncached) EME on the same path (§7 A) and
 a second slicing (§5.4).

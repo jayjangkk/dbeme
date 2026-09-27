@@ -3,7 +3,7 @@
 A polarization rotator only works if the cross section has no horizontal mirror
 plane.  These tests check that ``BiLevelStrip`` builds the right geometry, that
 a symmetric strip really does give zero TE-TM coupling (so the failure mode
-``CLAUDE.md`` §5.11 warns about is caught rather than mistaken for a bug), and
+``docs/validation_backlog.md`` §5.11 warns about is caught rather than mistaken for a bug), and
 that adding the slab produces the TM0/TE1 hybridisation the device needs.
 """
 

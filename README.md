@@ -432,7 +432,7 @@ And **basis membership is a correctness condition**: with the target at 1.9
 the wire's TE fundamental left the 16 nearest eigenvalues part-way along the
 path, the tracker linked a cutoff branch instead, and the cascade read −20 dB
 without failing. The target must sit among the physical branches, not below
-them (CLAUDE.md §5.13a).
+them (docs/validation_backlog.md §5.13a).
 
 ## Two cascade routes
 

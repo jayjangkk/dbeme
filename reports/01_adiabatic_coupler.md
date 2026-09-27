@@ -129,7 +129,7 @@ At 11.5 nm the answer at 400 µm is not merely inaccurate, it is qualitatively
 wrong: a *longer* adiabatic device is reported as *worse*. From about 5 nm
 downwards the result is stable and monotonic. The shipped grid uses 5 nm.
 
-This is `CLAUDE.md` §3's non-uniform-axis recommendation, now with a number
+This is `docs/dataset_doctrine.md` §3's non-uniform-axis recommendation, now with a number
 attached: sample at ≲5 nm wherever two branches approach, 20 nm elsewhere. The
 refinement is cheap because a wide axis costs nothing until a device visits it.
 

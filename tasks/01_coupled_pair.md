@@ -104,7 +104,7 @@ assignment on `|overlap|` against the previous grid point.
 Instrument `DataUpdater` to count `overlap_matrix` calls for one device path
 and confirm the count scales as *(path length) × (neighbours)*, **not** as
 `N²` over the grid. If upstream ever builds a full pair table, fix that first —
-a 3-D or 4-D axis is not survivable otherwise (see `CLAUDE.md` §3).
+a 3-D or 4-D axis is not survivable otherwise (see `docs/dataset_doctrine.md` §3).
 
 ---
 
@@ -161,4 +161,4 @@ n_eff,bus · R_bus = n_eff,ring · R_ring      (angular, not linear, β)
   then asymmetric. The dataset must not assume symmetry anywhere.
 * **`w1` fixed in Phase 1 is a deliberate simplification.** When you later free
   it, prefer reparameterising to `(w̄, Δw)` at a few coarse `gap` values rather
-  than a dense 3-D `(w1, w2, gap)` — see `CLAUDE.md` §3.
+  than a dense 3-D `(w1, w2, gap)` — see `docs/dataset_doctrine.md` §3.

@@ -83,7 +83,7 @@ window 4.4 × 1.6 µm. 368 points, 141 EME sections, ~21 min cold.
 
 A buried strip with symmetric cladding has a **horizontal** mirror plane. TE and
 TM sit in different symmetry classes under it, so they cannot couple at all —
-`CLAUDE.md` §5.11 is right that a rotator built on `FullEtchStrip` returns
+`docs/validation_backlog.md` §5.11 is right that a rotator built on `FullEtchStrip` returns
 identically zero conversion, and it would look like a bug. Leaving a slab on the
 bottom of the device layer destroys that mirror plane.
 
@@ -241,7 +241,7 @@ anything about the assembled PRS. The 1.06e-1 truncation residual bounds every
 number here and, unlike report 01, it does not even improve monotonically with
 mode count — this device needs a larger *guided* basis, not just a larger N.
 
-**New capability.** `BiLevelStrip` closes `CLAUDE.md` §5.11, and with
+**New capability.** `BiLevelStrip` closes `docs/validation_backlog.md` §5.11, and with
 `CoupledStrips` from report 01 the two cross sections between them cover demos
 1–3 of the plan. `em_simulation/platforms.py` now holds both stacks so a dataset
 file is a wavelength and nothing else.

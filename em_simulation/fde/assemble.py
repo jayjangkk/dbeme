@@ -93,7 +93,7 @@ def assemble(mode_data_list, num_modes, prop_axis=2, lossless=True,
 
 
 def biorthogonalise(E, H, x, y, prop_axis=2):
-    r"""Make each point's forward modes biorthogonal - CLAUDE.md §5.6.
+    r"""Make each point's forward modes biorthogonal - docs/validation_backlog.md §5.6.
 
     §5.6 records that ``_pin_gauge`` fixes one global phase **per mode** and
     cannot fix a **near-degenerate subspace**, where the residual gauge freedom
@@ -113,7 +113,7 @@ def biorthogonalise(E, H, x, y, prop_axis=2):
     * **near-degeneracy** - ARPACK returns an arbitrary rotation inside a
       near-degenerate subspace and no per-mode phase convention can pin it;
     * **discretisation** - even well-separated modes are only biorthogonal to
-      the accuracy of the quadrature (the ~2 % noted in CLAUDE.md §4).
+      the accuracy of the quadrature (the ~2 % noted in docs/validation_backlog.md §4).
 
     The correction is Löwdin symmetric orthogonalisation in the
     **unconjugated** metric - the one the method actually uses (§5.16), which

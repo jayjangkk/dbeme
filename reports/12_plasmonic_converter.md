@@ -276,7 +276,7 @@ algebra changed (§7.5) cost 0 s of mode solving.
    other form invertible, exactly as validated.
 4. DBEME's fixed grid cannot show an adiabatic optimum for a device whose
    step-to-step mismatch field is outside its basis: the mismatch loss is
-   length-independent and only the metal loss varies. This is CLAUDE.md
+   length-independent and only the metal loss varies. This is docs/validation_backlog.md
    §5.9 item 5 and §7 demo-4 blocker 4 measured, not argued.
 5. Rounding the metal corners changes the slot mode (binding and loss) and
    not the taper's step mismatch: the singular corner field was the slot's

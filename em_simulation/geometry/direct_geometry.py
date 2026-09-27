@@ -136,7 +136,7 @@ class DirectGeometry(metaclass=abc.ABCMeta):
 
         Delegates to :func:`~em_simulation.geometry.mode_tracking.hungarian_mode_links`.
         See that module for why the assignment has to be a permutation
-        (CLAUDE.md §5.13) and what the earlier per-column ``argmax`` got wrong.
+        (docs/validation_backlog.md §5.13) and what the earlier per-column ``argmax`` got wrong.
 
         Returns:
             - mode_link: ndarray of shape (num_section-1, mode_number) 

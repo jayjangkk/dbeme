@@ -1,4 +1,4 @@
-"""Link the modes of one section to the next - CLAUDE.md §5.13.
+"""Link the modes of one section to the next - docs/validation_backlog.md §5.13.
 
 FDE returns modes sorted by ``n_eff``, so labels swap at an anti-crossing.
 Tracking therefore has to follow **maximum overlap with the previous grid

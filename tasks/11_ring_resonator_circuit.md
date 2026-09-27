@@ -5,7 +5,7 @@
 > Read `CLAUDE.md`, then `tasks/11_ring_resonator_circuit.md`, and do Phase 1.
 > Stop at the Phase 1 gate and report the acceptance table before going further.
 
-Conventions, units and the dataset doctrine are in `CLAUDE.md`; §5.x refers to
+Conventions, units and the dataset doctrine are in `docs/validation_backlog.md`; §5.x refers to
 its validation backlog. Read `reports/06_pml_phase1_gate.md` §6 and §8 and the
 memory notes "S-param phase traps" and "PML: slicing before physics" before
 touching phase or loss.
@@ -181,7 +181,7 @@ with that port meaning.
 the phase-fit residual demands): `swept_parameters=("w1","w2","gap")`,
 `w1 = w2 = 500 nm` fixed range (single point each is fine — the point coupler
 keeps widths constant), gap axis non-uniform: 10 nm from 100–400 nm, 50 nm to
-1.0 µm, then 250 nm to 2.5 µm. Rationale in CLAUDE.md §3.3. Modes: TE0 + TE1
+1.0 µm, then 250 nm to 2.5 µm. Rationale in docs/dataset_doctrine.md §3.3. Modes: TE0 + TE1
 per guide (N = 4 forward) so the coupler's higher-order excitation is seen;
 `force_unitary=False`, `INTERFACE_PROJECTION = "output"`.
 
@@ -337,7 +337,7 @@ without it no spectrum is reported.
 Then `examples/demo_ring_resonator.py`: through/drop vs λ, FSR, loaded and
 intrinsic Q, extinction vs gap with the critical-coupling gap marked,
 resonance shift vs width (sensitivity, not absolute position), timings.
-The report (`reports/16_ring_resonator.md`, template CLAUDE.md §8) is
+The report (`reports/16_ring_resonator.md`, template docs/demo_plan.md §8) is
 written **after the Phase 4 gate**, because §7 protocol C forbids a report
 without its literature table.
 
@@ -350,7 +350,7 @@ State it. Intrinsic Q: radiation part physical, roughness part model-bound.
 ## Phase 4 — is the ring right? Independent references
 
 Three tiers, from exact to empirical. Every row of the final table carries
-its discrepancy **and a physical cause** (CLAUDE.md §7 protocol B). The
+its discrepancy **and a physical cause** (docs/demo_plan.md §7 protocol B). The
 question each tier answers is different; do not let a pass in one stand in
 for another.
 

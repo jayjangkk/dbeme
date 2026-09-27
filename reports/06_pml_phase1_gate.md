@@ -713,7 +713,7 @@ intrinsic property — confinement, effective index, TE fraction — is computed
 cross section and can order two of them differently. The robust fix is to match
 modes *between* adjacent sections by maximum overlap, which is exactly the
 technique `Geometry.calc_output_data` already uses for mode tracking
-(`CLAUDE.md` §5.13) and which the standalone `mode_data` path does not yet do.
+(`docs/validation_backlog.md` §5.13) and which the standalone `mode_data` path does not yet do.
 
 That is the next piece of work for a PML basis, and it is a *matching* problem,
 not a conditioning one.
@@ -723,7 +723,7 @@ not a conditioning one.
 Two things closed this, and only one of them was mine.
 
 **N = 12** was fixed by the Löwdin biorthogonalisation that landed in
-`assemble.py` on 2026-09-03 (`CLAUDE.md` §5.6, from the SiRAC optimisation
+`assemble.py` on 2026-09-03 (`docs/validation_backlog.md` §5.6, from the SiRAC optimisation
 work in report 07). Re-running the study on the current tree, N = 12 sits at
 **1.043** even on the transfer route, against 1.24 before. Biorthogonalising
 each cross section's basis in the unconjugated metric removes exactly the

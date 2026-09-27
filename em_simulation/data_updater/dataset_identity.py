@@ -32,7 +32,7 @@ FINGERPRINT_FILE = "fingerprint.json"
 #: 1 - original.
 #: 2 - forward modes are Löwdin-biorthogonalised per cross section before the
 #:     backward basis is built, so that ``O_aa = I`` holds exactly
-#:     (:func:`em_simulation.fde.assemble.biorthogonalise`, CLAUDE.md §5.6).
+#:     (:func:`em_simulation.fde.assemble.biorthogonalise`, docs/validation_backlog.md §5.6).
 #:     Pre-fix overlaps differ by up to ~7e-2 between near-degenerate modes and
 #:     ~3e-3 otherwise, and - crucially - a stored pre-fix overlap cascaded
 #:     against a freshly solved post-fix one mixes two conventions, which is the
