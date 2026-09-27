@@ -710,8 +710,9 @@ datasets/
   Si_pair_*, Si_bilevel_*, Si_rac_*   coupled pairs, rib, RAC (reports 01-05)
   Si_plasmonic_slot_1550[_sharp|_gap40|_c4]  lossy PML basis: Si wire in a gold slot (report 12)
   SiO2_kocabas_set2_1550               two-axis (w_si, gap) lossy basis: Kocabas's embedded converter (report 13)
-backups/                timestamped snapshots of em_simulation/ (backup.py,
-                        restore.py) taken before each change to the algebra
+backups/                pre-task-16 snapshots of em_simulation/ (untracked; each
+                        is a `backup/<name>` git tag - scripts/backups_to_tags.py)
+scripts/                repo tooling: backup.py, restore.py, backups_to_tags.py
 examples/               demo scripts and studies, figures in output/
 reports/                device write-ups, with their figures in output/
 tests/                  physics checks: backend, gauge, grid handling, materials

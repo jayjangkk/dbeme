@@ -513,7 +513,7 @@ transfer-matrix formulation must then invert exactly that matrix. You cannot
 regularise your way out of a formulation that requires the inverse to exist.
 
 This was implemented, measured, and **reverted**; the tree is byte-identical to
-the backup taken beforehand (`backups/restore.py --check`).
+the backup taken beforehand (`scripts/restore.py --check`).
 
 ### The fix that would work
 
@@ -578,7 +578,7 @@ Motivated by two targets §6 does *not* cover: **plasmonic waveguides** and
 outright, and neither is served by the "PML buys only the R ≲ 1–2 µm corner"
 conclusion drawn for strip waveguides.
 
-Backups taken before each stage; `python backups/restore.py` reverts.
+Backups taken before each stage; `python scripts/restore.py` reverts.
 
 ### Why the transfer form cannot serve them
 

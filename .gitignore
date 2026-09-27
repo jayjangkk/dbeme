@@ -7,3 +7,6 @@ examples/output/
 # (~700 kB for the ~140 points the demos visit) because only the parameter
 # points a device actually uses are ever computed.
 .venv-gds/
+
+# Snapshots of em_simulation/ before task 16; each one is a backup/<name> tag.
+backups/
