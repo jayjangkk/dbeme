@@ -1,0 +1,15 @@
+# References that are deliberately not files (scripts/check_links.py).
+# One path per line; the comment says why it may stay broken.  An entry that
+# stops being needed is reported as stale, so this list cannot rot silently.
+
+# Planned in a task spec, built under another name or not at all
+datasets/Si_fulletch_220nm_pair/dataset_info.py   # tasks/01 plan; shipped as datasets/Si_pair_fulletch_220nm
+em_simulation/geometry/coupled_waveguide/         # tasks/01 plan; built as em_simulation.fde.CoupledStrips + ParametricPath
+studies/common/                                   # tasks/04, reports/08: proposed refactor, not done
+reports/09_crosscheck.md                          # tasks/05b: Lumerical cross-check report, not written yet
+studies/ring/lumerical/                           # tasks/11, reports/16 section 5.2: "to be filled"
+em_simulation/circuit/roundtrip.py                # tasks/12 section 3.1: planned module, not built
+
+# Task 16, Phase 1 - created when that phase runs
+scripts/public_paths.txt                          # tasks/16 step 1.1
+datasets/__init__                                 # tasks/16 step 1.6, a guess at where dataset names resolve
