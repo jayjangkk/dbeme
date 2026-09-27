@@ -123,7 +123,7 @@ class SingleRunner():
         ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=True, shadow=True, ncol=5)
 
 
-        plt.xlabel("Propagation Length [$\mu$m]")
+        plt.xlabel(r"Propagation Length [$\mu$m]")
         plt.ylabel("Normalized Intensity")
         plt.title("Variation of Intensity Inside the Structure")
         

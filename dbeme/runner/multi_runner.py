@@ -115,7 +115,7 @@ class MultiRunner():
             mode_name = "mode " + str(i)
             plt.plot(concatenated_cum_lengths_um, total_sectional_amplitudes[:,i], label = mode_name)
 
-        plt.xlabel("Propagation Length [$\mu$m]")
+        plt.xlabel(r"Propagation Length [$\mu$m]")
         plt.ylabel("Normalized Intensity")
         plt.legend()
         plt.title("Variation of Intensity Inside the Structure")

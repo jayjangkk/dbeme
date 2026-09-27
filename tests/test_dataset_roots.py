@@ -25,8 +25,9 @@ def test_unset_leaves_the_path_alone(monkeypatch):
 
 def test_a_name_resolves_in_whichever_root_holds_it(tmp_path, monkeypatch):
     own, shared = tmp_path / "own", tmp_path / "shared"
-    (own / "private_set").mkdir(parents=True)
-    (shared / "public_set").mkdir(parents=True)
+    _dataset(own / "private_set")
+    _dataset(shared / "public_set")
+    (own / "public_set" / "__pycache__").mkdir(parents=True)   # a leftover shell
     _roots(monkeypatch, own, shared)
     asked = str(own / "public_set")            # the path a project script builds
     assert resolve_dataset_dir(asked) == str(shared / "public_set")
@@ -34,9 +35,14 @@ def test_a_name_resolves_in_whichever_root_holds_it(tmp_path, monkeypatch):
     assert resolve_dataset_dir(str(own / "new_set")) == str(own / "new_set")
 
 
+def _dataset(path):
+    path.mkdir(parents=True)
+    (path / "dataset_info.py").write_text("")
+
+
 def test_a_name_in_two_roots_raises(tmp_path, monkeypatch):
     for root in ("a", "b"):
-        (tmp_path / root / "twin").mkdir(parents=True)
+        _dataset(tmp_path / root / "twin")
     _roots(monkeypatch, tmp_path / "a", tmp_path / "b")
     with pytest.raises(ValueError, match="more than one"):
         resolve_dataset_dir(str(tmp_path / "a" / "twin"))

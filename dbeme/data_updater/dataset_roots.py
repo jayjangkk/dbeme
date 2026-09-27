@@ -7,9 +7,12 @@ roots instead, so a project that keeps its own datasets next to a checkout of
 this package (``<project>/datasets`` and ``<project>/dbeme/datasets``) opens
 both kinds with the same ``<project>/datasets/<name>`` path.
 
-A name present in more than one root raises: two datasets of one name are two
-different caches, and picking one silently would mix them.  A name in no root
-falls back to the path as given, which is how a new dataset is started.
+A root holds a dataset of that name only if the directory has a
+``dataset_info.py`` - an empty folder, or one left with nothing but
+``__pycache__``, is not a dataset.  A name present in more than one root
+raises: two datasets of one name are two different caches, and picking one
+silently would mix them.  A name in no root falls back to the path as given,
+which is how a new dataset is started.
 """
 
 import os
@@ -32,7 +35,8 @@ def resolve_dataset_dir(path):
     found = []
     for root in roots:
         candidate = os.path.join(root, name)
-        if os.path.isdir(candidate) and candidate not in found:
+        if (os.path.isfile(os.path.join(candidate, "dataset_info.py"))
+                and candidate not in found):
             found.append(candidate)
     if len(found) > 1:
         raise ValueError(f"dataset {name!r} is in more than one DBEME_DATASET_ROOTS "
