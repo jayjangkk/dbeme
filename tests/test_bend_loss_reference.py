@@ -17,13 +17,13 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.reference import (  # noqa: E402
+from dbeme.reference import (  # noqa: E402
     BentSlab,
     attenuation_db_per_cm,
     bend_loss_db_per_90deg,
     imag_neff_from_db_per_cm,
 )
-from em_simulation.reference.fd1d_pml import PMLGrid, solve_bent_slab  # noqa: E402
+from dbeme.reference.fd1d_pml import PMLGrid, solve_bent_slab  # noqa: E402
 
 WL = 1.55e-6
 

@@ -36,9 +36,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.environ["RAC_CLAD"] = "air"
 
 import demo_rapid_adiabatic_coupler as rac  # noqa: E402
-from em_simulation import DataExtractor, DataUpdater, ParametricPath  # noqa: E402
-from em_simulation.fde import EmepyFDE  # noqa: E402
-from em_simulation.validation import (  # noqa: E402
+from dbeme import DataExtractor, DataUpdater, ParametricPath  # noqa: E402
+from dbeme.fde import EmepyFDE  # noqa: E402
+from dbeme.validation import (  # noqa: E402
     check_branch_tracking,
     check_power_conservation,
     check_reciprocity,

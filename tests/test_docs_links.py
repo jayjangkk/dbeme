@@ -25,8 +25,8 @@ def test_shorthand_and_module_references_resolve(tmp_path):
     doc = str(tmp_path / "doc.md")
     assert check_links.exists("reports/07", doc)
     assert check_links.exists("tasks/05b", doc)
-    assert check_links.exists("em_simulation/validation.lumped_smatrix", doc)
+    assert check_links.exists("dbeme/validation.lumped_smatrix", doc)
     assert not check_links.exists("reports/99", doc)
     assert check_links.clean("reports/07_sirac_optimization.md §20") == "reports/07_sirac_optimization.md"
     assert check_links.clean("studies/<slug>/tests/") is None
-    assert check_links.clean("em_simulation/fde/pml.py:64") == "em_simulation/fde/pml.py"
+    assert check_links.clean("dbeme/fde/pml.py:64") == "dbeme/fde/pml.py"

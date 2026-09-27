@@ -20,8 +20,8 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import em_simulation.data_updater.overlap_calculation_tool as oct  # noqa: E402
-from em_simulation.fde.assemble import overlap_matrix  # noqa: E402
+import dbeme.data_updater.overlap_calculation_tool as oct  # noqa: E402
+from dbeme.fde.assemble import overlap_matrix  # noqa: E402
 
 
 def reference(E_a, H_b, x, y, prop_axis=2):

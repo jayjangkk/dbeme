@@ -17,10 +17,10 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.fde.cross_section import FullEtchStrip, _cell_edges, _fill_fraction  # noqa: E402
-from em_simulation.fde.materials import ConstantIndex, silica  # noqa: E402
-from em_simulation.fde.pml import PMLBackend, PMLModeSolver, refined_axis  # noqa: E402
-from em_simulation.fde.slot_converter import _rounded_rect_fill  # noqa: E402
+from dbeme.fde.cross_section import FullEtchStrip, _cell_edges, _fill_fraction  # noqa: E402
+from dbeme.fde.materials import ConstantIndex, silica  # noqa: E402
+from dbeme.fde.pml import PMLBackend, PMLModeSolver, refined_axis  # noqa: E402
+from dbeme.fde.slot_converter import _rounded_rect_fill  # noqa: E402
 
 
 # ------------------------------------------------------------- the axis
@@ -199,7 +199,7 @@ def test_confinement_is_area_weighted_on_a_refined_grid():
 
 
 def test_kocabas_tip_platform_keeps_every_edge_on_a_node():
-    from em_simulation.platforms import kocabas_converter_dataset_info, kocabas_path
+    from dbeme.platforms import kocabas_converter_dataset_info, kocabas_path
 
     cell, fine, extent = 25e-9, 5e-9, 50e-9
     info = kocabas_converter_dataset_info(set_number=2, cell=cell, tip_refine=(extent, fine))()
@@ -233,7 +233,7 @@ def test_kocabas_wall_strip_refines_the_wall_axis_and_leaves_the_width_axis_coar
     """The strip the gold wall moves through: fine wall steps, 10 nm width
     steps as before, every edge on a node - including the strip's own
     boundaries and the slot end."""
-    from em_simulation.platforms import kocabas_converter_dataset_info
+    from dbeme.platforms import kocabas_converter_dataset_info
 
     cell, fine = 25e-9, 5e-9
     info = kocabas_converter_dataset_info(set_number=2, cell=cell, refine=((100e-9, 300e-9, fine),))()
@@ -256,7 +256,7 @@ def test_kocabas_wall_strip_refines_the_wall_axis_and_leaves_the_width_axis_coar
 
 
 def test_kocabas_tip_refine_is_the_zero_strip():
-    from em_simulation.platforms import kocabas_converter_dataset_info
+    from dbeme.platforms import kocabas_converter_dataset_info
 
     a = kocabas_converter_dataset_info(set_number=2, cell=25e-9, tip_refine=(50e-9, 5e-9))()
     b = kocabas_converter_dataset_info(set_number=2, cell=25e-9, refine=((0.0, 50e-9, 5e-9),))()
@@ -269,7 +269,7 @@ def test_kocabas_tip_refine_is_the_zero_strip():
 
 
 def test_kocabas_refine_y_strips_are_mirrored_and_change_no_axis():
-    from em_simulation.platforms import kocabas_converter_dataset_info
+    from dbeme.platforms import kocabas_converter_dataset_info
 
     cell, fine = 25e-9, 5e-9
     plain = kocabas_converter_dataset_info(set_number=2, cell=cell, refine=((100e-9, 300e-9, fine),))()
@@ -290,8 +290,8 @@ def test_fill_floor_removes_the_epsilon_near_zero_cells():
     """A gold arc in silica sub-sampled 8 x 8 produces fills of 1/64, which
     is the epsilon-near-zero mix (0.0162) to within 4 %; with the floor no
     cell carries a metal fraction in (0, floor) and the fingerprint says so."""
-    from em_simulation.fde.materials import ConstantIndex
-    from em_simulation.fde.slot_converter import PlasmonicSlotConverter
+    from dbeme.fde.materials import ConstantIndex
+    from dbeme.fde.slot_converter import PlasmonicSlotConverter
 
     kw = dict(si_thickness=0.7e-6, metal_thickness=0.25e-6, metal_bottom=-0.125e-6, gap=0.1e-6,
               plate_reach=0.3e-6, corner_radius=20e-9, core=ConstantIndex(3.476), metal=ConstantIndex(0.238 + 11.26j),
@@ -319,7 +319,7 @@ def test_fill_floor_removes_the_epsilon_near_zero_cells():
 
 
 def test_kocabas_axes_can_be_half_slot_without_a_refinement():
-    from em_simulation.platforms import kocabas_converter_dataset_info
+    from dbeme.platforms import kocabas_converter_dataset_info
 
     info = kocabas_converter_dataset_info(set_number=2, cell=25e-9, axes="half_slot")()
     assert tuple(info.parameter_names) == ("w_si", "half_slot")
@@ -332,7 +332,7 @@ def test_kocabas_axes_can_be_half_slot_without_a_refinement():
 
 
 def test_kocabas_refine_rejects_off_grid_strips():
-    from em_simulation.platforms import kocabas_converter_dataset_info
+    from dbeme.platforms import kocabas_converter_dataset_info
 
     with pytest.raises(ValueError, match="base grid"):
         kocabas_converter_dataset_info(set_number=2, cell=25e-9, refine=((110e-9, 300e-9, 5e-9),))()

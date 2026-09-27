@@ -13,8 +13,8 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.fde import EmepyFDE  # noqa: E402
-from em_simulation.fde.cross_section import CoupledStrips  # noqa: E402
+from dbeme.fde import EmepyFDE  # noqa: E402
+from dbeme.fde.cross_section import CoupledStrips  # noqa: E402
 
 WL = 1.55e-6
 WINDOW = (2.125e-6, -0.8e-6, 0.8e-6)

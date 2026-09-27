@@ -243,7 +243,7 @@ mode count — this device needs a larger *guided* basis, not just a larger N.
 
 **New capability.** `BiLevelStrip` closes `docs/validation_backlog.md` §5.11, and with
 `CoupledStrips` from report 01 the two cross sections between them cover demos
-1–3 of the plan. `em_simulation/platforms.py` now holds both stacks so a dataset
+1–3 of the plan. `dbeme/platforms.py` now holds both stacks so a dataset
 file is a wavelength and nothing else.
 
 **Next.** (a) A larger mode basis and a wider window, which is the largest

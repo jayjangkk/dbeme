@@ -5,11 +5,11 @@ was e-beam written on 220 nm SOI and left unclad.  Confinement is much
 stronger than in the buried case, so this is the dataset the published
 numbers should be compared against.
 
-The platform lives in ``em_simulation/platforms.py``; a dataset file is a
+The platform lives in ``dbeme/platforms.py``; a dataset file is a
 wavelength and a cladding.
 """
 
-from em_simulation.platforms import rac_dataset_info
+from dbeme.platforms import rac_dataset_info
 
 WAVELENGTH = 1.55e-06
 

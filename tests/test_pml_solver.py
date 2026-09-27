@@ -21,9 +21,9 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.fde import FullEtchStrip  # noqa: E402
-from em_simulation.fde.materials import ConstantIndex, silica  # noqa: E402
-from em_simulation.fde.pml import (  # noqa: E402
+from dbeme.fde import FullEtchStrip  # noqa: E402
+from dbeme.fde.materials import ConstantIndex, silica  # noqa: E402
+from dbeme.fde.pml import (  # noqa: E402
     PMLModeSolver,
     stretched_grid,
     turning_point,
@@ -333,8 +333,8 @@ def _reciprocity_blocks(solver_, params, target, modes):
     antisymmetric part is an arbitrary ARPACK rotation (CLAUDE.md 5.6), not a
     field-placement error.  That is a separate, open item.
     """
-    import em_simulation.data_updater.overlap_calculation_tool as oct
-    from em_simulation.fde.assemble import biorthogonalise, overlap_matrix
+    import dbeme.data_updater.overlap_calculation_tool as oct
+    from dbeme.fde.assemble import biorthogonalise, overlap_matrix
 
     data, _ = solver_.mode_data(params, target, num_modes=modes)
     E = data.E.astype(np.complex128)[None].copy()
@@ -350,7 +350,7 @@ def _reciprocity_blocks(solver_, params, target, modes):
 
 
 def test_colocate_is_off_by_default_and_the_fingerprint_does_not_change():
-    from em_simulation.fde.pml import PMLBackend
+    from dbeme.fde.pml import PMLBackend
 
     off = PMLBackend(_sin_cross_section(), target_neff=1.70, mesh=60,
                      num_modes=4, **_COARSE)
@@ -415,9 +415,9 @@ def test_colocated_constant_guide_transmits_unity():
     to ``mode_data`` or ``assemble`` that breaks passivity of a PML basis
     breaks this.
     """
-    from em_simulation import DataExtractor, DirectParametricPath
-    from em_simulation.fde.pml import PMLBackend
-    from em_simulation.validation import lumped_smatrix
+    from dbeme import DataExtractor, DirectParametricPath
+    from dbeme.fde.pml import PMLBackend
+    from dbeme.validation import lumped_smatrix
 
     root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     length = 20e-6

@@ -28,7 +28,7 @@ right. Do not wait for a PML backend, and do not report an insertion loss.
 
 ## Phase 1 — cross section and a straight dataset
 
-### 1.1 `CoupledStrips(CrossSection)` in `em_simulation/fde/cross_section.py`
+### 1.1 `CoupledStrips(CrossSection)` in `dbeme/fde/cross_section.py`
 
 ```python
 parameter_names = ("w1", "w2", "gap", "curvature")
@@ -110,7 +110,7 @@ a 3-D or 4-D axis is not survivable otherwise (see `docs/dataset_doctrine.md` §
 
 ## Phase 2 — geometry classes and the coupled taper
 
-New package `em_simulation/geometry/coupled_waveguide/`, following the
+New package `dbeme/geometry/coupled_waveguide/`, following the
 `single_waveguide/` pattern: subclass `Geometry`, implement
 `calc_simulation_parameters()` returning `(simul_params, delta_zs)`.
 

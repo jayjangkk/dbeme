@@ -58,7 +58,7 @@ def _extractor(folder):
 
     import importlib.util
 
-    from em_simulation.fde import EmepyFDE
+    from dbeme.fde import EmepyFDE
 
     spec = importlib.util.spec_from_file_location(
         "dataset_info", os.path.join(folder, "dataset_info.py")

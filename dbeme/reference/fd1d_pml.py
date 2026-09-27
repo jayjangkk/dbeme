@@ -1,7 +1,7 @@
 r"""A 1-D finite-difference mode solver with a complex-stretched PML.
 
 This is the *thing being measured* in Phase 1 of ``tasks/02_pml_backend.md``.
-:mod:`~em_simulation.reference.bent_slab` gives the semi-analytic answer; this
+:mod:`~dbeme.reference.bent_slab` gives the semi-analytic answer; this
 module reproduces it with the machinery a real PML backend would use - complex
 coordinate stretching, a non-Hermitian operator, and shift-invert selection of
 the mode nearest a target index.  If the two disagree, the formulation is
@@ -118,7 +118,7 @@ def solve_bent_slab(
 ):
     """Complex ``n_eff`` of a bent slab, by finite difference with a PML.
 
-    :param slab: A :class:`~em_simulation.reference.bent_slab.BentSlab`, used
+    :param slab: A :class:`~dbeme.reference.bent_slab.BentSlab`, used
         for its geometry, indices and turning point - not for its solver.
     :param radius: Bend radius, metres.
     :param neff_target: Shift-invert target; defaults to the straight guide.

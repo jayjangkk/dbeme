@@ -28,10 +28,10 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from em_simulation.circuit.roughness import roughness_loss_db_per_cm, sidewall_factor  # noqa: E402
-from em_simulation.fde import EmepyFDE, FullEtchStrip  # noqa: E402
-from em_simulation.fde.materials import silica, silicon  # noqa: E402
-from em_simulation.fde.pml import PMLModeSolver, turning_point  # noqa: E402
+from dbeme.circuit.roughness import roughness_loss_db_per_cm, sidewall_factor  # noqa: E402
+from dbeme.fde import EmepyFDE, FullEtchStrip  # noqa: E402
+from dbeme.fde.materials import silica, silicon  # noqa: E402
+from dbeme.fde.pml import PMLModeSolver, turning_point  # noqa: E402
 
 WIDTH, THICKNESS = 500e-9, 220e-9
 LAMBDAS = (1.53e-6, 1.55e-6, 1.57e-6)

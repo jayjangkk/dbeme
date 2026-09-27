@@ -92,7 +92,7 @@ def apply() -> str:
         stub.__path__ = [_emepy_dir]
         stub.__doc__ = (
             "Partially loaded emepy (mode solver only) "
-            "- see em_simulation.fde._compat"
+            "- see dbeme.fde._compat"
         )
         stub._dbeme_stub = True
         sys.modules["emepy"] = stub

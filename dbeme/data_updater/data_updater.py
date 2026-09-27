@@ -19,7 +19,7 @@ class TestModeError(Exception):
 class DataUpdater:
     r"""Update and retrieve precomputed electromagnetic datasets.
 
-    The updater drives an :class:`~em_simulation.fde.base.FDEBackend` (by
+    The updater drives an :class:`~dbeme.fde.base.FDEBackend` (by
     default emepy's finite-difference mode solver) to populate a set of pickled
     dictionaries.  The upstream implementation used the Lumerical/ANSYS MODE
     API here; the dataset format and every consumer of it are unchanged.
@@ -42,7 +42,7 @@ class DataUpdater:
     :param backend: Mode solver to use.  Defaults to
         ``DatasetInfo.get_fde_backend()``, which is how a dataset declares its
         cross section (the role ``wg_crosssection.lms`` played for Lumerical).
-    :type backend: em_simulation.fde.base.FDEBackend
+    :type backend: dbeme.fde.base.FDEBackend
     :param is_testmode: Disables all solver calls when ``True`` so the class can
         be instantiated in unit tests or to read an existing dataset.
     :type is_testmode: bool
@@ -116,7 +116,7 @@ class DataUpdater:
         """Solve one parameter point, memoised.
 
         :param parameter_point: Tuple ordered as :attr:`parameter_names`.
-        :rtype: em_simulation.fde.base.ModeData
+        :rtype: dbeme.fde.base.ModeData
         """
         if self._is_testmode:
             raise TestModeError("solve_point() was called in test mode")

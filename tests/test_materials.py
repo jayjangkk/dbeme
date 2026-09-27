@@ -14,8 +14,8 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.fde import FullEtchStrip  # noqa: E402
-from em_simulation.fde import materials as M  # noqa: E402
+from dbeme.fde import FullEtchStrip  # noqa: E402
+from dbeme.fde import materials as M  # noqa: E402
 
 WL = 1.55e-6
 

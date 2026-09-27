@@ -1,4 +1,4 @@
-"""The circuit layer (`em_simulation/circuit/`) against sax and the closed form.
+"""The circuit layer (`dbeme/circuit/`) against sax and the closed form.
 
 Phase 1 gate of `tasks/11`:
 
@@ -23,7 +23,7 @@ sys.path.insert(0, ROOT)
 import sax  # noqa: E402
 import jax.numpy as jnp  # noqa: E402
 
-from em_simulation.circuit import (  # noqa: E402
+from dbeme.circuit import (  # noqa: E402
     IndexModel,
     OpticalLengthFit,
     add_drop_amplitude,
@@ -34,7 +34,7 @@ from em_simulation.circuit import (  # noqa: E402
     straight_model,
     unwrap_against,
 )
-from em_simulation.circuit.ring import round_trip_phase  # noqa: E402
+from dbeme.circuit.ring import round_trip_phase  # noqa: E402
 
 NEFF, NG, WL0 = 2.45, 4.2, 1.55  # sax straight parameters (wl in um)
 

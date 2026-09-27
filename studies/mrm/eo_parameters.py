@@ -43,8 +43,8 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from em_simulation.fde import EmepyFDE, FullEtchStrip  # noqa: E402
-from em_simulation.fde.materials import silica, silicon  # noqa: E402
+from dbeme.fde import EmepyFDE, FullEtchStrip  # noqa: E402
+from dbeme.fde.materials import silica, silicon  # noqa: E402
 
 WIDTH, THICKNESS = 500e-9, 220e-9
 WAVELENGTH = 1.55e-6

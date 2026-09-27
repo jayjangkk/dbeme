@@ -8,7 +8,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.propagator.single_propagator.single_eme import SingleEME, cap_columns  # noqa: E402
+from dbeme.propagator.single_propagator.single_eme import SingleEME, cap_columns  # noqa: E402
 
 
 def test_cap_scales_only_columns_above_unit_power():

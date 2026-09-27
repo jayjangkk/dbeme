@@ -49,7 +49,7 @@ from circulax.components.base_component import PhysicsReturn, Signals, States, c
 
 C_LIGHT = 299792458.0
 OUT = os.path.join(ROOT, "reports", "output", "mrm")
-_spec = importlib.util.spec_from_file_location("circulax_ext", os.path.join(ROOT, "em_simulation", "circuit", "circulax_ext.py"))
+_spec = importlib.util.spec_from_file_location("circulax_ext", os.path.join(ROOT, "dbeme", "circuit", "circulax_ext.py"))
 ext = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(ext)
 

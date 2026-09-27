@@ -1,4 +1,4 @@
-"""The finite-element backend (``em_simulation/fde/femwell_fde.py``).
+"""The finite-element backend (``dbeme/fde/femwell_fde.py``).
 
 What has to be true for a FEM dataset to be trusted downstream:
 
@@ -24,12 +24,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 pytest.importorskip("femwell")
 
-from em_simulation.fde.assemble import assemble, overlap_matrix  # noqa: E402
-from em_simulation.fde.base import FDEBackend  # noqa: E402
-from em_simulation.fde.cross_section import FullEtchStrip  # noqa: E402
-from em_simulation.fde.femwell_fde import FemwellBackend  # noqa: E402
-from em_simulation.fde.materials import ConstantIndex  # noqa: E402
-from em_simulation.fde.pml import PMLBackend  # noqa: E402
+from dbeme.fde.assemble import assemble, overlap_matrix  # noqa: E402
+from dbeme.fde.base import FDEBackend  # noqa: E402
+from dbeme.fde.cross_section import FullEtchStrip  # noqa: E402
+from dbeme.fde.femwell_fde import FemwellBackend  # noqa: E402
+from dbeme.fde.materials import ConstantIndex  # noqa: E402
+from dbeme.fde.pml import PMLBackend  # noqa: E402
 
 
 def _si_strip():
@@ -133,7 +133,7 @@ def test_grid_sampling_reproduces_skfem_and_averages_shared_points(fem):
 def test_axis_steps_free_the_wall_from_the_cell():
     """On the FEM backend the half_slot axis may step finer than the field
     grid; the set's slot start and end stay on it; the FD grid refuses."""
-    from em_simulation.platforms import kocabas_converter_dataset_info
+    from dbeme.platforms import kocabas_converter_dataset_info
 
     info = kocabas_converter_dataset_info(set_number=2, cell=5e-9, corner_radius=20e-9, solver="femwell",
                                           axes="half_slot", axis_steps={"half_slot": 1e-9})()
@@ -148,7 +148,7 @@ def test_axis_steps_free_the_wall_from_the_cell():
 
 
 def test_plasmonic_slot_on_a_conforming_mesh():
-    from em_simulation.platforms import kocabas_converter_dataset_info
+    from dbeme.platforms import kocabas_converter_dataset_info
 
     info = kocabas_converter_dataset_info(set_number=2, cell=5e-9, corner_radius=20e-9,
                                           solver="femwell", mode_numbers=6, axes="half_slot")()

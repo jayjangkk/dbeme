@@ -1,11 +1,11 @@
-"""`em_simulation/circuit/cascade_jnp.py` against the production cascade on a shipped dataset.
+"""`dbeme/circuit/cascade_jnp.py` against the production cascade on a shipped dataset.
 
 The linear taper of `examples/demo_linear_taper.py` (0.5 -> 1.2 um over 10 um)
 on `datasets/Si_fulletch_220nm`: every grid point it visits is cached, so
 building it solves nothing - the mode solver is patched to raise, so a test
 that would solve (and write to the dataset) fails instead.  Asserts:
 
-* the ``jnp`` cascade equals `em_simulation.validation.lumped_smatrix` on the
+* the ``jnp`` cascade equals `dbeme.validation.lumped_smatrix` on the
   scattering route at the path's own section lengths, to 1e-10;
 * ``jax.grad`` of a transmitted power with respect to one section length
   matches a central finite difference.
@@ -25,8 +25,8 @@ DATASET = os.path.join(ROOT, "datasets", "Si_fulletch_220nm")
 @pytest.fixture(scope="module")
 def path():
     pytest.importorskip("jax")
-    from em_simulation import DataUpdater, LinearTaper
-    from em_simulation.fde.emepy_fde import EmepyFDE
+    from dbeme import DataUpdater, LinearTaper
+    from dbeme.fde.emepy_fde import EmepyFDE
 
     def refuse(self, point):
         raise RuntimeError(f"cold grid point {point}: a test must not solve")
@@ -44,8 +44,8 @@ def path():
 def test_jnp_cascade_matches_production(path):
     import jax.numpy as jnp
 
-    from em_simulation.circuit.cascade_jnp import CascadeJnp
-    from em_simulation.validation import lumped_smatrix
+    from dbeme.circuit.cascade_jnp import CascadeJnp
+    from dbeme.validation import lumped_smatrix
 
     cascade, dz = CascadeJnp.from_path(path)
     S = np.asarray(cascade.smatrix(jnp.asarray(dz)))
@@ -58,7 +58,7 @@ def test_jnp_cascade_gradient(path):
     import jax
     import jax.numpy as jnp
 
-    from em_simulation.circuit.cascade_jnp import CascadeJnp
+    from dbeme.circuit.cascade_jnp import CascadeJnp
 
     cascade, dz = CascadeJnp.from_path(path)
     k = len(dz) // 2

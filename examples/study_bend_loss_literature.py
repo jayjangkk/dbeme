@@ -39,9 +39,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import matplotlib.pyplot as plt  # noqa: E402
 
 from _plotting import save  # noqa: E402
-from em_simulation.fde import FullEtchStrip  # noqa: E402
-from em_simulation.fde.materials import silica, silicon  # noqa: E402
-from em_simulation.fde.pml import PMLModeSolver, turning_point  # noqa: E402
+from dbeme.fde import FullEtchStrip  # noqa: E402
+from dbeme.fde.materials import silica, silicon  # noqa: E402
+from dbeme.fde.pml import PMLModeSolver, turning_point  # noqa: E402
 
 WAVELENGTH = 1.500e-6
 WIDTH, THICKNESS = 0.445e-6, 0.220e-6

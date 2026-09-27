@@ -16,7 +16,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.data_updater.dataset_identity import (  # noqa: E402
+from dbeme.data_updater.dataset_identity import (  # noqa: E402
     FINGERPRINT_FILE,
     DatasetIdentityError,
     fingerprint,
@@ -98,8 +98,8 @@ def test_an_empty_cache_is_adopted_rather_than_rejected(tmp_path):
 
 def test_material_change_is_caught_through_the_cross_section(tmp_path):
     """The case this was written for: a swapped index model."""
-    from em_simulation.fde import FullEtchStrip
-    from em_simulation.fde.materials import SELLMEIER_COEFFICIENTS, SellmeierMaterial
+    from dbeme.fde import FullEtchStrip
+    from dbeme.fde.materials import SELLMEIER_COEFFICIENTS, SellmeierMaterial
 
     class FakeBackend:
         def __init__(self, cross_section):

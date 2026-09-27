@@ -65,7 +65,7 @@ trusted through the overlap path. Not addressed here; flagged for Phase 3.
 ## 2. Phase 1 — the reference
 
 A bent slab, conformally mapped and solved exactly in Airy functions
-(`em_simulation/reference/bent_slab.py`). Heiblum and Harris,
+(`dbeme/reference/bent_slab.py`). Heiblum and Harris,
 *IEEE J. Quantum Electron.* **11**, 75 (1975).
 
 Mapping the bend to a straight guide with `n_eq = n·e^{u/R}` and linearising
@@ -133,7 +133,7 @@ right.
 
 ## 3. Phase 1 — the thing being measured
 
-`em_simulation/reference/fd1d_pml.py`: finite difference on a complex-stretched
+`dbeme/reference/fd1d_pml.py`: finite difference on a complex-stretched
 grid, deliberately solving the **same linearised profile**, so any discrepancy
 is the discretisation and the PML rather than a different physical model.
 
@@ -198,7 +198,7 @@ choice for production — it agrees with thickness ×1.5 to four decimals.
 
 ## 5. Phase 2 — the solver, Route A
 
-`em_simulation/fde/pml.py`. `EmepyFDE` returns a real `n_eff`; this gives
+`dbeme/fde/pml.py`. `EmepyFDE` returns a real `n_eff`; this gives
 EMpy's vectorial solver a complex-stretched grid so it returns a complex one.
 
 The task's audit was right that the substrate is present — complex coordinates

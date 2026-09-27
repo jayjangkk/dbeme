@@ -9,7 +9,7 @@ unusable.  Restricting the basis to the modes that are actually resolved is the
 fix; ``examples/study_rac_air_basis.py`` measures the difference.
 """
 
-from em_simulation.platforms import rac_dataset_info
+from dbeme.platforms import rac_dataset_info
 
 WAVELENGTH = 1.55e-6
 

@@ -9,7 +9,7 @@ is precisely the field the 20-mode set could only absorb.  One solve costs
 eigensolve - so the design path is ~4 h.  See report 13 section 7.
 """
 
-from em_simulation.platforms import kocabas_converter_dataset_info
+from dbeme.platforms import kocabas_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 

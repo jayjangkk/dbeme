@@ -13,7 +13,7 @@ tracked-branch order, picks the two TE0 supermodes at the (identical) end
 cross sections and rotates them into the bus / ring basis
 ``psi_bus = (psi_e + s psi_o) / sqrt2`` with the sign ``s`` read off the
 fields, so the result is the 4-port coupler in the port convention of
-``em_simulation.circuit.waveguide.ideal_coupler`` (o1 bus in, o2 bus through,
+``dbeme.circuit.waveguide.ideal_coupler`` (o1 bus in, o2 bus through,
 o3 ring in, o4 ring out).
 
 Sanity checks per gap (`docs/validation_backlog.md` §5): reciprocity ``max|S - S^T|`` on the
@@ -36,9 +36,9 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
-from em_simulation import DataExtractor, DataUpdater, DirectParametricPath, ParametricPath  # noqa: E402
-from em_simulation.propagator.single_propagator.single_eme import SingleEME  # noqa: E402
-from em_simulation.validation import lumped_smatrix  # noqa: E402
+from dbeme import DataExtractor, DataUpdater, DirectParametricPath, ParametricPath  # noqa: E402
+from dbeme.propagator.single_propagator.single_eme import SingleEME  # noqa: E402
+from dbeme.validation import lumped_smatrix  # noqa: E402
 
 SingleEME.INTERFACE_PROJECTION = "output"
 

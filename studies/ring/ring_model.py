@@ -4,7 +4,7 @@ Reads ``reports/output/ring/coupler_<lambda>.json`` (one per wavelength,
 `build_coupler.py`) and ``ring_loss.json`` (`ring_loss.py`) and builds:
 
 * the 4-port coupler sax model per bus-ring gap ``g0``, interpolated across
-  the solved wavelengths by `em_simulation.circuit.sax_model` (magnitude
+  the solved wavelengths by `dbeme.circuit.sax_model` (magnitude
   PCHIP, phase through the optical length, unwrapped against the straight
   guide's propagation phase over the coupler chord);
 * the ring arc: ``2 pi R`` minus the chord the coupler region already
@@ -14,7 +14,7 @@ Reads ``reports/output/ring/coupler_<lambda>.json`` (one per wavelength,
   from the spectrum and from the closed form (`circuit.ring.ring_metrics`).
 
 Everything a sax model receives is in microns; everything read from the
-JSON is SI (`em_simulation.circuit` docstring).
+JSON is SI (`dbeme.circuit` docstring).
 """
 
 import json
@@ -24,7 +24,7 @@ import numpy as np
 import jax.numpy as jnp
 import sax
 
-from em_simulation.circuit import (
+from dbeme.circuit import (
     IndexModel,
     PchipJax,
     all_pass_amplitude,

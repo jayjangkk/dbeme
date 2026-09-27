@@ -1,4 +1,4 @@
-"""The circulax delay-line plugin (`em_simulation/circuit/circulax_ext.py`).
+"""The circulax delay-line plugin (`dbeme/circuit/circulax_ext.py`).
 
 Runs in ``.venv-circuit`` only:  .venv-circuit/Scripts/python -m pytest tests_circuit -q
 
@@ -23,7 +23,7 @@ import circulax  # noqa: E402
 from circulax.components import electronic  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_spec = importlib.util.spec_from_file_location("circulax_ext", os.path.join(ROOT, "em_simulation", "circuit", "circulax_ext.py"))
+_spec = importlib.util.spec_from_file_location("circulax_ext", os.path.join(ROOT, "dbeme", "circuit", "circulax_ext.py"))
 ext = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(ext)
 

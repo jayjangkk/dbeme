@@ -6,7 +6,7 @@ its model is analytic: ``exp(+i 2 pi n_eff L / lambda)`` with a loss.
 ``IndexModel`` carries ``n_eff(lambda)`` as a polynomial fitted through the
 per-wavelength solves (never linear by default: degree 2 gives ``n_eff``,
 ``n_g`` and dispersion), and the models take ``wl`` in **microns** as every
-sax model does (`em_simulation.circuit` docstring).
+sax model does (`dbeme.circuit` docstring).
 """
 
 import numpy as np

@@ -15,7 +15,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.fde import BiLevelStrip, EmepyFDE, FullEtchStrip  # noqa: E402
+from dbeme.fde import BiLevelStrip, EmepyFDE, FullEtchStrip  # noqa: E402
 
 WL = 1.55e-6
 WINDOW = (2.2e-6, -0.8e-6, 0.8e-6)

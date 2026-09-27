@@ -1,4 +1,4 @@
-"""The analytical ring (`em_simulation/circuit/ring.py`) against brute force.
+"""The analytical ring (`dbeme/circuit/ring.py`) against brute force.
 
 `tasks/11` §1.3 and the Phase 1 gate: the amplitude and intensity forms agree,
 a lossless ring conserves power, critical coupling nulls the through port,
@@ -15,7 +15,7 @@ import pytest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from em_simulation.circuit.ring import (  # noqa: E402
+from dbeme.circuit.ring import (  # noqa: E402
     add_drop,
     add_drop_amplitude,
     all_pass,

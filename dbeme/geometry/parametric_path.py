@@ -27,7 +27,7 @@ from .geometry import Geometry
 class ParametricPath(Geometry):
     """Geometry from a mapping of parameter name to ``f(z)``.
 
-    :param dataset: The :class:`~em_simulation.data_updater.data_updater.DataUpdater`.
+    :param dataset: The :class:`~dbeme.data_updater.data_updater.DataUpdater`.
     :param parameter_functions: ``{name: callable}``, one per dataset parameter,
         each taking propagation length in metres and returning that parameter's
         value.  A constant is accepted in place of a callable.
@@ -153,7 +153,7 @@ class DirectParametricPath(DirectGeometry):
     two is the grid.
 
     :param data_extractor: A
-        :class:`~em_simulation.data_extractor.data_extractor.DataExtractor`.
+        :class:`~dbeme.data_extractor.data_extractor.DataExtractor`.
     :param parameter_functions: ``{name: callable}``, as :class:`ParametricPath`.
     :param total_length: Device length in metres.
     :param resolution: Number of sections.  Match it to the dataset path's

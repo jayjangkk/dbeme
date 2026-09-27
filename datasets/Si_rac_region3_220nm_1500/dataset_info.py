@@ -3,11 +3,11 @@
 One wavelength point for the splitting-ratio sweep, on the buried
 SiO2-clad stack this project uses elsewhere.
 
-The platform lives in ``em_simulation/platforms.py``; a dataset file is a
+The platform lives in ``dbeme/platforms.py``; a dataset file is a
 wavelength and a cladding.
 """
 
-from em_simulation.platforms import rac_dataset_info
+from dbeme.platforms import rac_dataset_info
 
 WAVELENGTH = 1.5e-06
 

@@ -14,9 +14,9 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.data_updater.data_updater import DataUpdater  # noqa: E402
-from em_simulation.fde.base import ModeData  # noqa: E402
-from em_simulation.geometry.geometry import Geometry  # noqa: E402
+from dbeme.data_updater.data_updater import DataUpdater  # noqa: E402
+from dbeme.fde.base import ModeData  # noqa: E402
+from dbeme.geometry.geometry import Geometry  # noqa: E402
 
 INFO = """
 import numpy as np

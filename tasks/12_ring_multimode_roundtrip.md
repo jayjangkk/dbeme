@@ -24,10 +24,10 @@ full `(2N, 2N)` S-matrix — is new to this repo and is what this task builds.
 > exists, DBEME cannot optimize the one thing most ring work is about.
 
 *Status 2026-09-20 — partly outdated.* The PML backend exists and is
-validated (`em_simulation/fde/pml.py`, `reports/06`, task 02 done): bend
+validated (`dbeme/fde/pml.py`, `reports/06`, task 02 done): bend
 radiation loss per `(w, R, λ)` is a direct solve, and `studies/ring/ring_loss.py`
 computes it for the 500 × 220 nm ring at R = 2, 3, 5 µm. Sidewall scattering
-is now a model in `em_simulation/circuit/roughness.py` (Payne–Lacey via
+is now a model in `dbeme/circuit/roughness.py` (Payne–Lacey via
 the effective-index method, σ and L_c declared, scaled to each bend by the
 mode's sidewall field factor). What remains true: a **lossy DBEME dataset**
 (PML basis inside the cascade) is not built — report 06 §8, the mode count —
@@ -62,7 +62,7 @@ comes from the lossless basis.
 *Agreed, and not yet built.* Task 11 composes a **single-mode** ring in sax
 from a 4-port coupler and an analytic arc. The circuit layer already
 carries multimode ports (`"o1@TE0"`, `"o1@TE1"`, …,
-`em_simulation/circuit/sax_model.py`), so a multimode ring is a netlist away;
+`dbeme/circuit/sax_model.py`), so a multimode ring is a netlist away;
 the eigen-formulation below is the cheaper and more informative route for
 resonances and Q, and the two must agree (that is the gate). One caveat on
 the operator as written: with backreflection the round trip couples forward
@@ -116,17 +116,17 @@ a dataset build with a known recipe; (4) last.
 
 | need | where |
 |---|---|
-| full `(2N, 2N)` S of a path, tracked order, `[b_out; b_in] = S [a_in; a_out]` | `em_simulation/validation.py::lumped_smatrix`; index convention `examples/demo_plasmonic_converter.py:115-118` |
+| full `(2N, 2N)` S of a path, tracked order, `[b_out; b_in] = S [a_in; a_out]` | `dbeme/validation.py::lumped_smatrix`; index convention `examples/demo_plasmonic_converter.py:115-118` |
 | 4-port coupler in bus/ring basis, sign from fields | `studies/ring/build_coupler.py::analyse`, `four_port` |
 | bent-guide `n_eff(λ, R)`, PML loss, roughness | `reports/output/ring/ring_loss.json`, `studies/ring/ring_loss.py` |
-| sax models with multimode ports; phase-fitted λ interpolation | `em_simulation/circuit/sax_model.py`, `waveguide.py` |
-| closed-form ring and metrics | `em_simulation/circuit/ring.py` |
+| sax models with multimode ports; phase-fitted λ interpolation | `dbeme/circuit/sax_model.py`, `waveguide.py` |
+| closed-form ring and metrics | `dbeme/circuit/ring.py` |
 | width-schedule optimisation on a cached path | `studies/sirac/optimize.py` (CMA-ES), report 07 |
 | single-guide bent dataset (`top_width`, signed `curvature`) | `datasets/Si_fulletch_220nm` |
 
 ## 3. Phase A — the round-trip operator on Task 11's building blocks
 
-### 3.1 `em_simulation/circuit/roundtrip.py`
+### 3.1 `dbeme/circuit/roundtrip.py`
 
 For a loop made of segments with S-matrices `S_k` (each `2N × 2N` in the
 port convention above), form each segment's **transfer matrix**

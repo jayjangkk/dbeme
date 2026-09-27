@@ -16,7 +16,7 @@ for frequency-domain components ("time-domain convolution not supported",
 `s_transforms.fdomain_component`), and an S-matrix component carries no
 memory: a ring built from S-matrices has no round-trip delay in the time
 domain.  The ring-down gate of `tasks/11` §5.2 is therefore met with a
-*plugin*, ``em_simulation/circuit/circulax_ext.py`` - an envelope delay line
+*plugin*, ``dbeme/circuit/circulax_ext.py`` - an envelope delay line
 built on circulax's own ``@component`` API (no fork): the arc becomes a
 chain of first-order sections with the exact mean delay ``n_g L / c`` and
 the carrier's ``a e^{i phi}``, and the ring-down after gating the source off
@@ -45,7 +45,7 @@ from circulax.components import electronic, photonic  # noqa: E402
 C_LIGHT = 299792458.0
 OUT = os.path.join(ROOT, "reports", "output", "ring", "circulax_ringdown.json")
 
-# the same models as em_simulation.circuit.waveguide, restated so this script
+# the same models as dbeme.circuit.waveguide, restated so this script
 # has no dependency on the main venv's package (it imports emepy)
 NEFF, NG, WL0 = 2.4467, 4.178, 1.55      # 500 x 220 nm strip, ring_loss.json
 R_UM = 10.0
@@ -137,12 +137,12 @@ def main():
         info["error"] = f"{type(exc).__name__}: {exc}"
         print("circulax steady-state check failed:", info["error"])
 
-    # the transient, with the delay-line plugin (em_simulation/circuit/circulax_ext.py):
+    # the transient, with the delay-line plugin (dbeme/circuit/circulax_ext.py):
     # the ring built from S-matrices alone is memoryless; the plugin gives the
     # arc its round-trip time and the ring-down follows.
     import importlib.util
     spec = importlib.util.spec_from_file_location(
-        "circulax_ext", os.path.join(ROOT, "em_simulation", "circuit", "circulax_ext.py"))
+        "circulax_ext", os.path.join(ROOT, "dbeme", "circuit", "circulax_ext.py"))
     ext = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(ext)
     tau_e = result["closed_form"]["tau_energy_s"]

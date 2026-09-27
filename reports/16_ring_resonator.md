@@ -8,7 +8,7 @@ Data and figures: `reports/output/ring/`. Date: 2026-09-20.
 **In one paragraph.** A ring is a circuit, not a cascade: DBEME supplies the
 bus-ring coupler (one path per gap over a dataset whose ring core walks away
 from a fixed bus) and the bent strip's index and loss; the circuit layer
-(`em_simulation/circuit/`, sax) closes the loop and the analytical ring
+(`dbeme/circuit/`, sax) closes the loop and the analytical ring
 (Bogaerts 2012) checks it. The coupler's bus side is converged and
 power-conserving; its ring side is not computable in the straight frame
 (the moving guide sheds its translation mismatch at every interface,

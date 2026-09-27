@@ -69,7 +69,7 @@ class CascadeJnp:
     @classmethod
     def from_path(cls, path, method="direct"):
         """Build from a solved path; returns ``(cascade, delta_zs)``."""
-        from em_simulation import EME
+        from dbeme import EME
 
         eme = EME(path, force_unitary=False)
         prop = eme.propagator

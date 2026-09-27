@@ -12,7 +12,7 @@ the wall's staircase should halve and the rounded modes move part of the way
 toward their 1 nm values (report 13 section 7).
 """
 
-from em_simulation.platforms import kocabas_converter_dataset_info
+from dbeme.platforms import kocabas_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 

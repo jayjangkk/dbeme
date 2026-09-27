@@ -36,10 +36,10 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from em_simulation import EME, DataUpdater, LinearTaper, ParametricPath  # noqa: E402
-from em_simulation.data_updater.dataset_identity import DatasetIdentityError  # noqa: E402
-from em_simulation.matrix_calculation_tool import _redheffer_star_product  # noqa: E402
-from em_simulation.validation import guided_throughout  # noqa: E402
+from dbeme import EME, DataUpdater, LinearTaper, ParametricPath  # noqa: E402
+from dbeme.data_updater.dataset_identity import DatasetIdentityError  # noqa: E402
+from dbeme.matrix_calculation_tool import _redheffer_star_product  # noqa: E402
+from dbeme.validation import guided_throughout  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

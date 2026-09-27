@@ -23,7 +23,7 @@ DBEME, and whether a circuit simulator should be added. Decisions taken:
    or thermal dynamics, not for the static spectrum.
 2. **DBEME supplies building blocks, not the circuit.** A circuit solver is a
    consumer of S-matrices downstream of `FDEBackend`; it must not be a backend.
-   New code lives in `em_simulation/circuit/`.
+   New code lives in `dbeme/circuit/`.
 3. **sax is the interface, circulax is the time-domain and nonlinear engine.**
    sax 0.14.7, jax 0.11.1 and klujax are already in `.venv`. circulax
    (github.com/gdsfactory/circulax: JAX, transient / DC / AC / harmonic
@@ -45,20 +45,20 @@ DBEME, and whether a circuit simulator should be added. Decisions taken:
 
 | need | where |
 |---|---|
-| ring guide `n_eff(w, κ)` | `datasets/Si_fulletch_220nm` — signed κ axis; transform at `em_simulation/fde/cross_section.py:340`; ramp guard `emepy_fde._check_conformal_ramp`; valid R > 4.3 µm (§5.10) |
+| ring guide `n_eff(w, κ)` | `datasets/Si_fulletch_220nm` — signed κ axis; transform at `dbeme/fde/cross_section.py:340`; ramp guard `emepy_fde._check_conformal_ramp`; valid R > 4.3 µm (§5.10) |
 | two-core coupler | `CoupledStrips` (`cross_section.py:385-580`), `swept_parameters=("w1","w2","gap")` supported at L416; `datasets/Si_pair_fulletch_220nm_{1260..1360}` have gap fixed at 200 nm |
-| wavelength | one dataset per λ via `em_simulation/platforms.py` factories; driver `examples/sweep_wavelength.py`; Sellmeier Si/SiO₂ in `em_simulation/fde/materials.py` |
+| wavelength | one dataset per λ via `dbeme/platforms.py` factories; driver `examples/sweep_wavelength.py`; Sellmeier Si/SiO₂ in `dbeme/fde/materials.py` |
 | n_g, delay, phase | `examples/demo_material_dispersion.py::group_index`; `studies/tapeout/sparams_phase.py::dominant_delay`; convention `exp(-iωt)`, `exp(+iβz)`, `τ = +dφ/dω` (`reports/output/tapeout/sisnprs_smatrix.json` → `phase_convention`) |
-| bend loss | `em_simulation/fde/pml.py::PMLModeSolver`, `turning_point`; `studies/sirac/run_bend_loss.py`; `examples/study_bend_loss_literature.py` |
+| bend loss | `dbeme/fde/pml.py::PMLModeSolver`, `turning_point`; `studies/sirac/run_bend_loss.py`; `examples/study_bend_loss_literature.py` |
 | S-matrix export | `studies/tapeout/run_sparams.py` (CSV/JSON), `run_smatrix_sisnprs.py` (VPI `SmatrixMeasuredOpt` .dat) |
 | per-point scalar stored in a dataset | `TE_pol.pkl` — the pattern for the new sidewall factor |
 
 Not built: `curvature` on the pair dataset (pulley coupler). Out of scope
 here; the point coupler below does not need it.
 
-## Phase 1 — `em_simulation/circuit/`: DBEME → sax adapter, and the ring closed form
+## Phase 1 — `dbeme/circuit/`: DBEME → sax adapter, and the ring closed form
 
-### 1.1 `em_simulation/circuit/sax_model.py`
+### 1.1 `dbeme/circuit/sax_model.py`
 
 `sax_model_from_samples(wavelengths, S, ports, modes) -> callable` returning
 a sax model `f(wl=...) -> SDict` keyed `("o1@TE0", "o2@TE0")` etc. Multimode
@@ -88,13 +88,13 @@ wavelengths, a ring needs pm resolution. Rules:
 `SDict` values must be `jnp` arrays so gradients flow (this is what circulax
 needs later). Reciprocity is enforced by construction (`S = Sᵀ`).
 
-### 1.2 `em_simulation/circuit/waveguide.py`
+### 1.2 `dbeme/circuit/waveguide.py`
 
 `arc_model(neff_of_wl, ng, length, alpha_db_per_cm)` and
 `straight_model(...)`: sax models from a fitted `n_eff(λ)` and a loss. The
 ring arc is `2πR` at the ring's centre radius with `n_eff(w, κ=1/R, λ)`.
 
-### 1.3 `em_simulation/circuit/ring.py` — the analytical solution, no sax
+### 1.3 `dbeme/circuit/ring.py` — the analytical solution, no sax
 
 `all_pass(r, a, phi)`, `add_drop(r1, r2, a, phi)`, and
 `ring_metrics(...) -> FSR, FWHM, Q_loaded, Q_intrinsic, Q_coupling,
@@ -150,7 +150,7 @@ Tests: `tests/test_circuit_sax_adapter.py`, `tests/test_ring_closed_form.py`.
 
 ### Phase 1 — done 2026-09-20 (measured)
 
-`em_simulation/circuit/{__init__,phase_fit,sax_model,waveguide,ring}.py`;
+`dbeme/circuit/{__init__,phase_fit,sax_model,waveguide,ring}.py`;
 27 tests. The package enables JAX float64 on import (nothing else in the
 repo imports JAX). Units: SI into the factories, sax's microns and dB/cm at
 the model call.
@@ -264,7 +264,7 @@ speed-up claim.
   8, 10, 15} µm, λ ∈ band; `α = 2 k0 Im(n_eff)`; PML convergence sweep as
   report 06 §Phase 3 (thickness, stretch, standoff, < 5 %). Expect negligible
   above 5 µm; report it anyway.
-* **Roughness**: `em_simulation/circuit/roughness.py` implementing Payne &
+* **Roughness**: `dbeme/circuit/roughness.py` implementing Payne &
   Lacey, *Opt. Quantum Electron.* 26, 977 (1994) with the sidewall field
   factor from the mode (`∫|E|² along the two sidewall lines / ∫|E|² dA`).
   Store that factor per grid point as `sidewall_factor.pkl` beside
@@ -488,7 +488,7 @@ A failure in the FDTD coupler or full-ring row blocks the report.
   later the same day).** An S-matrix component is memoryless, so a ring of
   them has no round-trip time; the earlier transient failure
   (`AttributeError ... 'subs'`) was *mine* — `wl` passed through the
-  diffrax kwargs instead of `params=`. `em_simulation/circuit/circulax_ext.py`
+  diffrax kwargs instead of `params=`. `dbeme/circuit/circulax_ext.py`
   adds `OpticalDelayLine` on circulax's own `@component` API: the arc as a
   chain of N first-order sections with the exact mean delay `n_g L/c` and
   the carrier's `a e^{iφ}`, matched wave stamps at both ports, and a DC

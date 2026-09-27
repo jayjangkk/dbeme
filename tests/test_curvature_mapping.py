@@ -13,7 +13,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.geometry.curvature import (  # noqa: E402
+from dbeme.geometry.curvature import (  # noqa: E402
     grid_has_negative_curvature,
     map_curvature,
 )

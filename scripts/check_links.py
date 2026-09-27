@@ -30,7 +30,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCAN_DIRS = ("tasks", "reports", "docs")
 SCAN_FILES = ("CLAUDE.md", "README.md")
 PREFIXES = ("reports/", "tasks/", "studies/", "examples/", "output/", "datasets/",
-            "docs/", "scripts/", "em_simulation/", "tests/", "tests_circuit/",
+            "docs/", "scripts/", "dbeme/", "tests/", "tests_circuit/",
             "references/")
 BARE = ("CLAUDE.md", "README.md")
 ALLOW = os.path.join(ROOT, "scripts", "check_links_allow.txt")

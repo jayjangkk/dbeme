@@ -37,8 +37,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import matplotlib.pyplot as plt  # noqa: E402
 
 from _plotting import save  # noqa: E402
-from em_simulation.reference import BentSlab, attenuation_db_per_cm  # noqa: E402
-from em_simulation.reference.fd1d_pml import solve_bent_slab  # noqa: E402
+from dbeme.reference import BentSlab, attenuation_db_per_cm  # noqa: E402
+from dbeme.reference.fd1d_pml import solve_bent_slab  # noqa: E402
 
 #: Weakly guiding, so the loss is representable where the model is valid.
 SLAB = dict(core_index=1.50, clad_index=1.444, half_width=0.75e-6)

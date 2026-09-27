@@ -1,7 +1,7 @@
 """The plasmonic ruler: gold, the single-interface SPP, and the MIM gap plasmon.
 
 These are the closed-form answers the lossy solver is checked against
-(``em_simulation/reference/plasmonic.py``).  Nothing here solves a mode.
+(``dbeme/reference/plasmonic.py``).  Nothing here solves a mode.
 
 Sign convention throughout the project: fields go as ``e^{i beta z}``, so an
 absorbing metal has ``Im(n) > 0`` and a lossy mode has ``Im(n_eff) > 0``.
@@ -16,8 +16,8 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.fde.materials import gold  # noqa: E402
-from em_simulation.reference.plasmonic import (  # noqa: E402
+from dbeme.fde.materials import gold  # noqa: E402
+from dbeme.reference.plasmonic import (  # noqa: E402
     MIMSlab,
     attenuation_db_per_um,
     propagation_length,

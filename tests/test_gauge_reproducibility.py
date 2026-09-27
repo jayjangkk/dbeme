@@ -35,8 +35,8 @@ deterministically.  This test is the regression guard for that.
 import numpy as np
 import pytest
 
-from em_simulation.fde import EmepyFDE, FullEtchStrip
-from em_simulation.fde import emepy_fde as efde
+from dbeme.fde import EmepyFDE, FullEtchStrip
+from dbeme.fde import emepy_fde as efde
 
 POINT = (0.7e-6, 0.0)
 NUM_MODES = 3

@@ -8,7 +8,7 @@ effective indices and is cascaded on the scattering route (``auto`` resolves
 to ``direct`` because the backend declares itself lossy).
 """
 
-from em_simulation.platforms import plasmonic_converter_dataset_info
+from dbeme.platforms import plasmonic_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 GAP = 20e-9

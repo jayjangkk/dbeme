@@ -773,7 +773,7 @@ a curve, so the mode converges with element size; and because a wall at
 the dataset's parameter axes are freed from the cell pitch. Both are what
 the taper needs.
 
-**The backend** (`em_simulation/fde/femwell_fde.py`, `FemwellBackend`) sits
+**The backend** (`dbeme/fde/femwell_fde.py`, `FemwellBackend`) sits
 behind the same `FDEBackend` contract as the PML solver, so `DataUpdater`,
 `assemble`, the overlaps and the cascade are untouched. It asks the cross
 section for its geometry as shapely polygons (`CrossSection.polygons()`,

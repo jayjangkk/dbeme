@@ -6,7 +6,7 @@ quantities - ``neff``, the TE polarisation fraction, and the ``E``/``H``
 profiles on a common grid - from emepy's finite-difference vectorial mode
 solver (:class:`emepy.fd.MSEMpy`, which wraps EMpy's ``VFDModeSolver``).
 
-Everything downstream of :class:`~em_simulation.fde.base.ModeData` - field
+Everything downstream of :class:`~dbeme.fde.base.ModeData` - field
 normalisation, overlap integrals, mode tracking, the EME transfer matrices -
 is unchanged from the Lumerical-based version.
 """
@@ -36,7 +36,7 @@ class EmepyFDE(FDEBackend):
     """Solve waveguide cross sections with emepy on a fixed grid.
 
     :param cross_section: Geometry description, e.g.
-        :class:`~em_simulation.fde.cross_section.FullEtchStrip`.
+        :class:`~dbeme.fde.cross_section.FullEtchStrip`.
     :param parameter_names: Dataset parameter order.  Defaults to the cross
         section's own order.
     :param num_modes: Number of forward modes per parameter point.

@@ -9,7 +9,7 @@ already converged; only the number of distinct cross sections along the
 taper grows.  Mesh convention 2.
 """
 
-from em_simulation.platforms import kocabas_converter_dataset_info
+from dbeme.platforms import kocabas_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 

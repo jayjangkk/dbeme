@@ -1,13 +1,13 @@
 """Direct (uncached) mode extraction along an EME path.
 
-Where :class:`~em_simulation.data_updater.data_updater.DataUpdater` snaps every
+Where :class:`~dbeme.data_updater.data_updater.DataUpdater` snaps every
 section onto a dataset grid and reuses stored results, ``DataExtractor`` solves
 each section of the path as it comes.  That is ordinary EME: slower, but it
 needs no dataset and it is the natural reference to validate the dataset-based
 result against.
 
 The upstream implementation drove Lumerical MODE through ``lumapi``; this one
-calls an :class:`~em_simulation.fde.base.FDEBackend` (emepy by default).  The
+calls an :class:`~dbeme.fde.base.FDEBackend` (emepy by default).  The
 returned arrays and their conventions are unchanged.
 """
 

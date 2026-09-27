@@ -43,14 +43,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import matplotlib.pyplot as plt  # noqa: E402
 
 from _plotting import save  # noqa: E402
-from em_simulation import (  # noqa: E402
+from dbeme import (  # noqa: E402
     EME,
     DataExtractor,
     DataUpdater,
     DirectParametricPath,
     ParametricPath,
 )
-from em_simulation.matrix_calculation_tool import _redheffer_star_product  # noqa: E402
+from dbeme.matrix_calculation_tool import _redheffer_star_product  # noqa: E402
 
 import demo_adiabatic_coupler as coupler_demo  # noqa: E402
 import demo_polarization_rotator as rotator_demo  # noqa: E402

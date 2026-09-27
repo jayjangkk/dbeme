@@ -25,7 +25,7 @@ junction position and `R_s` are declared inputs, stated in the report.
 
 ## What exists
 
-`em_simulation/circuit/circulax_ext.py` (delay line, gated source),
+`dbeme/circuit/circulax_ext.py` (delay line, gated source),
 `studies/mrm/eo_parameters.py`, `studies/mrm/circulax_mrm.py`
 (`RingModulatorCMT` with the `v_e` port in the example's form, `BiasedAC`,
 `make_nrz`), `tests_circuit/` (runs in `.venv-circuit`).

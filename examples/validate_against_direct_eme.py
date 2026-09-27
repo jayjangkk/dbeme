@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import matplotlib.pyplot as plt  # noqa: E402
 
 from _plotting import save  # noqa: E402
-from em_simulation import (  # noqa: E402
+from dbeme import (  # noqa: E402
     EME,
     DataExtractor,
     DataUpdater,

@@ -255,7 +255,7 @@ def star(first, second):
     """Redheffer star product, ``first`` then ``second``, batched over leading axes.
 
     The block convention and algebra of
-    `em_simulation.matrix_calculation_tool._redheffer_star_product` - rows
+    `dbeme.matrix_calculation_tool._redheffer_star_product` - rows
     ``[:N]`` forward outputs, columns ``[:N]`` forward inputs - with ``@`` and
     ``inv`` broadcasting, so a whole frequency grid cascades in one pass.
     """

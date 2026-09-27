@@ -134,7 +134,7 @@ class DirectGeometry(metaclass=abc.ABCMeta):
     def _generate_mode_links(self, overlap_matrices):
         """Link each section's modes to the previous section's, by overlap.
 
-        Delegates to :func:`~em_simulation.geometry.mode_tracking.hungarian_mode_links`.
+        Delegates to :func:`~dbeme.geometry.mode_tracking.hungarian_mode_links`.
         See that module for why the assignment has to be a permutation
         (docs/validation_backlog.md §5.13) and what the earlier per-column ``argmax`` got wrong.
 

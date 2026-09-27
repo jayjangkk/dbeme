@@ -6,7 +6,7 @@ that every edge sits on a grid point - an 8 nm width axis.  A solve here costs
 ~80 s against ~40 s; build it only for a full-sweep convergence check.
 """
 
-from em_simulation.platforms import plasmonic_converter_dataset_info
+from dbeme.platforms import plasmonic_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 GAP = 20e-9

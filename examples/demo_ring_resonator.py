@@ -119,7 +119,7 @@ def main():
     sensitivity = None
     strip = os.path.join(ROOT, "datasets", "Si_fulletch_220nm")
     try:
-        from em_simulation import DataUpdater
+        from dbeme import DataUpdater
         du = DataUpdater(strip)
         n_g = rows[0]["n_g"]
         widths = (480e-9, 500e-9, 520e-9)

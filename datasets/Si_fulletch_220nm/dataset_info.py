@@ -27,8 +27,8 @@ the points a device actually visits are ever computed.
 
 import numpy as np
 
-from em_simulation.fde import EmepyFDE, FullEtchStrip
-from em_simulation.fde.materials import silica, silicon
+from dbeme.fde import EmepyFDE, FullEtchStrip
+from dbeme.fde.materials import silica, silicon
 
 WAVELENGTH = 1.55e-6
 THICKNESS = 220e-9
@@ -102,7 +102,7 @@ class DatasetInfo:
             # The axis is symmetric about zero on purpose: a left bend and a
             # right bend are mirror images, and folding them onto |kappa| would
             # make the two halves of an S-bend look identical and erase the
-            # mode conversion at their join.  See em_simulation/geometry/
+            # mode conversion at their join.  See dbeme/geometry/
             # curvature.py.  A wide axis costs nothing - only the points a
             # device actually visits are ever solved.
             "curvature": np.round(np.linspace(-200000, 200000, 81), 0),

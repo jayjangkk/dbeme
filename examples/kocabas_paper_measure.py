@@ -34,8 +34,8 @@ sys.path.insert(0, os.path.join(ROOT, "examples"))
 
 import demo_kocabas_converter as demo                       # noqa: E402
 from demo_plasmonic_converter import lumped, physical, ports, K0   # noqa: E402
-from em_simulation import DataUpdater                        # noqa: E402
-from em_simulation.fde.assemble import assemble, overlap_matrix   # noqa: E402
+from dbeme import DataUpdater                        # noqa: E402
+from dbeme.fde.assemble import assemble, overlap_matrix   # noqa: E402
 
 suffix = sys.argv[1]
 out_json = sys.argv[2] if len(sys.argv) > 2 else os.path.join(ROOT, "reports", "output", f"kocabas_paper_measure_{suffix}.json")

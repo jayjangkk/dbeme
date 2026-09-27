@@ -67,7 +67,7 @@ class Material(metaclass=abc.ABCMeta):
         every wavelength.  A dataset records the fingerprints of its materials
         so that a cache built with one index model is never silently reused
         with another - see
-        :func:`em_simulation.data_updater.dataset_identity.fingerprint`.
+        :func:`dbeme.data_updater.dataset_identity.fingerprint`.
         """
 
     def validity_range(self):

@@ -39,7 +39,7 @@ def lumped_smatrix(geometry, force_unitary=False, force_passive=False,
                    length=None, method=None):
     """The single scattering matrix of a whole device.
 
-    :param geometry: A :class:`~em_simulation.geometry.geometry.Geometry`.
+    :param geometry: A :class:`~dbeme.geometry.geometry.Geometry`.
     :param force_unitary: Project each section onto the nearest unitary matrix.
         Leave **off** for anything measuring truncation error - the projection
         hides exactly what is being measured.

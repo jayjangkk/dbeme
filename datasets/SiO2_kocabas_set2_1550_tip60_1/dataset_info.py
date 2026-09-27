@@ -9,7 +9,7 @@ exact per-edge split it made possible showed the staircase is the gold
 wall's (report 13 section 7).  Kept as that measurement.
 """
 
-from em_simulation.platforms import kocabas_converter_dataset_info
+from dbeme.platforms import kocabas_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 

@@ -13,14 +13,14 @@ import pytest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from em_simulation.circuit.roughness import (  # noqa: E402
+from dbeme.circuit.roughness import (  # noqa: E402
     payne_lacey_alpha,
     roughness_loss_db_per_cm,
     sidewall_factor,
     slab_te_index,
 )
-from em_simulation.fde.base import ModeData  # noqa: E402
-from em_simulation.platforms import BusRingStrips, ring_coupler_dataset_info  # noqa: E402
+from dbeme.fde.base import ModeData  # noqa: E402
+from dbeme.platforms import BusRingStrips, ring_coupler_dataset_info  # noqa: E402
 
 
 def test_bus_stays_fixed_as_gap_changes():

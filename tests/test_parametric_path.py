@@ -15,7 +15,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.geometry.parametric_path import ParametricPath  # noqa: E402
+from dbeme.geometry.parametric_path import ParametricPath  # noqa: E402
 
 
 class FakeUpdater:

@@ -7,14 +7,14 @@ pyyaml
 
 # Mode solver.  emepy must be installed with --no-deps: it pins simphony 0.6
 # and tidy3d-beta for its own EME engine and circuit export, neither of which
-# is used here (see em_simulation/fde/_compat.py).
+# is used here (see dbeme/fde/_compat.py).
 #     pip install emepy --no-deps
 emepy
 ElectroMagneticPythonGpu   # provides EMpy_gpu, the FD solver emepy wraps
 shapely                    # used by emepy.tools
 
 # Material data: refractive index vs wavelength from refractiveindex.info.
-# Optional - em_simulation/fde/materials.py falls back to built-in Sellmeier
+# Optional - dbeme/fde/materials.py falls back to built-in Sellmeier
 # formulas without it.  The database itself is a separate one-off download:
 #     pyoptik setup
 PyOptik

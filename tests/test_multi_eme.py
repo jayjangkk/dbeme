@@ -20,9 +20,9 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.geometry.composite_geometry import CompositeGeometry  # noqa: E402
-from em_simulation.geometry.geometry import Geometry  # noqa: E402
-from em_simulation.propagator.multi_propagator.multi_eme import MultiEME  # noqa: E402
+from dbeme.geometry.composite_geometry import CompositeGeometry  # noqa: E402
+from dbeme.geometry.geometry import Geometry  # noqa: E402
+from dbeme.propagator.multi_propagator.multi_eme import MultiEME  # noqa: E402
 
 
 class _StubGeometry(Geometry):

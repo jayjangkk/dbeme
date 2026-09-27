@@ -43,8 +43,8 @@ from _plotting import (  # noqa: E402
     save,
     section_amplitudes,
 )
-from em_simulation import EME, DataUpdater, LinearTaper, Runner  # noqa: E402
-from em_simulation.matrix_calculation_tool import _redheffer_star_product  # noqa: E402
+from dbeme import EME, DataUpdater, LinearTaper, Runner  # noqa: E402
+from dbeme.matrix_calculation_tool import _redheffer_star_product  # noqa: E402
 
 DATASET = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),

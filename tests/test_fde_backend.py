@@ -11,8 +11,8 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.fde import EmepyFDE, FullEtchStrip  # noqa: E402
-from em_simulation.fde.assemble import assemble, overlap_matrix  # noqa: E402
+from dbeme.fde import EmepyFDE, FullEtchStrip  # noqa: E402
+from dbeme.fde.assemble import assemble, overlap_matrix  # noqa: E402
 
 WL = 1.55e-6
 

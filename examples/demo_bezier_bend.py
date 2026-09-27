@@ -40,8 +40,8 @@ from _plotting import (  # noqa: E402
     save,
     section_amplitudes,
 )
-from em_simulation import EME, DataUpdater, Runner, SingleCustomBend  # noqa: E402
-from em_simulation.geometry.bend_shapes.bezier import BezierCurve  # noqa: E402
+from dbeme import EME, DataUpdater, Runner, SingleCustomBend  # noqa: E402
+from dbeme.geometry.bend_shapes.bezier import BezierCurve  # noqa: E402
 
 DATASET = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),

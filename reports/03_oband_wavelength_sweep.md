@@ -45,11 +45,11 @@ physically meaningless — two extra mode solves per point, bought for nothing.
 One dataset per wavelength plus a sweep helper, which is what `docs/validation_backlog.md` §5.14
 already recommends.
 
-That is now a configuration change rather than code. `em_simulation/platforms.py`
+That is now a configuration change rather than code. `dbeme/platforms.py`
 holds each stack once, and a dataset file is a wavelength:
 
 ```python
-from em_simulation.platforms import sacher_bilevel_dataset_info
+from dbeme.platforms import sacher_bilevel_dataset_info
 
 WAVELENGTH = 1.31e-6
 DatasetInfo = sacher_bilevel_dataset_info(WAVELENGTH)

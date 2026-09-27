@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "examples"))
 
-from em_simulation.platforms import (  # noqa: E402
+from dbeme.platforms import (  # noqa: E402
     RAC_GAP,
     RAC_W_BOT,
     RAC_W_EQUAL,
@@ -207,7 +207,7 @@ def test_cutoff_is_the_substrate_not_the_cladding_when_they_differ():
 
 def test_symmetric_stacks_are_unaffected_by_the_cutoff_fix():
     """Every buried dataset in this project must keep the value it had."""
-    from em_simulation.platforms import (
+    from dbeme.platforms import (
         sacher_bilevel_dataset_info,
         sacher_coupler_dataset_info,
     )

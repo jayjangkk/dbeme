@@ -6,7 +6,7 @@ This module adds the missing piece by giving ``EMpy``'s vectorial solver a
 complex-stretched grid.
 
 :class:`PMLModeSolver` is the solver; :class:`PMLBackend` puts it behind
-:class:`~em_simulation.fde.base.FDEBackend`, so a *dataset* can be built on a
+:class:`~dbeme.fde.base.FDEBackend`, so a *dataset* can be built on a
 lossy basis (``datasets/Si_plasmonic_slot_1550``, report 12).  That wiring
 waited for Phase 3's mode-count study - a PML-EME basis needs tens of modes
 rather than six and DBEME stores ``(2N x 2N)`` overlaps per adjacent
@@ -75,7 +75,7 @@ See ``reports/07_sirac_optimization.md`` section 23.
 Validation
 ----------
 See ``reports/06_pml_phase1_gate.md``.  Against the independent Airy reference
-in :mod:`em_simulation.reference`, at matched ``n_eff``, the loss rate agrees to
+in :mod:`dbeme.reference`, at matched ``n_eff``, the loss rate agrees to
 **3 %** over seven decades on a SiN guide; against Vlasov & McNab (2004) the
 bend-loss trend of a 220 nm Si wire is reproduced (report 06 section 6).  The
 first device - a Si-wire-to-gold-slot converter, report 12 - found two more
@@ -251,7 +251,7 @@ def _stretch_end(z, n, f, outer):
 class PMLModeSolver:
     """Complex modes of a cross section, on a complex-stretched grid.
 
-    :param cross_section: Any :class:`~em_simulation.fde.cross_section.CrossSection`.
+    :param cross_section: Any :class:`~dbeme.fde.cross_section.CrossSection`.
     :param wavelength: Metres.
     :param window: ``(half_width, y_min, y_max)``, or ``(x_min, x_max, y_min,
         y_max)`` for an asymmetric one.  A bend radiates **outward only**, so

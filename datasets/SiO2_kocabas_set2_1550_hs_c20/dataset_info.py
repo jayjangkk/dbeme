@@ -9,7 +9,7 @@ from 5 nm to 1 nm cells); a 20 nm arc moves 0.012, so it is the geometry on
 which a wall refinement can be compared at all.
 """
 
-from em_simulation.platforms import kocabas_converter_dataset_info
+from dbeme.platforms import kocabas_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 

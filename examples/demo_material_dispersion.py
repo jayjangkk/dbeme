@@ -36,8 +36,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import matplotlib.pyplot as plt  # noqa: E402
 
 from _plotting import save  # noqa: E402
-from em_simulation.fde import EmepyFDE, FullEtchStrip  # noqa: E402
-from em_simulation.fde.materials import (  # noqa: E402
+from dbeme.fde import EmepyFDE, FullEtchStrip  # noqa: E402
+from dbeme.fde.materials import (  # noqa: E402
     SELLMEIER_COEFFICIENTS,
     ConstantIndex,
     SellmeierMaterial,

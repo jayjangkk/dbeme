@@ -6,7 +6,7 @@ because the slot tapers independently of the Si (gap 75 -> 125 nm along the
 paper's design).  Lossy PML basis; the paper's material constants.
 """
 
-from em_simulation.platforms import kocabas_converter_dataset_info
+from dbeme.platforms import kocabas_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 

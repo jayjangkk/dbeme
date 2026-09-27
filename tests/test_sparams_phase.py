@@ -1,4 +1,4 @@
-"""Invariants of `em_simulation/propagator/sparams_phase` - continuous phase and delay.
+"""Invariants of `dbeme/propagator/sparams_phase` - continuous phase and delay.
 
 Each test encodes one of the three traps the module exists for, or one of the
 contracts the S-parameter scripts rely on without checking at run time.
@@ -13,7 +13,7 @@ import pytest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from em_simulation.propagator.sparams_phase import (  # noqa: E402
+from dbeme.propagator.sparams_phase import (  # noqa: E402
     C_LIGHT,
     aligned_gradient,
     cascade,
@@ -171,7 +171,7 @@ def _random_smatrix(rng, n, scale=0.3):
 
 def test_star_is_the_reference_product_batched():
     """The frequency-grid cascade must be the propagator's own algebra."""
-    from em_simulation.matrix_calculation_tool import _redheffer_star_product
+    from dbeme.matrix_calculation_tool import _redheffer_star_product
 
     rng = np.random.default_rng(5)
     n = 3
@@ -185,7 +185,7 @@ def test_star_is_the_reference_product_batched():
 
 
 def test_propagate_into_is_propagation_starred_with_the_interface():
-    from em_simulation.matrix_calculation_tool import _redheffer_star_product
+    from dbeme.matrix_calculation_tool import _redheffer_star_product
 
     rng = np.random.default_rng(9)
     n = 4
@@ -202,7 +202,7 @@ def test_propagate_into_is_propagation_starred_with_the_interface():
 
 def test_cascade_is_the_propagators_section_order():
     """``prop_0, interface_0, prop_1, ...`` - `_find_Smatrix_new_length`'s order."""
-    from em_simulation.matrix_calculation_tool import _redheffer_star_product
+    from dbeme.matrix_calculation_tool import _redheffer_star_product
 
     rng = np.random.default_rng(13)
     n, sections, freqs = 3, 6, 2

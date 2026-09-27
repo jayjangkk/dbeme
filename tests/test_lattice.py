@@ -1,4 +1,4 @@
-"""`em_simulation/circuit/lattice.py` against sax and against known lattice designs.
+"""`dbeme/circuit/lattice.py` against sax and against known lattice designs.
 
 * the closed-form transfer of a cell equals the sax composition of the same
   ideal couplers and straight arms (the netlist and the port convention are
@@ -22,8 +22,8 @@ sys.path.insert(0, ROOT)
 import jax.numpy as jnp  # noqa: E402
 import sax  # noqa: E402
 
-from em_simulation.circuit import IndexModel, ideal_coupler, straight_model  # noqa: E402
-from em_simulation.circuit.lattice import (  # noqa: E402
+from dbeme.circuit import IndexModel, ideal_coupler, straight_model  # noqa: E402
+from dbeme.circuit.lattice import (  # noqa: E402
     lattice_netlist,
     lattice_transfer,
     response_powers,

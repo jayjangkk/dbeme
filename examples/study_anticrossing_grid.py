@@ -39,9 +39,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import matplotlib.pyplot as plt  # noqa: E402
 
 from _plotting import OUTPUT_DIR, save  # noqa: E402
-from em_simulation import DataExtractor, DirectParametricPath, EME  # noqa: E402
-from em_simulation.fde.assemble import assemble, overlap_matrix  # noqa: E402
-from em_simulation.matrix_calculation_tool import _redheffer_star_product  # noqa: E402
+from dbeme import DataExtractor, DirectParametricPath, EME  # noqa: E402
+from dbeme.fde.assemble import assemble, overlap_matrix  # noqa: E402
+from dbeme.matrix_calculation_tool import _redheffer_star_product  # noqa: E402
 
 from demo_adiabatic_coupler import (  # noqa: E402
     DATASET,

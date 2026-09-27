@@ -22,7 +22,7 @@ import ray
 #: Turn it on for very long paths or large mode counts with either
 #: ``DBEME_USE_RAY=1`` in the environment or::
 #:
-#:     import em_simulation.matrix_calculation_tool as mct
+#:     import dbeme.matrix_calculation_tool as mct
 #:     mct.USE_RAY = True
 USE_RAY = os.environ.get("DBEME_USE_RAY", "").lower() in ("1", "true", "yes")
 
@@ -32,7 +32,7 @@ def _ensure_ray():
 
     The upstream version initialised Ray at import time with the whole project
     as ``working_dir``, which packaged and uploaded the virtualenv on every
-    import.  Workers still need to import ``em_simulation`` to unpickle the
+    import.  Workers still need to import ``dbeme`` to unpickle the
     remote functions, so the project root goes on their ``PYTHONPATH`` instead
     - same effect, nothing copied.
     """

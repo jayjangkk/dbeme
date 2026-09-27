@@ -64,7 +64,7 @@ class CrossSection(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def materials(self) -> list:
-        """Every :class:`~em_simulation.fde.materials.Material` in the stack."""
+        """Every :class:`~dbeme.fde.materials.Material` in the stack."""
 
     def fingerprint(self) -> str:
         """Identity of the geometry *and* its index models.
@@ -225,7 +225,7 @@ class FullEtchStrip(CrossSection):
         ==========================================             +--> x
 
     :param thickness: Core height in metres (e.g. ``220e-9``).
-    :param core: Core material.  A :class:`~em_simulation.fde.materials.Material`,
+    :param core: Core material.  A :class:`~dbeme.fde.materials.Material`,
         a number, or a ``"shelf/book/page"`` database identifier.  Defaults to
         crystalline Si from refractiveindex.info.
     :param cladding: Material above and beside the core.  Defaults to SiO2.
@@ -409,7 +409,7 @@ class CoupledStrips(CrossSection):
 
     :param thickness: Device-layer thickness in metres.
     :param gap: Default edge-to-edge separation in metres.
-    :param core: Core material (see :mod:`em_simulation.fde.materials`).
+    :param core: Core material (see :mod:`dbeme.fde.materials`).
     :param cladding: Material above and between the cores.
     :param substrate: Material below.  Defaults to ``cladding``.
     :param swept_parameters: Names this cross section expects in the dataset
@@ -550,7 +550,7 @@ class CoupledStrips(CrossSection):
         near 0 means guide 2.  Around 0.5 the two guides are hybridised - that
         is the anti-crossing.
 
-        :param mode_data: A :class:`~em_simulation.fde.base.ModeData`.
+        :param mode_data: A :class:`~dbeme.fde.base.ModeData`.
         :param split_x: Where to cut, in metres.  The gap centre is at 0 by
             construction, so the default is the obvious choice.
         :returns: Array of length ``num_modes``.

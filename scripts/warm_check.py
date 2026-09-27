@@ -38,15 +38,15 @@ def _count(cls, name, key):
 
 
 def install():
-    from em_simulation.geometry.direct_geometry import DirectGeometry
-    from em_simulation.fde.emepy_fde import EmepyFDE
-    from em_simulation.fde.pml import PMLBackend
+    from dbeme.geometry.direct_geometry import DirectGeometry
+    from dbeme.fde.emepy_fde import EmepyFDE
+    from dbeme.fde.pml import PMLBackend
 
     _count(DirectGeometry, "calc_output_data", "path solves")
     _count(EmepyFDE, "solve", "mode solves")
     _count(PMLBackend, "solve", "mode solves")
     try:
-        from em_simulation.fde.femwell_fde import FemwellBackend
+        from dbeme.fde.femwell_fde import FemwellBackend
     except ImportError:
         return
     _count(FemwellBackend, "solve", "mode solves")

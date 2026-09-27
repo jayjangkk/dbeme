@@ -14,7 +14,7 @@ implication. Reference lists only when they add something.
 ## 0. Ground rules
 
 * `ref_dbeme/` and `ref_emepy/` are **vendored upstream, never edited**. If a
-  fix belongs upstream, patch the copy under `em_simulation/` and note the
+  fix belongs upstream, patch the copy under `dbeme/` and note the
   divergence in `README.md` → *What changed relative to upstream*.
 * The **dataset pickles are a cache, not source**. `dataset_info.py` is the
   source of truth. If a grid axis, mesh, window, mode count, wavelength or
@@ -24,17 +24,17 @@ implication. Reference lists only when they add something.
   cross sections sampled on the same `(x, y)` mesh. Any change to `window` or
   `MESH` invalidates every overlap in that dataset. `EmepyFDE` raises if the
   grid moves — do not work around that check, regenerate instead.
-* New mode solvers go behind `em_simulation/fde/base.py::FDEBackend`. That ABC
+* New mode solvers go behind `dbeme/fde/base.py::FDEBackend`. That ABC
   is the whole point of the port; do not let solver specifics leak into
   `data_updater` or the geometry classes.
 * Debugging style: identify the root cause, then propose the **minimal patch**.
   Do not rewrite a module unless asked.
-* **Nothing platform-specific under `em_simulation/`, `datasets/<generic>`,
+* **Nothing platform-specific under `dbeme/`, `datasets/<generic>`,
   `examples/`, `tests/`.** A foundry stack - thicknesses, indices, sidewall
   angles, GDS layers - lives in `studies/`, the platform datasets and
   the platform document; a test that needs it goes to
   `studies/<slug>/tests/`. These trees become the public repository (task 16).
-* Before changing `em_simulation/`, commit or `git tag pre_<label>`. The
+* Before changing `dbeme/`, commit or `git tag pre_<label>`. The
   snapshots `backups/` used to hold are the `backup/<name>` tags.
 
 ## 1. Commands

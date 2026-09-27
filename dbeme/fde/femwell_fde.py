@@ -1,4 +1,4 @@
-r"""A finite-element mode solver behind :class:`~em_simulation.fde.base.FDEBackend`.
+r"""A finite-element mode solver behind :class:`~dbeme.fde.base.FDEBackend`.
 
 Why a second lossy backend exists.  :mod:`pml` solves on a uniform
 finite-difference grid, and on a plasmonic cross section that grid *is* the
@@ -68,7 +68,7 @@ _M_TO_UM = 1e6
 class FemwellModeSolver:
     """Complex modes of a cross section on a boundary-conforming FEM mesh.
 
-    :param cross_section: A :class:`~em_simulation.fde.cross_section.CrossSection`
+    :param cross_section: A :class:`~dbeme.fde.cross_section.CrossSection`
         that implements :meth:`polygons`.
     :param wavelength: Metres.
     :param window: ``(half_width, y_min, y_max)`` or ``(x_min, x_max, y_min,

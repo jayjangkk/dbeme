@@ -6,7 +6,7 @@ so the width axis runs in 5 nm steps and the gap axis in 2.5 nm steps and the
 about four times as much; build it only for the convergence row of report 13.
 """
 
-from em_simulation.platforms import kocabas_converter_dataset_info
+from dbeme.platforms import kocabas_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 

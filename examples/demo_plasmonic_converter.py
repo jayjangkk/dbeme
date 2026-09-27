@@ -9,7 +9,7 @@ the slot itself loses about 1 dB/um.
 What is modelled here is the **lateral** stepping stone CLAUDE.md prescribes
 for this device: the Si width tapers 400 nm -> 0 between two full-height gold
 walls that follow the taper at a constant air gap, suspended in air
-(``em_simulation.fde.slot_converter``).  The device confines its plasmon
+(``dbeme.fde.slot_converter``).  The device confines its plasmon
 *vertically* (the 20 nm), which one swept width cannot represent; the model's
 gap plasmon is the lateral one of the ``2 x gap`` slot the walls leave behind.
 Absolute numbers are therefore not the paper's - the report says which
@@ -58,7 +58,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import matplotlib.pyplot as plt  # noqa: E402
 
 from _plotting import save  # noqa: E402
-from em_simulation import (  # noqa: E402
+from dbeme import (  # noqa: E402
     EME,
     DataExtractor,
     DataUpdater,
@@ -66,11 +66,11 @@ from em_simulation import (  # noqa: E402
     ParametricPath,
     Runner,
 )
-from em_simulation.fde.materials import air  # noqa: E402
-from em_simulation.fde.pml import PMLBackend  # noqa: E402
-from em_simulation.fde.slot_converter import PlasmonicSlotConverter  # noqa: E402
-from em_simulation.platforms import plasmonic_converter_dataset_info  # noqa: E402
-from em_simulation.reference.plasmonic import attenuation_db_per_um  # noqa: E402
+from dbeme.fde.materials import air  # noqa: E402
+from dbeme.fde.pml import PMLBackend  # noqa: E402
+from dbeme.fde.slot_converter import PlasmonicSlotConverter  # noqa: E402
+from dbeme.platforms import plasmonic_converter_dataset_info  # noqa: E402
+from dbeme.reference.plasmonic import attenuation_db_per_um  # noqa: E402
 
 TAG = "plasmonic"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

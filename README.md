@@ -47,7 +47,7 @@ practical.
 The physics, the dataset format, the geometry classes and the EME solver are
 upstream's. The solver boundary and the Python-3.13 compatibility work are new.
 
-**New — `em_simulation/fde/`**
+**New — `dbeme/fde/`**
 
 | file | role |
 |---|---|
@@ -60,35 +60,35 @@ upstream's. The solver boundary and the Python-3.13 compatibility work are new.
 | `pml.py` | `PMLModeSolver` / `PMLBackend`: EMpy's vectorial solver on a complex-stretched grid, shift-invert mode selection and a core-confinement filter, so `n_eff` is complex and radiation and metal loss exist (reports 06, 12) |
 | `slot_converter.py` | `PlasmonicSlotConverter`: a Si core between two gold walls with a gap, complex permittivity averaged in ε, rounded corners, a `core_mask` for the confinement filter; the gap can be a second path parameter (`sweep_gap`) for slots that taper independently of the Si |
 
-**New — `em_simulation/reference/`**
+**New — `dbeme/reference/`**
 
 Closed-form rulers the solvers are checked against, none of which import a
 solver: the bent slab's exact Airy solution and a 1-D finite-difference PML
 (`bent_slab.py`, `fd1d_pml.py`), and the single-interface SPP and the
 symmetric MIM gap plasmon (`plasmonic.py`).
 
-**New — `em_simulation/geometry/parametric_path.py`**
+**New — `dbeme/geometry/parametric_path.py`**
 
 `ParametricPath` / `DirectParametricPath`: a device given as one function of
 propagation length per dataset parameter, snapped onto the grid (or not, for the
 direct reference). `SingleWaveguide` hard-codes the parameter set of a one-core
 dataset; this takes any of them, which is what the coupled-pair devices need.
 
-**New — `em_simulation/platforms.py`**
+**New — `dbeme/platforms.py`**
 
 Each published stack written down once, so a dataset file is just a wavelength.
 A DBEME dataset is keyed to the mode problem and λ is part of that key, so a
 wavelength sweep is one dataset per wavelength — *not* a λ grid axis, which
 would compute neighbour overlaps between wavelengths that nothing can use.
 
-**New — `em_simulation/validation.py`**
+**New — `dbeme/validation.py`**
 
 The Tier-1 invariant checks packaged so a report can open with a table of what
 was measured: reciprocity, reflection symmetry, power conservation with the
 unitary projection off, mode-basis convergence, slicing independence and branch
 tracking.
 
-**New — `em_simulation/data_updater/dataset_identity.py`**
+**New — `dbeme/data_updater/dataset_identity.py`**
 
 Records what a cached dataset was built for — index models, wavelength, mesh,
 window, mode count, parameter grid — and refuses to serve it for anything else.
@@ -195,7 +195,7 @@ or just run `./install.sh`.
 
 `emepy` is installed with `--no-deps` on purpose: it pins `simphony` 0.6 and
 `tidy3d-beta`, which are only needed for its own EME engine and its circuit
-export. We use its mode solver alone, and `em_simulation/fde/_compat.py` loads
+export. We use its mode solver alone, and `dbeme/fde/_compat.py` loads
 just that part of the package. Ray is optional (`pip install ray`).
 
 `PyOptik` supplies the material data. The last line downloads the
@@ -215,7 +215,7 @@ Verify:
 ## Quick start
 
 ```python
-from em_simulation import DataUpdater, LinearTaper, EME, Runner
+from dbeme import DataUpdater, LinearTaper, EME, Runner
 import numpy as np
 
 du = DataUpdater("datasets/Si_fulletch_220nm")
@@ -392,7 +392,7 @@ rounded geometry (`--suffix hs_c20` against
 `--suffix r100-300_1+y95-135_1_c20`, both `--axes half_slot`) is the
 experiment.
 
-**A finite-element backend** (`em_simulation/fde/femwell_fde.py`) — a
+**A finite-element backend** (`dbeme/fde/femwell_fde.py`) — a
 boundary-conforming mesh behind the same backend contract, for the case the
 finite-difference grid cannot converge: a rounded metal corner is a staircase
 at any affordable cell, and the gap plasmon moved 0.03–0.05 in `n_eff`
@@ -458,7 +458,7 @@ published route. `examples/verify_smatrix_routes.py` is the gate;
 
 DBEME cascades cross sections along `z`; it cannot close a loop. A ring, a
 Mach-Zehnder, a coupled-resonator filter are *circuits* of DBEME building
-blocks, and `em_simulation/circuit/` is where those blocks become circuit
+blocks, and `dbeme/circuit/` is where those blocks become circuit
 models (task 11). It is a consumer of S-matrices downstream of
 `FDEBackend`, not a backend.
 
@@ -510,7 +510,7 @@ parameter grid and the cross section. See
 
 ```python
 import numpy as np
-from em_simulation.fde import EmepyFDE, FullEtchStrip, silica, silicon
+from dbeme.fde import EmepyFDE, FullEtchStrip, silica, silicon
 
 
 class DatasetInfo:
@@ -546,7 +546,7 @@ A layer takes a `Material`, a plain number, or a `"shelf/book/page"` identifier
 from [refractiveindex.info](https://refractiveindex.info):
 
 ```python
-from em_simulation.fde.materials import PyOptikMaterial, silicon, silica
+from dbeme.fde.materials import PyOptikMaterial, silicon, silica
 
 FullEtchStrip(core=silicon(), cladding=silica())          # database, with fallback
 FullEtchStrip(core="main/Si/Salzberg", cladding=1.444)    # explicit page + a number
@@ -658,7 +658,7 @@ because only visited points are solved. See
 `[[S11, S12], [S21, S22]]`. So `S == S.T` is not the reciprocity test and fails
 at 1e-2 on a perfectly good taper. The real conditions are
 `T_forward == T_backward.T` and each reflection block symmetric; those hold to
-2e-5 and 1e-12. `em_simulation.validation.check_reciprocity` implements the
+2e-5 and 1e-12. `dbeme.validation.check_reciprocity` implements the
 correct one.
 
 **The grid step is probably a floor — not yet proven.** Snapping onto a 20 nm
@@ -694,7 +694,7 @@ alongside the geometry parameters, so adding it to the grid needs no change in
 ## Layout
 
 ```
-em_simulation/          ported DBEME core
+dbeme/          ported DBEME core
   fde/                  NEW - the emepy mode-solver backend + materials.py,
                         pml.py (lossy PML backend), slot_converter.py
   reference/            NEW - closed-form rulers: Airy bent slab, 1-D PML,
@@ -710,7 +710,7 @@ datasets/
   Si_pair_*, Si_bilevel_*, Si_rac_*   coupled pairs, rib, RAC (reports 01-05)
   Si_plasmonic_slot_1550[_sharp|_gap40|_c4]  lossy PML basis: Si wire in a gold slot (report 12)
   SiO2_kocabas_set2_1550               two-axis (w_si, gap) lossy basis: Kocabas's embedded converter (report 13)
-backups/                pre-task-16 snapshots of em_simulation/ (untracked; each
+backups/                pre-task-16 snapshots of dbeme/ (untracked; each
                         is a `backup/<name>` git tag - scripts/backups_to_tags.py)
 scripts/                repo tooling: backup.py, restore.py, backups_to_tags.py
 examples/               demo scripts and studies, figures in output/

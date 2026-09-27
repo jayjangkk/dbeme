@@ -68,7 +68,7 @@ understates what sits underneath.
 
 Phases 0–3 done (report 06); first real use done on the plasmonic converter
 (report 12) with a lossy dataset, DBEME vs direct EME and DBEME vs literature.
-What the backend is: `PMLModeSolver` / `PMLBackend` (`em_simulation/fde/pml.py`),
+What the backend is: `PMLModeSolver` / `PMLBackend` (`dbeme/fde/pml.py`),
 complex `n_eff`, PML recipe in the dataset identity, scattering cascade by
 `SMATRIX_METHOD = "auto"`, output-side interface projection by
 `INTERFACE_PROJECTION = "auto"`. What it is not: a basis that holds the near
@@ -154,7 +154,7 @@ the problem is in the formulation, and a 2-D solver will only hide it.
 
 ## Phase 2 — the backend itself
 
-> **Status:** done — `em_simulation/fde/pml.py` (`PMLModeSolver`, `PMLBackend`), report 06 §5–6, §10.
+> **Status:** done — `dbeme/fde/pml.py` (`PMLModeSolver`, `PMLBackend`), report 06 §5–6, §10.
 
 Two routes. They **coexist** with `EmepyFDE` rather than replacing it:
 `get_fde_backend()` is per dataset, so lossless datasets keep the fast uniform

@@ -11,7 +11,7 @@ horizontal mirror plane, so it breaks the very symmetry the partial etch was
 introduced to break - see ``reports/04_sidewall_angle.md``.
 """
 
-from em_simulation.platforms import sacher_bilevel_dataset_info
+from dbeme.platforms import sacher_bilevel_dataset_info
 
 WAVELENGTH = 1.55e-06
 BOTTOM_SIDEWALL_ANGLE = 85.0

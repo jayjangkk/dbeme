@@ -47,8 +47,8 @@ from _plotting import OUTPUT_DIR, save  # noqa: E402
 from demo_plasmonic_converter import (  # noqa: E402
     PHYSICAL_IMAG_NEFF, budget, guided_block, lumped, physical, ports, standard_form,
 )
-from em_simulation import DataExtractor, DataUpdater, DirectParametricPath, ParametricPath  # noqa: E402
-from em_simulation.platforms import KOCABAS_SETS, kocabas_converter_dataset_info, kocabas_path  # noqa: E402
+from dbeme import DataExtractor, DataUpdater, DirectParametricPath, ParametricPath  # noqa: E402
+from dbeme.platforms import KOCABAS_SETS, kocabas_converter_dataset_info, kocabas_path  # noqa: E402
 
 TAG = "kocabas"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

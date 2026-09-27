@@ -22,8 +22,8 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.fde import EmepyFDE, FullEtchStrip  # noqa: E402
-from em_simulation.fde.assemble import assemble, overlap_matrix  # noqa: E402
+from dbeme.fde import EmepyFDE, FullEtchStrip  # noqa: E402
+from dbeme.fde.assemble import assemble, overlap_matrix  # noqa: E402
 
 POINT = (0.9e-6, 0.0)
 NEIGHBOUR = (0.92e-6, 0.0)

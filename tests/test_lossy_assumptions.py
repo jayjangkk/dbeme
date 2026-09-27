@@ -17,11 +17,11 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.fde import EmepyFDE, FullEtchStrip  # noqa: E402
-from em_simulation.fde.assemble import assemble, overlap_matrix  # noqa: E402
-from em_simulation.fde.base import FDEBackend, ModeData  # noqa: E402
-from em_simulation.fde.materials import ConstantIndex, silica, silicon  # noqa: E402
-from em_simulation.propagator.propagator import (  # noqa: E402
+from dbeme.fde import EmepyFDE, FullEtchStrip  # noqa: E402
+from dbeme.fde.assemble import assemble, overlap_matrix  # noqa: E402
+from dbeme.fde.base import FDEBackend, ModeData  # noqa: E402
+from dbeme.fde.materials import ConstantIndex, silica, silicon  # noqa: E402
+from dbeme.propagator.propagator import (  # noqa: E402
     LOSSY_NEFF_TOLERANCE,
     _reject_unitary_projection_on_lossy_modes,
 )
@@ -276,7 +276,7 @@ def test_radiation_mask_keeps_lossy_guided_modes():
     """The 100 dB/cm rule is a lossless-model heuristic.  A Si wire beside
     gold (Im ~ 5e-3) and a gap plasmon (2e-2) are guided modes of a lossy
     basis; only the cutoff may reject them there."""
-    from em_simulation.geometry.geometry import (
+    from dbeme.geometry.geometry import (
         RADIATION_IMAG_NEFF, radiation_mode_mask,
     )
 
@@ -291,7 +291,7 @@ def test_radiation_mask_keeps_lossy_guided_modes():
 def test_radiation_mask_asks_the_dataset_whether_it_is_lossless():
     from types import SimpleNamespace
 
-    from em_simulation.geometry.geometry import _data_is_lossless
+    from dbeme.geometry.geometry import _data_is_lossless
 
     assert _data_is_lossless(SimpleNamespace(_is_lossless=lambda: False)) is False
     assert _data_is_lossless(SimpleNamespace(_is_lossless=lambda: True)) is True

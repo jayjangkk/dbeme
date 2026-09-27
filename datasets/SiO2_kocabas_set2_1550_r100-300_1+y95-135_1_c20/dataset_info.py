@@ -12,7 +12,7 @@ positions; the Si axis stays at 10 nm.  Compare with
 5 nm grid.
 """
 
-from em_simulation.platforms import kocabas_converter_dataset_info
+from dbeme.platforms import kocabas_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 

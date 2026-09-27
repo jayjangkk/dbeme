@@ -12,7 +12,7 @@ Si width axis at 10 nm, and costs +68 % unknowns against 4.9x per solve for
 the uniform 2.5 nm grid.
 """
 
-from em_simulation.platforms import kocabas_converter_dataset_info
+from dbeme.platforms import kocabas_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 

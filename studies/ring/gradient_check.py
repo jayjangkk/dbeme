@@ -28,7 +28,7 @@ import jax  # noqa: E402
 import jax.numpy as jnp  # noqa: E402
 import sax  # noqa: E402
 
-from em_simulation.circuit import all_pass_amplitude, round_trip_phase  # noqa: E402
+from dbeme.circuit import all_pass_amplitude, round_trip_phase  # noqa: E402
 from studies.ring.ring_model import OUT, bend_index, gap_interpolated_coupler, load_coupler_json, load_loss_json  # noqa: E402
 
 

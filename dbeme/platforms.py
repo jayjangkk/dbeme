@@ -10,7 +10,7 @@ instantiates:
 
 .. code-block:: python
 
-    from em_simulation.platforms import sacher_coupler_dataset_info
+    from dbeme.platforms import sacher_coupler_dataset_info
 
     WAVELENGTH = 1.31e-6
     DatasetInfo = sacher_coupler_dataset_info(WAVELENGTH)
@@ -405,8 +405,8 @@ def plasmonic_converter_dataset_info(
     (2018): a 400 x 200 nm Si wire tapers laterally to a point over 600 nm
     inside a gold/air/gold slot, with an air gap ``gap`` between the Si edge
     and the metal (20 nm designed, 40 nm fabricated).  The cross section is
-    :class:`~em_simulation.fde.slot_converter.PlasmonicSlotConverter`, the
-    backend is the lossy :class:`~em_simulation.fde.pml.PMLBackend`, and the
+    :class:`~dbeme.fde.slot_converter.PlasmonicSlotConverter`, the
+    backend is the lossy :class:`~dbeme.fde.pml.PMLBackend`, and the
     swept axis is the Si width.
 
     The axis is dense where the conversion happens.  The Si TE0 mode is cut

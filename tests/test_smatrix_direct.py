@@ -26,14 +26,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__))), "examples"))
 
-from em_simulation.fde import EmepyFDE, FullEtchStrip  # noqa: E402
-from em_simulation.fde.assemble import assemble, overlap_matrix  # noqa: E402
-from em_simulation.fde.materials import silica, silicon  # noqa: E402
-from em_simulation.geometry.geometry import Geometry  # noqa: E402
-from em_simulation.matrix_calculation_tool import (  # noqa: E402
+from dbeme.fde import EmepyFDE, FullEtchStrip  # noqa: E402
+from dbeme.fde.assemble import assemble, overlap_matrix  # noqa: E402
+from dbeme.fde.materials import silica, silicon  # noqa: E402
+from dbeme.geometry.geometry import Geometry  # noqa: E402
+from dbeme.matrix_calculation_tool import (  # noqa: E402
     _redheffer_star_product,
 )
-from em_simulation.propagator.single_propagator.single_eme import (  # noqa: E402
+from dbeme.propagator.single_propagator.single_eme import (  # noqa: E402
     SingleEME,
 )
 
@@ -442,7 +442,7 @@ def test_the_cutoff_is_off_for_the_transfer_route(taper):
 def _T(form, oab, oba):
     from types import SimpleNamespace
 
-    from em_simulation.propagator.single_propagator.single_eme import SingleEME
+    from dbeme.propagator.single_propagator.single_eme import SingleEME
 
     stub = SimpleNamespace(INTERFACE_PROJECTION=form)
     return SingleEME._calc_transmission_matrix(stub, oab, oba)
@@ -480,7 +480,7 @@ def test_auto_projection_follows_the_basis():
     T21 invertible); lossy: the bounded output-side form."""
     from types import SimpleNamespace
 
-    from em_simulation.propagator.single_propagator.single_eme import SingleEME
+    from dbeme.propagator.single_propagator.single_eme import SingleEME
 
     o = np.array([[[0.99 + 0j]]])
     lossless = SimpleNamespace(INTERFACE_PROJECTION="auto", _lossless=True)

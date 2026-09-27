@@ -51,7 +51,7 @@ class ModeData:
 
 
 class FDEBackend(metaclass=abc.ABCMeta):
-    """Mode solver plugged into :class:`~em_simulation.data_updater.data_updater.DataUpdater`."""
+    """Mode solver plugged into :class:`~dbeme.data_updater.data_updater.DataUpdater`."""
 
     #: Names of the geometry parameters this backend accepts, in the order used
     #: by the dataset's parameter tuples.  Set by the concrete backend.

@@ -54,9 +54,9 @@ through it is.
 
 import numpy as np
 
-from em_simulation.fde import EmepyFDE
-from em_simulation.fde.cross_section import CoupledStrips
-from em_simulation.fde.materials import silica, silicon
+from dbeme.fde import EmepyFDE
+from dbeme.fde.cross_section import CoupledStrips
+from dbeme.fde.materials import silica, silicon
 
 WAVELENGTH = 1.55e-6
 THICKNESS = 220e-9

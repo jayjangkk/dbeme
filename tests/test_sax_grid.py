@@ -19,7 +19,7 @@ sys.path.insert(0, ROOT)
 import jax  # noqa: E402
 import jax.numpy as jnp  # noqa: E402
 
-from em_simulation.circuit.sax_model import sax_model_from_grid  # noqa: E402
+from dbeme.circuit.sax_model import sax_model_from_grid  # noqa: E402
 
 N_EFF, N_G, DN, WL0 = 1.626, 1.991, 0.038, 1.31e-6
 PORTS = ("o1", "o2", "o3", "o4")

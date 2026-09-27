@@ -2,7 +2,7 @@
 
 **Only for ``.venv-circuit``.**  This file imports circulax and is loaded by
 path (``importlib.util.spec_from_file_location``), never through
-``em_simulation.circuit``, whose package chain imports emepy; it therefore
+``dbeme.circuit``, whose package chain imports emepy; it therefore
 depends on nothing else in the repo.  It is a plugin against the pinned
 circulax release, not a fork: circulax's ``@component`` / ``@source``
 decorators take a plain physics function returning the DAE terms

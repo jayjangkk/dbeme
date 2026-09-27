@@ -13,10 +13,10 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from em_simulation.fde.base import FDEBackend, ModeData  # noqa: E402
-from em_simulation.fde.materials import air, gold, silica  # noqa: E402
-from em_simulation.fde.pml import PMLBackend  # noqa: E402
-from em_simulation.fde.slot_converter import PlasmonicSlotConverter  # noqa: E402
+from dbeme.fde.base import FDEBackend, ModeData  # noqa: E402
+from dbeme.fde.materials import air, gold, silica  # noqa: E402
+from dbeme.fde.pml import PMLBackend  # noqa: E402
+from dbeme.fde.slot_converter import PlasmonicSlotConverter  # noqa: E402
 
 WL = 1.55e-6
 
@@ -159,7 +159,7 @@ def test_plates_default_to_the_silicon_height():
 
 
 def test_platform_is_suspended_with_full_height_plates_and_four_pml_edges():
-    from em_simulation.platforms import plasmonic_converter_dataset_info
+    from dbeme.platforms import plasmonic_converter_dataset_info
 
     info = plasmonic_converter_dataset_info(cell=20e-9)()
     assert info.cladding_index == pytest.approx(1.0)
@@ -180,7 +180,7 @@ def test_platform_grid_is_aligned_with_the_geometry():
     puts the Si edge and the metal inner edge on grid points - so all cross
     sections are discretised the same way (a metal edge moving inside a cell
     moved the hybrid mode's index by 0.1)."""
-    from em_simulation.platforms import plasmonic_converter_dataset_info
+    from dbeme.platforms import plasmonic_converter_dataset_info
 
     cell = 10e-9
     info = plasmonic_converter_dataset_info(cell=cell)()
@@ -254,7 +254,7 @@ def test_backend_recipe_enters_the_dataset_identity(backend):
     import json
     from types import SimpleNamespace
 
-    from em_simulation.data_updater.dataset_identity import fingerprint
+    from dbeme.data_updater.dataset_identity import fingerprint
 
     recipe = backend.fingerprint()
     assert json.loads(json.dumps(recipe)) == recipe
@@ -321,7 +321,7 @@ def test_rounded_corners_remove_metal_only_at_the_corners():
 
 
 def test_rounded_fill_is_quantised_away_from_epsilon_near_zero():
-    from em_simulation.fde.slot_converter import _rounded_rect_fill
+    from dbeme.fde.slot_converter import _rounded_rect_fill
 
     x = np.arange(-100, 101, 5) * 1e-9
     y = np.arange(-100, 101, 5) * 1e-9
@@ -350,7 +350,7 @@ def test_gap_can_be_a_path_parameter(grid):
 
 
 def test_kocabas_platform_matches_table_ii():
-    from em_simulation.platforms import (
+    from dbeme.platforms import (
         KOCABAS_SETS, kocabas_converter_dataset_info, kocabas_path,
     )
 
@@ -375,7 +375,7 @@ def test_kocabas_platform_matches_table_ii():
 
 
 def test_kocabas_grid_puts_every_edge_on_a_cell_boundary():
-    from em_simulation.platforms import kocabas_converter_dataset_info
+    from dbeme.platforms import kocabas_converter_dataset_info
 
     cell = 25e-9
     info = kocabas_converter_dataset_info(set_number=2, cell=cell)()
@@ -393,7 +393,7 @@ def test_both_plasmonic_platforms_colocate_e_and_h():
     """The half-cell E/H offset (report 07 section 23) is off by default in
     PMLModeSolver; every dataset built on these platforms must have it fixed,
     and the identity must say so."""
-    from em_simulation.platforms import kocabas_converter_dataset_info, plasmonic_converter_dataset_info
+    from dbeme.platforms import kocabas_converter_dataset_info, plasmonic_converter_dataset_info
 
     for info in (plasmonic_converter_dataset_info(cell=20e-9)(), kocabas_converter_dataset_info(cell=25e-9)()):
         backend = info.get_fde_backend()

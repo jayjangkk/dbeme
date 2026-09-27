@@ -40,14 +40,14 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.collections import LineCollection  # noqa: E402
 
 from _plotting import propagation_axis, save  # noqa: E402
-from em_simulation import (  # noqa: E402
+from dbeme import (  # noqa: E402
     DataExtractor,
     DataUpdater,
     DirectParametricPath,
     ParametricPath,
 )
-from em_simulation.matrix_calculation_tool import _redheffer_star_product  # noqa: E402
-from em_simulation.validation import (  # noqa: E402
+from dbeme.matrix_calculation_tool import _redheffer_star_product  # noqa: E402
+from dbeme.validation import (  # noqa: E402
     check_branch_tracking,
     check_mode_basis_convergence,
     check_power_conservation,
@@ -149,7 +149,7 @@ def sweep_length(path, lengths, launch_index, n_modes):
     sections - the sequence of cross sections is set by the *normalised*
     width schedule - so the whole sweep reuses the interface matrices.
     """
-    from em_simulation import EME
+    from dbeme import EME
 
     eme = EME(path, force_unitary=True)
     eme.calc_Smatrix()

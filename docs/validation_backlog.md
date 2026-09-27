@@ -138,7 +138,7 @@ coupled Si pair, two modes at `Δn = 0.0101` had a **self**-overlap
 `|⟨E₄,H₅⟩| = 0.0745`, so `O_aa ≠ I` and a **constant-width** guide — where the
 answer must be `T = 1` exactly — transmitted **1.59**.
 
-*Fixed in* `em_simulation/fde/assemble.py::biorthogonalise`: Löwdin symmetric
+*Fixed in* `dbeme/fde/assemble.py::biorthogonalise`: Löwdin symmetric
 orthogonalisation in the **unconjugated** metric (§5.16), applied per cross
 section inside `assemble`, so every backend and dataset gets it. `A = S^{-1/2}`
 with `S = ½(M + Mᵀ)` — the symmetric part, because that is what the interface
@@ -226,7 +226,7 @@ solution** — 1-D, semi-analytic, cheap, and it probes the radiating tail
 directly, which is precisely what a PML must get right. Then a published SOI
 bend-loss-vs-radius curve, then FDTD.
 
-*Alternative — built 2026-09-17:* `em_simulation/fde/femwell_fde.py::FemwellBackend`
+*Alternative — built 2026-09-17:* `dbeme/fde/femwell_fde.py::FemwellBackend`
 (femwell 0.1.12 / scikit-fem / gmsh), a boundary-conforming FEM mesh behind
 the same `FDEBackend` contract. Geometry comes from `CrossSection.polygons()`
 (shapely, per material region; implemented for `FullEtchStrip` and
@@ -248,7 +248,7 @@ because the overlaps require one shared grid and femwell's unstructured mesh
 must be interpolated onto it (that interpolation error then enters every
 overlap).
 
-*Status: built (2026-09-02 → 09-06), Route A.* `em_simulation/fde/pml.py` —
+*Status: built (2026-09-02 → 09-06), Route A.* `dbeme/fde/pml.py` —
 `PMLModeSolver` / `PMLBackend` on EMpy's vectorial solver with a complex
 stretched grid, shift-invert selection and a core-confinement filter; validated
 against the Airy bent slab (3 % over seven decades) and Vlasov & McNab 2004
@@ -299,7 +299,7 @@ slots and leaving one at its initialised **zero**. A mode with `n_eff = 0` has
 no field behind it, so its overlap rows are junk and the interface matrix goes
 singular.
 
-*Fixed in* `em_simulation/geometry/mode_tracking.py::hungarian_mode_links`
+*Fixed in* `dbeme/geometry/mode_tracking.py::hungarian_mode_links`
 (`scipy.optimize.linear_sum_assignment`); both classes delegate to it. With a
 fixed `N`-mode basis on both sides of every interface the map *must* be a
 permutation, so there is no case where greedy is right and this is not. The

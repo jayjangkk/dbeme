@@ -2,7 +2,7 @@ r"""Turn raw solver output into the arrays the EME solver consumes.
 
 This is the numerical core that used to sit inside ``DataUpdater``'s
 Lumerical sweep post-processing.  It is backend independent: give it a list of
-:class:`~em_simulation.fde.base.ModeData` sampled on one common grid and it
+:class:`~dbeme.fde.base.ModeData` sampled on one common grid and it
 produces the normalised bidirectional mode basis and the overlap matrices that
 the dataset stores.
 
@@ -32,7 +32,7 @@ def assemble(mode_data_list, num_modes, prop_axis=2, lossless=True,
     :param num_modes: Number of forward modes ``N``.
     :param prop_axis: Index of the propagation component (2 = z).
     :param lossless: Whether the medium is lossless by construction - take it
-        from :attr:`~em_simulation.fde.base.FDEBackend.lossless`, never from
+        from :attr:`~dbeme.fde.base.FDEBackend.lossless`, never from
         ``Im(n_eff)``.  It selects how the backward basis is built and whether
         a negative ``Im(n_eff)`` is treated as round-off.
     :param biorthogonal: Enforce ``½(M + Mᵀ) = I`` within each point's forward

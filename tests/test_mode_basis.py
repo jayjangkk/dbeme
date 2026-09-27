@@ -15,13 +15,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from em_simulation.data_updater import overlap_calculation_tool as oct  # noqa: E402
-from em_simulation.fde.assemble import (  # noqa: E402
+from dbeme.data_updater import overlap_calculation_tool as oct  # noqa: E402
+from dbeme.fde.assemble import (  # noqa: E402
     assemble,
     biorthogonalise,
     overlap_matrix,
 )
-from em_simulation.geometry.mode_tracking import (  # noqa: E402
+from dbeme.geometry.mode_tracking import (  # noqa: E402
     hungarian_mode_links,
     link_quality,
 )
@@ -81,7 +81,7 @@ def test_biorthogonalise_leaves_an_already_biorthogonal_set_alone():
 
 def test_assemble_applies_biorthogonalisation_and_can_be_switched_off():
     """The flag exists to reproduce pre-fix results, and must actually do so."""
-    from em_simulation.fde.base import ModeData
+    from dbeme.fde.base import ModeData
 
     rng = np.random.default_rng(2)
     x, y = _grid()

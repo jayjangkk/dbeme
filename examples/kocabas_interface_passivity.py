@@ -18,7 +18,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT); sys.path.insert(0, os.path.join(ROOT, "examples"))
 import demo_kocabas_converter as demo                              # noqa: E402
 from demo_plasmonic_converter import EME, physical                 # noqa: E402
-from em_simulation import DataUpdater                              # noqa: E402
+from dbeme import DataUpdater                              # noqa: E402
 
 suffix, gaps = sys.argv[1], [int(v) for v in sys.argv[2:]]
 demo.use_cell(5.0, suffix=suffix, axes="half_slot")

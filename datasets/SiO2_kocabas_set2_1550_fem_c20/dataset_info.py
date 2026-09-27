@@ -11,7 +11,7 @@ gold, 15 nm on the silicon; a lossy ring (eps'' 0.5 over 0.3 um) stands in for
 the PML.
 """
 
-from em_simulation.platforms import kocabas_converter_dataset_info
+from dbeme.platforms import kocabas_converter_dataset_info
 
 WAVELENGTH = 1.55e-6
 

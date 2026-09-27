@@ -40,15 +40,15 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import matplotlib.pyplot as plt  # noqa: E402
 
 from _plotting import save  # noqa: E402
-from em_simulation.fde import FullEtchStrip  # noqa: E402
-from em_simulation.fde.assemble import assemble, overlap_matrix  # noqa: E402
-from em_simulation.fde.materials import silica, silicon  # noqa: E402
-from em_simulation.fde.pml import PMLModeSolver  # noqa: E402
-from em_simulation.matrix_calculation_tool import (  # noqa: E402
+from dbeme.fde import FullEtchStrip  # noqa: E402
+from dbeme.fde.assemble import assemble, overlap_matrix  # noqa: E402
+from dbeme.fde.materials import silica, silicon  # noqa: E402
+from dbeme.fde.pml import PMLModeSolver  # noqa: E402
+from dbeme.matrix_calculation_tool import (  # noqa: E402
     _redheffer_star_product,
 )
-from em_simulation.geometry.geometry import Geometry  # noqa: E402
-from em_simulation.propagator.single_propagator.single_eme import SingleEME  # noqa: E402
+from dbeme.geometry.geometry import Geometry  # noqa: E402
+from dbeme.propagator.single_propagator.single_eme import SingleEME  # noqa: E402
 
 WAVELENGTH = 1.55e-6
 WIDE, NARROW = 0.500e-6, 0.400e-6
