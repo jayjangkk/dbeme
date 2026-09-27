@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dbeme"
+version = "0.1.0"
+description = "Dataset-based eigenmode expansion for integrated photonics: cached mode datasets, lossy/PML and FEM backends, and a differentiable circuit layer"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+authors = [{ name = "Jaehyuck Jang" }]
+keywords = ["photonics", "eigenmode expansion", "EME", "mode solver", "silicon photonics"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+# emepy is NOT listed: it pins simphony 0.6 and tidy3d-beta for an EME engine
+# this package does not use, so it is installed first with --no-deps (README,
+# Install).  dbeme/fde/_compat.py covers what those pins would have provided.
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.12",
+    "matplotlib>=3.8",
+    "tqdm",
+    "pyyaml",
+    "ElectroMagneticPythonGpu",  # EMpy_gpu, the FD solver emepy wraps (BSD)
+    "shapely",
+    "PyOptik",                   # refractiveindex.info data; built-in Sellmeier fallback
+    "ray",                       # MultiEME distributes its interface overlaps
+]
+
+[project.optional-dependencies]
+fem = ["femwell>=0.1.12"]        # GPL-3.0, hence optional: the FEM backend only
+circuit = ["jax>=0.4.30", "sax>=0.14"]
+gds = ["gdsfactory>=9.20"]
+test = ["pytest"]
+
+[project.urls]
+Repository = "https://github.com/jayjangkk/dbeme"
+Upstream = "https://github.com/thdwotjd/dataset-based-eme"
+
+[tool.setuptools.packages.find]
+include = ["dbeme*"]

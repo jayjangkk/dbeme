@@ -60,6 +60,18 @@ import numpy as np
 from .base import FDEBackend, ModeData
 from .emepy_fde import _pin_gauge
 
+
+def _require_femwell():
+    """femwell is GPL-3.0, so it is the optional ``[fem]`` extra: say so at the
+    first solve instead of failing deep inside the mesher.  Constructing the
+    backend does not need it, so cached FEM datasets still open warm."""
+    try:
+        import femwell  # noqa: F401
+    except ImportError as missing:
+        raise ImportError("the FEM backend needs femwell, which is GPL-3.0 and "
+                          "therefore optional: pip install 'dbeme[fem]'") from missing
+
+
 __all__ = ["FemwellBackend", "FemwellModeSolver"]
 
 _M_TO_UM = 1e6
@@ -165,6 +177,7 @@ class FemwellModeSolver:
     def _mesh_and_epsilon(self, params):
         """A gmsh mesh of the cross section plus the absorbing ring, and the
         piecewise-constant complex permittivity on it."""
+        _require_femwell()
         import shapely
         from shapely.geometry import box
         from skfem import Basis, ElementTriP0
@@ -212,6 +225,7 @@ class FemwellModeSolver:
         :returns: ``(ModeData, confinement)`` ordered guided-first then by
             decreasing ``Re n_eff``, exactly as :mod:`pml` does.
         """
+        _require_femwell()
         from femwell.maxwell.waveguide import compute_modes
 
         wanted = int(num_modes or self.num_modes)

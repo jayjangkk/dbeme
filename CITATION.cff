@@ -1,0 +1,48 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it and the method it implements (Song & Sohn 2025)."
+title: "dbeme: dataset-based eigenmode expansion for integrated photonics"
+type: software
+authors:
+  - family-names: Jang
+    given-names: Jaehyuck
+license: MIT
+repository-code: "https://github.com/jayjangkk/dbeme"
+version: 0.1.0
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Song
+      given-names: Jaesung
+    - family-names: Sohn
+      given-names: Young-Ik
+  title: "Ultra-fast and accurate multimode waveguide design based on a dataset-based eigenmode expansion method"
+  journal: "Optics Express"
+  volume: 33
+  issue: 22
+  start: 46815
+  end: 46827
+  year: 2025
+  doi: "10.1364/OE.567425"
+references:
+  - type: article
+    authors:
+      - family-names: Hammond
+        given-names: Ian M.
+      - family-names: Hammond
+        given-names: Alec M.
+      - family-names: Camacho
+        given-names: Ryan M.
+    title: "Deep learning-enhanced, open-source eigenmode expansion"
+    journal: "Optics Letters"
+    volume: 47
+    issue: 6
+    start: 1383
+    end: 1386
+    year: 2022
+    doi: "10.1364/OL.443664"
+  - type: software
+    title: "dataset-based-eme"
+    authors:
+      - name: thdwotjd
+    repository-code: "https://github.com/thdwotjd/dataset-based-eme"
+    license: MIT

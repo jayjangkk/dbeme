@@ -19,8 +19,12 @@ shapely                    # used by emepy.tools
 #     pyoptik setup
 PyOptik
 
-# Optional: distributed matrix work, off by default (DBEME_USE_RAY=1)
-# ray
+# Ray: MultiEME always distributes its interface overlaps with it; the
+# *_ray matrix helpers stay off unless DBEME_USE_RAY=1.
+ray
+
+# Optional extras (pyproject.toml): fem = femwell (GPL-3.0),
+# circuit = jax + sax, gds = gdsfactory (requirements-gds.txt).
 
 # Development
 pytest

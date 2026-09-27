@@ -1,0 +1,9 @@
+[submodule "ref_dbeme"]
+	path = ref_dbeme
+	url = https://github.com/thdwotjd/dataset-based-eme.git
+[submodule "ref_emepy"]
+	path = ref_emepy
+	url = https://github.com/BYUCamachoLab/emepy.git
+[submodule "ref_pyoptik"]
+	path = ref_pyoptik
+	url = https://github.com/MartinPdeS/PyOptik.git
