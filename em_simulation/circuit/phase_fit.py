@@ -43,7 +43,7 @@ def unwrap_against(wavelengths, phase, reference=None):
     28 um of silicon strip at 10 nm steps.  Past that, pass a ``reference``
     - an array of the same shape or a callable of the wavelength - and the
     wrapped residual against it is unwrapped and added back
-    (`studies/tapeout/sparams_phase.py`).
+    (`em_simulation/propagator/sparams_phase.py`).
 
     What the reference must get right is the **slope**, not the offset: the
     residual's step between samples must stay under ``pi``, so the

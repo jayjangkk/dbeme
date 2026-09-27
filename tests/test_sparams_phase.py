@@ -1,4 +1,4 @@
-"""Invariants of `studies/tapeout/sparams_phase` - continuous phase and delay.
+"""Invariants of `em_simulation/propagator/sparams_phase` - continuous phase and delay.
 
 Each test encodes one of the three traps the module exists for, or one of the
 contracts the S-parameter scripts rely on without checking at run time.
@@ -13,7 +13,7 @@ import pytest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from studies.tapeout.sparams_phase import (  # noqa: E402
+from em_simulation.propagator.sparams_phase import (  # noqa: E402
     C_LIGHT,
     aligned_gradient,
     cascade,
