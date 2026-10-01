@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dbeme"
-version = "0.1.0"
+version = "1.0.0"
 description = "Dataset-based eigenmode expansion for integrated photonics: cached mode datasets, lossy/PML and FEM backends, and a differentiable circuit layer"
 readme = "README.md"
 license = "MIT"

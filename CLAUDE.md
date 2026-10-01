@@ -35,6 +35,11 @@ implication. Reference lists only when they add something.
   submodule; so does any test that needs such a stack.
 * Before changing `dbeme/`, commit or `git tag pre_<label>`, so the previous
   solver can always be restored.
+* **Git and versions follow `docs/git_workflow.md`.** Work on a branch, not
+  `main`; record every behavioural change in `changelog/unreleased.md` in the
+  same commit; never push, merge into `main`, tag a release or move a `v*` tag
+  unless Jae asks. Released versions (`changelog/vX.Y.Z.md`, tag `vX.Y.Z`) are
+  frozen.
 
 ## 1. Commands
 
@@ -92,6 +97,7 @@ unchanged, so "§5.13a" or "CLAUDE.md §5.2" in older text means the file below.
 | 4-5 | `docs/validation_backlog.md` | before reporting any number: what is validated, and the §5.x checks with pass criteria (`force_unitary`, lossy-basis caveats, gauge, tracking) |
 | 6-8 | `docs/demo_plan.md` | writing a demo or report: capability matrix, comparison protocol, report template |
 | 9 | `docs/references.md` | citing: method, device and material references |
+| - | `docs/git_workflow.md`, `changelog/` | before any commit, merge, push or release: branches, version bumps, changelog entries |
 
 A device task is `tasks/<nn>_<name>.md` and its write-up `reports/<nn>_<name>.md`;
 the numbers of the two series do not match - the task file names its report.
