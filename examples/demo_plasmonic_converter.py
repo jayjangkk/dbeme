@@ -71,6 +71,7 @@ from dbeme.fde.pml import PMLBackend  # noqa: E402
 from dbeme.fde.slot_converter import PlasmonicSlotConverter  # noqa: E402
 from dbeme.platforms import plasmonic_converter_dataset_info  # noqa: E402
 from dbeme.reference.plasmonic import attenuation_db_per_um  # noqa: E402
+from dbeme.propagator.single_propagator.single_eme import interface_switches  # noqa: E402
 
 TAG = "plasmonic"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -247,7 +248,7 @@ def end_ratios(payload, gap):
 # ------------------------------------------------------------ sanity gate
 
 
-def sanity_gate(du, taper):
+def sanity_gate(du, taper, taper_basis=None):
     rows = []
     # (a) a constant-width walled wire loses exactly its propagation loss
     L = 1.0e-6
@@ -263,8 +264,9 @@ def sanity_gate(du, taper):
         "neff": [float(np.real(n0)), float(np.imag(n0))],
         "loss_dB_per_um": attenuation_db_per_um(n0, WAVELENGTH),
     })
-    # (b) reciprocity of the 600 nm taper, standard arrangement
-    S, od = taper["S"], taper["od"]
+    # (b) reciprocity of the 600 nm taper, standard arrangement - on the
+    # cascade without the reciprocal projection, if the caller built one
+    S, od = (taper_basis or taper)["S"], (taper_basis or taper)["od"]
     std = standard_form(S)
     asym = float(np.abs(std - std.T).max())
     block = guided_block(S, od)
@@ -286,6 +288,7 @@ def sanity_gate(du, taper):
         "measured": channel, "relative_to_|S|": channel / max(abs(S[j_out, i_in]), 1e-300),
         "pass": bool(channel < 1e-6),
     })
+    S, od = taper["S"], taper["od"]
     # (c) passivity: no *physical* input column gains power.  Berenger-mode
     # inputs are excluded on purpose - their unconjugated normalisation puts
     # |a|^2 two to three times off the power they carry (r = 2-3), so a column
@@ -410,7 +413,12 @@ def gate(payload, du, gap):
         return
     print(f"\n[{gap} nm gap] sanity gate")
     taper = lumped(ParametricPath(du, schedule(600e-9), total_length=600e-9))
-    rows = sanity_gate(du, taper)
+    # the reciprocity rows measure the basis: with SingleEME's reciprocal
+    # projection on (the lossy default since 2026-10-01) they would read
+    # ~1e-15 by construction
+    with interface_switches(INTERFACE_RECIPROCAL=False):
+        taper_basis = lumped(ParametricPath(du, schedule(600e-9), total_length=600e-9))
+    rows = sanity_gate(du, taper, taper_basis)
     for row in rows:
         print(f"  {row['check']:64s} {row['measured']:.3e}  "
               f"{'ok' if row['pass'] else 'FAIL'}")

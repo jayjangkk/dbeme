@@ -86,6 +86,7 @@ things that had to be got right: the low-side PML layers were gain
 
 import numpy as np
 import scipy.sparse.linalg as spla
+import scipy.sparse as sp
 
 from . import _compat  # noqa: F401  - numpy/scipy shims must load first
 from .base import FDEBackend, ModeData
@@ -248,6 +249,23 @@ def _stretch_end(z, n, f, outer):
     z[cells] = z[cells] + (f - 1) * (z[cells] - q1) ** 3 / (q2 - q1) ** 2
 
 
+def _shift_invert(matrix, sigma):
+    """``(A - sigma I)^-1`` as an operator, factorised with a minimum-degree
+    ordering on ``A^T + A``.
+
+    What ``eigs`` builds itself when given only ``sigma`` is the same inverse
+    with SuperLU's default COLAMD ordering.  On the finite-difference
+    operator of a 2-D grid the symmetric structure is what matters: measured
+    on the 413 x 177 edge-coupler grid (146 202 unknowns, 40 modes), the fill
+    drops from 9.8 M to 5.7 M entries per factor and the whole ``eigs`` from
+    102 s to 63 s, with every eigenvalue unchanged to 1.3e-13 - so datasets
+    solved before and after agree to round-off (``tasks/18``).
+    """
+    lu = spla.splu((matrix - sigma * sp.identity(matrix.shape[0], format="csc", dtype=complex)).tocsc(),
+                   permc_spec="MMD_AT_PLUS_A")
+    return spla.LinearOperator(matrix.shape, matvec=lu.solve, dtype=complex)
+
+
 class PMLModeSolver:
     """Complex modes of a cross section, on a complex-stretched grid.
 
@@ -263,7 +281,16 @@ class PMLModeSolver:
     :param mesh: Points across ``x``; ``mesh_y`` defaults to a matching pitch.
     :param pml_thickness: PML depth on the ``+x`` edge, metres.  Phase 1 found
         2 um under-converged and 4 um converged for a weak guide; scale with
-        the wavelength in the cladding.
+        the wavelength in the cladding.  A dict ``{edge: depth}`` sets each
+        edge on its own - for a stack whose edges end in different media.  A
+        Si substrate under a BOX is the case that needs it: the Si inside a
+        deep bottom layer is a slab between the oxide and the PML wall, it
+        carries a band of PML-guided modes at ``Re n`` 2-2.6 whose loss
+        scales as ``1 / depth**2``, and at 0.5 um that band sat on every
+        target between the tip and the output of an edge coupler and pushed
+        the device's own modes out of the set (``tasks/18``, Phase 0.3).
+        A thin, Si-only bottom layer moves the band far from the real axis
+        while still absorbing the steep leakage waves a substrate takes.
     :param pml_factor: Complex stretch reached at the outer edge.  ``1 + 2j`` is
         emepy's own intended value; ``1 + 4j`` is safer.
     :param pml_edges: Which edges to absorb on.  A bend radiates outward only,
@@ -312,7 +339,13 @@ class PMLModeSolver:
         self.refine_y = tuple(tuple(float(v) for v in r) for r in refine_y)
         self._wavelength = float(wavelength)
         self.window = tuple(float(v) for v in window)
-        self.pml_thickness = float(pml_thickness)
+        if isinstance(pml_thickness, dict):
+            unknown = set(pml_thickness) - {"+x", "-x", "+y", "-y"}
+            if unknown:
+                raise ValueError(f"pml_thickness: unknown edges {sorted(unknown)}")
+            self.pml_thickness = {str(k): float(v) for k, v in pml_thickness.items()}
+        else:
+            self.pml_thickness = float(pml_thickness)
         self.pml_factor = complex(pml_factor)
         self.pml_edges = tuple(pml_edges)
         self._num_modes = int(num_modes)
@@ -338,13 +371,19 @@ class PMLModeSolver:
         # interior by construction (refined_axis), so the outer cells keep it.
         step_x = self._x[1] - self._x[0]
         step_y = self._y[1] - self._y[0]
-        depth_x = int(round(self.pml_thickness / step_x))
-        depth_y = int(round(self.pml_thickness / step_y))
+
+        def depth(edge, step):
+            if edge not in self.pml_edges:
+                return 0
+            if isinstance(self.pml_thickness, dict):
+                return int(round(self.pml_thickness.get(edge, 0.0) / step))
+            return int(round(self.pml_thickness / step))
+
         self._layers = dict(
-            layers_plus_x=depth_x if "+x" in self.pml_edges else 0,
-            layers_minus_x=depth_x if "-x" in self.pml_edges else 0,
-            layers_plus_y=depth_y if "+y" in self.pml_edges else 0,
-            layers_minus_y=depth_y if "-y" in self.pml_edges else 0,
+            layers_plus_x=depth("+x", step_x),
+            layers_minus_x=depth("-x", step_x),
+            layers_plus_y=depth("+y", step_y),
+            layers_minus_y=depth("-y", step_y),
         )
         self._x = self._refine(self._x, self.refine_x, self._layers["layers_minus_x"],
                                self._layers["layers_plus_x"], "x")
@@ -547,13 +586,15 @@ class PMLModeSolver:
         solver.nmodes, solver.tol = wanted, self.accuracy
         matrix = solver.build_matrix()
         k0 = 2 * np.pi / (self.wavelength * _M_TO_UM)
+        sigma = (float(np.real(target_neff)) * k0) ** 2
         values, vectors = spla.eigs(
             matrix,
             k=wanted,
             which="LM",
-            sigma=(float(np.real(target_neff)) * k0) ** 2,
+            sigma=sigma,
             tol=self.accuracy,
             ncv=min(max(4 * wanted, 40), matrix.shape[0] - 1),
+            OPinv=_shift_invert(matrix, sigma),
         )
         neff = np.sqrt(values) / k0
         neff = np.where(np.real(neff) < 0, -neff, neff)
@@ -713,7 +754,10 @@ class PMLBackend(PMLModeSolver, FDEBackend):
         fingerprint = {
             "stretch_convention": self.STRETCH_CONVENTION,
             "pml_edges": sorted(self.pml_edges),
-            "pml_thickness_m": float(self.pml_thickness),
+            "pml_thickness_m": (
+                {k: self.pml_thickness[k] for k in sorted(self.pml_thickness)}
+                if isinstance(self.pml_thickness, dict) else float(self.pml_thickness)
+            ),
             "pml_factor": [float(self.pml_factor.real), float(self.pml_factor.imag)],
             "target_neff": float(self.target_neff),
             "confinement_threshold": float(self.confinement_threshold),
@@ -732,5 +776,46 @@ class PMLBackend(PMLModeSolver, FDEBackend):
         """One parameter point as :class:`ModeData`, gauge pinned."""
         params = dict(zip(self.parameter_names, parameter_point))
         params.setdefault("wavelength", self._wavelength)
-        data, _ = self.mode_data(params, self.target_neff)
+        data, _ = self.mode_data(params, self.target_for(params))
         return data
+
+    def target_for(self, params):
+        """The shift-invert target at ``params``: one number here."""
+        return self.target_neff
+
+
+class TargetRulePMLBackend(PMLBackend):
+    """:class:`PMLBackend` with a shift-invert target chosen point by point.
+
+    One target cannot serve a path whose guided index runs from the
+    cladding to far above it on a lossy basis: the PML bands of the
+    discretised continuum (``Re n`` 1.8-1.9, ``Im n`` ~0.35 for an oxide
+    window; 2.0-2.6 with ``Im`` 0.2-0.4 for a Si substrate taken into the
+    PML) sit between the two ends, and around any fixed target they fill the
+    set before one end's modes arrive.  On the Wan & Wang edge coupler a
+    target of 2.3 returned no device mode at the 1.449 tip and lost TE0 at
+    the 2.6 output (``tasks/18``, Phase 0.3).  A target at the *local*
+    fundamental keeps the device's modes and the near-cutoff continuum they
+    radiate into, and pushes the PML bands to the far end of the set.
+
+    :param target_rule: ``f(params) -> float``, the real target at a point.
+        Must be deterministic: it is part of what a stored point means.
+    :param target_rule_name: A string naming the rule and every setting that
+        changes its output; it replaces ``target_neff`` in the fingerprint.
+    """
+
+    def __init__(self, cross_section, target_rule, target_rule_name,
+                 parameter_names=None, **kwargs):
+        super().__init__(cross_section, target_neff=float("nan"),
+                         parameter_names=parameter_names, **kwargs)
+        self.target_rule = target_rule
+        self.target_rule_name = str(target_rule_name)
+
+    def target_for(self, params):
+        return float(self.target_rule(params))
+
+    def fingerprint(self):
+        out = super().fingerprint()
+        out.pop("target_neff", None)
+        out["target_rule"] = self.target_rule_name
+        return out

@@ -1,0 +1,214 @@
+{
+ "wavelength_nm": 1310,
+ "bilayer": {
+  "sections": 280,
+  "reciprocity": {
+   "TE": {
+    "abs": 0.00020722678562891443,
+    "relative": 0.00025495386776735595,
+    "T": 0.6606456374597619
+   },
+   "TM": {
+    "abs": 0.00016720166823757832,
+    "relative": 0.00019527435428337906,
+    "T": 0.7331465440723632
+   }
+  },
+  "passivity_max_physical_column": 0.7333623638228229,
+  "passivity_max_any_column": 0.7333623638228229,
+  "launch_power_budget": {
+   "TE": {
+    "out_fwd_physical": 0.6427726951288794,
+    "reflected": 0.00014869970004882015,
+    "window_power": 0.9733879621396647
+   },
+   "TM": {
+    "out_fwd_physical": 0.6517033580235333,
+    "reflected": 0.0003506192470550252,
+    "window_power": 0.9733879621396647
+   }
+  },
+  "membership": {
+   "TE": {
+    "branch": 1,
+    "min_link": 0.8678611516952515,
+    "at_point": [
+     0.0,
+     7.5e-07,
+     0.0
+    ],
+    "links_below_0p9": 1,
+    "still_fundamental_at_end": true
+   },
+   "TM": {
+    "branch": 0,
+    "min_link": 0.9053207039833069,
+    "at_point": [
+     0.0,
+     7.5e-07,
+     0.0
+    ],
+    "links_below_0p9": 0,
+    "still_fundamental_at_end": true
+   },
+   "target_minus_top_TE": {
+    "max": 0.028820276260375977,
+    "at": [
+     2.2e-07,
+     0.0,
+     1.6e-06
+    ],
+    "median": -0.02565622329711914
+   }
+  },
+  "facet": {
+   "TE": {
+    "odd_power": 0.005763243721459798,
+    "even_power": 1.599181409010732,
+    "fundamental_power": 0.9452167446548124,
+    "guided_set_power": 0.9452167620726446,
+    "window_power": 0.9733879621396647,
+    "E_reconstruction_residual": 2.8783169731563563
+   },
+   "TM": {
+    "odd_power": 0.011079557133241115,
+    "even_power": 1.7197684653548004,
+    "fundamental_power": 0.9008929544962092,
+    "guided_set_power": 0.9008930123230796,
+    "window_power": 0.9733879621396647,
+    "E_reconstruction_residual": 3.5657564601081817
+   }
+  },
+  "slicing": {
+   "25nm": {
+    "TE": 1.917452870738027,
+    "TM": 1.8464996611685456
+   },
+   "50nm": {
+    "TE": 1.9046601655844506,
+    "TM": 1.8389563553591783
+   },
+   "50nm_absdT": {
+    "TE": 0.0018970229469358335,
+    "TM": 0.0011363304827674003
+   },
+   "50nm_sections": 280,
+   "12.5nm": {
+    "TE": 1.9338299555957787,
+    "TM": 1.8525868333482811
+   },
+   "12.5nm_absdT": {
+    "TE": 0.002420407020931825,
+    "TM": 0.000915539288206868
+   },
+   "12.5nm_sections": 280,
+   "points_solved_for_slicing": 0
+  }
+ },
+ "conventional": {
+  "sections": 231,
+  "reciprocity": {
+   "TE": {
+    "abs": 0.00015957240634321827,
+    "relative": 0.0001845956438427467,
+    "T": 0.7472616458605112
+   },
+   "TM": {
+    "abs": 5.582206700647897e-06,
+    "relative": 6.325496877118137e-06,
+    "T": 0.7787938908829225
+   }
+  },
+  "passivity_max_physical_column": 0.7788732238453089,
+  "passivity_max_any_column": 0.7788732238453089,
+  "launch_power_budget": {
+   "TE": {
+    "out_fwd_physical": 0.612726742523699,
+    "reflected": 0.00023999971066227793,
+    "window_power": 0.9733879621396647
+   },
+   "TM": {
+    "out_fwd_physical": 0.2914012282123246,
+    "reflected": 8.583065673374446e-05,
+    "window_power": 0.9733879621396647
+   }
+  },
+  "membership": {
+   "TE": {
+    "branch": 2,
+    "min_link": 0.8678611516952515,
+    "at_point": [
+     0.0,
+     7.5e-07,
+     0.0
+    ],
+    "links_below_0p9": 1,
+    "still_fundamental_at_end": true
+   },
+   "TM": {
+    "branch": 0,
+    "min_link": 0.9053207039833069,
+    "at_point": [
+     0.0,
+     7.5e-07,
+     0.0
+    ],
+    "links_below_0p9": 0,
+    "still_fundamental_at_end": true
+   },
+   "target_minus_top_TE": {
+    "max": 0.15971457958221436,
+    "at": [
+     0.0,
+     1.6e-07,
+     1.6e-06
+    ],
+    "median": -0.027563095092773438
+   }
+  },
+  "facet": {
+   "TE": {
+    "odd_power": 0.018244383850029206,
+    "even_power": 1.5849794319579353,
+    "fundamental_power": 0.8459472846458396,
+    "guided_set_power": 0.8459694407252846,
+    "window_power": 0.9733879621396647,
+    "E_reconstruction_residual": 2.333799048297267
+   },
+   "TM": {
+    "odd_power": 0.008586965275171323,
+    "even_power": 1.6578945578289965,
+    "fundamental_power": 0.3814521806855344,
+    "guided_set_power": 0.3814678487171099,
+    "window_power": 0.9733879621396647,
+    "E_reconstruction_residual": 1.3108325993068035
+   }
+  },
+  "slicing": {
+   "25nm": {
+    "TE": 2.1273322650575017,
+    "TM": 5.355089310910927
+   },
+   "50nm": {
+    "TE": 2.1103499491274387,
+    "TM": 5.340777901442824
+   },
+   "50nm_absdT": {
+    "TE": 0.002400649577022018,
+    "TM": 0.0009618446467439257
+   },
+   "50nm_sections": 231,
+   "12.5nm": {
+    "TE": 2.145106916477459,
+    "TM": 5.364592811862339
+   },
+   "12.5nm_absdT": {
+    "TE": 0.0025026212347785126,
+    "TM": 0.0006369645928474554
+   },
+   "12.5nm_sections": 231,
+   "points_solved_for_slicing": 0
+  }
+ },
+ "seconds": 219.44748854637146
+}

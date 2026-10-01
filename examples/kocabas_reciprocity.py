@@ -57,6 +57,9 @@ def asym(A, mask=None):
 def build(rcond, projection):
     SingleEME.INTERFACE_RCOND = rcond
     SingleEME.INTERFACE_PROJECTION = projection
+    # the asymmetry this script measures is what the reciprocal projection
+    # (on for lossy bases since 2026-10-01) removes
+    SingleEME.INTERFACE_RECIPROCAL = False
     eme = EME(path, force_unitary=False); eme.calc_Smatrix()
     return eme.propagator._calc_interface_Smatrix(), eme.propagator._calc_propagation_Smatrix()
 

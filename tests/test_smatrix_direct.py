@@ -175,7 +175,9 @@ def test_the_projection_flags_are_applied_by_both_routes():
 
 
 def test_interface_smatrix_is_the_scattering_blocks(taper):
-    """``[[T12, -R21], [R12, T21]]`` - the inv(T21) round trip cancels."""
+    """``[[T12, R21], [R12, T21]]`` - the inv(T21) round trip cancels.
+    (``tests/test_interface_reflection.py`` checks the blocks against exact
+    references.)"""
     eme = SingleEME(_Stub(taper), force_unitary=False)
     modes = eme.mode_count
     T12 = eme._calc_transmission_matrix(eme.overlap_forward_ab, eme.overlap_forward_ba)
@@ -187,7 +189,7 @@ def test_interface_smatrix_is_the_scattering_blocks(taper):
 
     built = eme._calc_interface_Smatrix()
     assert built[:, :modes, :modes] == pytest.approx(T12)
-    assert built[:, :modes, modes:] == pytest.approx(-R21)
+    assert built[:, :modes, modes:] == pytest.approx(R21)
     assert built[:, modes:, :modes] == pytest.approx(R12)
     assert built[:, modes:, modes:] == pytest.approx(T21)
 

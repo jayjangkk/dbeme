@@ -35,6 +35,54 @@ a TM-like fundamental at 3.002 and first-vertical-order TE/TM modes at
 2.443 / 2.451, which a shift-invert target of 1.9 returned *instead of* the
 fundamental (§1).
 
+> **Note (2026-09-30).** Three corrections to the cascade postdate this
+> report (README → "What changed relative to upstream" → Fixed):
+>
+> * one sign gauge for both overlap sets;
+> * the interface reflection block, from field continuity;
+> * the interface column cap, now opt-in.
+>
+> Warm re-runs at the new default (cap off), on the first-pass sharp 5 nm
+> dataset `SiO2_kocabas_set2_1550` (§4 "first pass"):
+>
+> | quantity | value |
+> |---|---|
+> | design point, at the tip | **72.5 %** (72.3 % as written, uncapped; 72.2 % with the cap opted in; 72.0 % under the cap before the fixes) |
+> | length sweep, 500 / 800 / 1100 / 1400 / 1700 / 2100 / 2500 / 3000 nm | 65.8 / 67.8 / 69.8 / 71.4 / 72.5 / 73.4 / 73.7 / 73.9 % |
+> | gap sweep, 25 / 75 / 125 nm | 67.8 / 72.5 / 73.7 % |
+> | gate: passivity | 0.81 |
+> | gate: physical-channel reciprocity | 1.2e-3 |
+>
+> * **Not re-run:** §4's headline sweeps and §10 are on `..._fem_c20_hs1`,
+>   which is not in this checkout.
+> * **The variant datasets** are in the notes of §8 and §12, except two of
+>   §7's:
+>   * `_c25` is unchanged (78.9 %);
+>   * `_r100-300_2.5+y95-135_2.5_c20` reads 83.0 % (was 83.4 %). So §7's wall
+>     refinement buys a quarter point (82.8 → 83.0 %), not one.
+> * **The 312-section path of §12** is not passive under the corrected
+>   cascade.
+> * **Where the numbers are.** The figures, tables and
+>   `reports/output/kocabas_converter.json` show the values as written.
+>   `reports/output/kocabas_gauge_check.json` has every configuration
+>   (`examples/kocabas_gauge_check.py`).
+>
+> **Note (2026-10-01).** A fourth correction: each lossy interface matrix is
+> projected onto its reciprocal part (README → Fixed, "Reciprocal interface
+> matrix"; §12's note). Warm re-runs on the same dataset:
+>
+> | quantity | value |
+> |---|---|
+> | design point, at the tip | **72.4 %** (72.5 % on 2026-09-30) |
+> | length sweep, 500 / 800 / 1100 / 1400 / 1700 / 2100 / 2500 / 3000 nm | 65.6 / 67.6 / 69.5 / 71.2 / 72.4 / 73.4 / 73.7 / 73.9 % |
+> | gap sweep, 25 / 75 / 125 nm | 67.9 / 72.4 / 73.6 % |
+> | gate: passivity | 0.81 |
+> | gate: physical-channel reciprocity | 1.2e-3, measured with the projection off (2.6e-15 with it on, by construction) |
+>
+> * `_c25` reads 78.6 % and `_r100-300_2.5+y95-135_2.5_c20` 83.1 %.
+> * The 312-section path of §12 is passive with the opt-in self-overlap
+>   estimate, and reads 85.6 %.
+
 ---
 
 ## 1. Sanity gate
@@ -833,6 +881,27 @@ two experiments §7 ended by naming, run in that order
 | FD 5 nm, rounded, **40 modes** | **82.9 %** | 1.5528 + 0.0043j | — | — | — | 3.0e−3 | 72 sections, 11 278 s |
 | **FEM, rounded, 20 modes** | **80.7 % (−0.93 dB)** | **1.5835 + 0.0037j, `L_p` 33.4 µm** | 0.923 | 7.0 % | 0.5 % | 6.1e−4 | 112 sections, 82 756 s |
 
+
+> **Note (2026-09-30).** Re-run uncapped, as this section was written
+> (`examples/kocabas_gauge_check.py`):
+>
+> | basis | upstream | one sign gauge | current (one gauge, corrected reflection block) |
+> |---|---|---|---|
+> | 20 modes | 82.39 % | 82.39 % | 82.78 % |
+> | 40 modes | 82.76 % | 82.93 % | 83.03 % |
+>
+> * The printed 82.9 % for 40 modes is reproduced by the upstream
+>   configuration at the pseudo-inverse cutoff then in force (1e-3: 82.92 %,
+>   warm check). The cutoff went to 1e-2 on 2026-09-20 (§4), which gives
+>   82.76 %. The 40-mode path depends on the cutoff; the 20-mode path does
+>   not.
+> * Forty modes still buy a quarter to half a point.
+> * The FEM row's dataset (`..._fem_c20`) no longer matches its platform
+>   fingerprint, so it was not re-run.
+> * 2026-10-01, with the reciprocal projection (§12's note): 82.73 % (20
+>   modes) and 82.69 % (40 modes). Forty modes now buy nothing; with the
+>   opt-in self-overlap estimate they buy 0.13 points (82.71 → 82.84 %).
+
 **Forty modes buy half a point.** The slot mode, the forward Berenger
 amplitude (0.085 against 0.080) and the gate are unchanged; the twenty
 added modes are all continuum (Im n 0.07–1.08, the seven physical modes
@@ -1029,6 +1098,32 @@ lossy PML/absorber basis the gate now requires the channel asymmetry to be
 below 1e−2 relative to the transmission, and the per-interface physical-block
 asymmetry is the diagnostic to look at when it is not.
 
+> **Note (2026-10-01).** The reading above is wrong about the mechanism.
+>
+> * On the FEM basis the antisymmetric reflection is not the truncation of
+>   the continuum's mode set. It is the antisymmetric part `A` of each
+>   section's own self-overlap, which biorthogonalisation leaves in place
+>   (median continuum column 0.05).
+>   * An interface between a section and itself already reflects
+>     `−A(I − A²)` (output side); the equal-magnitude, opposite-sign entries
+>     are `A`'s.
+>   * `A`'s own origin is not settled: the overlaps leave out the absorber
+>     ring, where the continuum still carries field (README → Fixed).
+> * Fresh solves on the 312-section path of the same family (§12; path point
+>   250 and sections 200–311) confirm it:
+>   * the self-overlap's symmetric part is `I` to 2e-9;
+>   * an interface built from `M` alone reproduces that path's stored 1 nm
+>     wall-step interfaces;
+>   * the asymmetry is the same from 0.25 to 10 nm steps.
+> * §11's own path (`..._fem_c20_hs1`, 231 interfaces) is not in this
+>   checkout and was not re-solved. That its asymmetry is `A` is inferred
+>   from the sister path. On FD bases truncation contributes too.
+> * The reflection is now projected onto its reciprocal part (README →
+>   Fixed, "Reciprocal interface matrix"; §12's note), so a lossy cascade is
+>   reciprocal by construction. This section's numbers are what the
+>   projection removes. The gate's reciprocity row and
+>   `examples/kocabas_reciprocity.py` are computed with the projection off.
+
 ## 12. The last two z-steps, and a cap the cascade needed
 
 Two more datasets take the longitudinal discretisation of the taper — the
@@ -1071,6 +1166,84 @@ which the cap would move by a few tenths.
 | 1 nm | 5 nm | 232 | 85.3 % | 0.969 | 2.07 % | 1.10 % | 0.42 % | 90.8 % |
 | **0.5 nm** | 5 nm | 382 | **87.0 %** | 0.973 | 1.64 % | 1.11 % | 0.48 % | **89.1 %** |
 | 1 nm | **2.5 nm** | 312 | 85.9 % | 0.967 | 2.04 % | 1.36 % | 0.27 % | — |
+
+> **Note (2026-09-30, revised 2026-10-01).** Four corrections bear on this
+> section (README → Fixed):
+>
+> * one sign gauge for both overlap sets, replacing the two-mask rule;
+> * the reflection block;
+> * the interface column cap, now opt-in;
+> * the reciprocal projection of each lossy interface matrix, with an
+>   opt-in self-overlap correction (2026-10-01).
+>
+> The 312-section path, re-run with `examples/kocabas_gauge_check.py`
+> (passivity is the largest physical-input column of `|S|²`, over all
+> outputs and over physical outputs only):
+>
+> | configuration | cap | at the tip | deficit | passivity, all / physical outputs |
+> |---|---|---|---|---|
+> | upstream (reproduces the numbers above exactly) | off | 87.3 % | −0.19 | 6.9 / 0.88 |
+> | upstream | on | 85.9 % | +0.09 | 0.91 / 0.86 |
+> | one gauge, upstream reflection block | off | 85.5 % | +0.10 | 0.96 / 0.85 |
+> | one gauge, upstream reflection block | on | 85.2 % | +0.12 | 0.88 / 0.85 |
+> | one gauge, continuity reflection block (the 2026-09-30 default) | off | 92.5 % | −0.15 | 38 / 9.7 |
+> | the same | on | 91.3 % | +0.01 | 28 / 0.91 |
+> | current: the same, reciprocal projection | off (default) | 85.6 % | +0.02 | 38.9 / 0.85 |
+> | current | on | 85.7 % | +0.07 | 0.93 / 0.85 |
+> | **current + self-overlap estimate** | off | **85.6 %** | +0.07 | **0.93** / 0.85 |
+> | current + self-overlap estimate | on | 85.4 % | +0.07 | 0.93 / 0.85 |
+> | current, reflection blocks zeroed | off | 85.4 % | +0.02 | 38 / 0.85 |
+> | current, reflection blocks zeroed | on | 85.5 % | +0.07 | 0.93 / 0.85 |
+> | current + self-overlap estimate, reflection blocks zeroed | off | 85.4 % | +0.07 | 0.93 / 0.85 |
+>
+> What follows:
+>
+> * The 6.9 came with the two-mask gauge. With one gauge and upstream's
+>   reflection block the path is passive uncapped (0.96).
+> * **The continuum gain was not truncation of the mode set.**
+>   Biorthogonalisation leaves
+>   each section's self-overlap with an antisymmetric part `A` (median
+>   continuum column 0.05 here). With `M = I` assumed, every interface
+>   transmits `I − A²` and reflects `−A(I − A²)`, at any step size. Against
+>   a continuum damped only 0.39 % per 5.3 nm section, that compounds over
+>   311 interfaces:
+>   * The antisymmetric reflections carried 36 of the 38 and the +7 points
+>     at the tip (92.5 %).
+>   * The transmission floor alone gives 38. With the exact `M` of sections
+>     200–311 from fresh solves, that segment's chain falls from 43.4 to
+>     1.004.
+> * **The reciprocal projection** (the default) removes the reflection part:
+>   85.6 %, with the physical outputs passive (0.85). The transmission floor
+>   remains in forward continuum (38.9), and the cap holds it (0.93).
+> * **The self-overlap estimate** (opt-in) removes both. The path is passive
+>   uncapped (0.93, and 0.95 for far-end inputs) at 85.6 %.
+>   * That is 0.02–0.03 points from the exact-`M` hybrid.
+>   * In the offline replica it is passive in the conjugated Poynting metric
+>     too.
+> * The current cascade reads 85.3–85.7 % in every configuration, with or
+>   without the cap and the estimate. The passive upstream and one-gauge rows
+>   read 85.2–85.9 %.
+>   * **The 312-section row is 85.6 %**, not the 85.9 % of the table above.
+>   * Its `A`, mismatch and Berenger columns are pre-fix.
+> * At the default the deficit (+0.02) and the far-end inputs (1.01 over all
+>   outputs) still carry the transmission floor. They are quotable only with
+>   the estimate (docs/validation_backlog.md §5.2).
+> * **The step-independent per-interface floor.** The paragraph after the
+>   table reads a floor that "counts interfaces rather than step size". That
+>   is the signature of this self-overlap floor. Whether it accounts for the
+>   Si and wall mismatch floors was not checked.
+>
+> Not re-run:
+>
+> * the 232- and 382-section datasets (`..._fem_c20_hs1`, `..._hs0.5`). They
+>   are not in this checkout and are the same family, so these are
+>   unverified under the corrected cascade:
+>   * their rows (85.3 %, 87.0 %);
+>   * the "87 ± 1 % modal" estimate;
+>   * the paper's-measure column (90.8 %, 89.1 %) and the "89–91 %"
+>     statement, which also depend on the cap, now opt-in;
+> * §10, §11 and §4's headline sweeps, which are on `..._fem_c20_hs1`;
+> * the `A`, mismatch and Berenger columns.
 
 The wall term is not a staircase all the way down: 7.0 → 2.1 → 1.6 % for
 5 → 1 → 0.5 nm steps, a factor 3.4 for the first ×5 and 1.3 for the next

@@ -1,0 +1,46 @@
+[
+ {
+  "variant": "bilayer",
+  "seconds": 22639.894743442535,
+  "points_solved": 239,
+  "eme_sections": 280,
+  "points_total": 263,
+  "per_point_s": 94.72759306879722,
+  "abrupt": [
+   [
+    [
+     0.0,
+     7.5e-07,
+     0.0
+    ],
+    [
+     0.0,
+     3.675e-07,
+     0.0
+    ]
+   ]
+  ]
+ },
+ {
+  "variant": "conventional",
+  "seconds": 2411.362150669098,
+  "points_solved": 31,
+  "eme_sections": 231,
+  "points_total": 294,
+  "per_point_s": 77.78587582803542,
+  "abrupt": [
+   [
+    [
+     0.0,
+     7.5e-07,
+     0.0
+    ],
+    [
+     0.0,
+     3.675e-07,
+     0.0
+    ]
+   ]
+  ]
+ }
+]

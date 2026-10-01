@@ -3,8 +3,9 @@
 The scattering route of `SingleEME._calc_Smatrix_direct` is
 ``P_0 * I_0 * P_1 * I_1 * ...`` (Redheffer star products): propagation
 through section ``k``, then the interface at its end.  The interface matrices
-``I_k`` come from the stored overlaps and carry the production projection and
-column cap; the propagation blocks ``P_k = diag(exp(i beta dz_k))`` (both
+``I_k`` come from the stored overlaps and carry the production projection (and
+the column cap only when ``SingleEME.INTERFACE_COLUMN_CAP`` opts in; it is off
+by default); the propagation blocks ``P_k = diag(exp(i beta dz_k))`` (both
 directions, scattering form: nothing grows) are the only place the section
 lengths enter.  So a device's S-matrix is exactly differentiable in every
 ``dz_k`` with no solver derivative - the axes that cost zero mode solves are

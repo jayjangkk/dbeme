@@ -31,15 +31,39 @@ unitarity alone will not reveal.
 `force_unitary=False`.
 *On a lossy, truncated basis the number is 1e-3, and that is not a failure.*
 Per interface the transmission blocks are symmetric by construction, but the
-reflection block `R12 = ½(O_abᵀ − O_ba) T12` is symmetric only to the extent
-that the two projections of the interface agree, and for the discretised
+reflection block `R12 = ½(O_baᵀ − O_ab) T12` is symmetric only to the extent
+that the two projections of the interface agree (upstream's index-mixed
+`½(O_abᵀ − O_ba) T12` was corrected on 2026-09-30, README → Fixed,
+"Interface reflection block"), and for the discretised
 continuum they differ by ~0.2 (a Berenger mode of one section is represented
 on the other side by a different set); the physical block stays reciprocal to
 1e-3 per interface and the cascade sums to ~1e-3 on the launched channel
 (report 13 §11, `examples/kocabas_reciprocity.py`). Not a gauge, not the
-cutoff, not the projection side, and it does not fall with basis size. For a
+cutoff, not the projection side, and it does not fall with basis size
+(report 13 §11 measured this with upstream's reflection block; with the
+corrected block and no cap the report 13 design point reads 1.4e-3, its
+variants 6e-4 to 5e-3, and report 22 2e-4 to 5e-4, where the upstream block
+with the cap had given 2.6 to 4.1 %). For a
 lossy basis the pass criterion is `< 1e-2` relative to the transmission; a
 value of order 1 is the conjugation error this check exists for.
+*Since 2026-10-01* `SingleEME.INTERFACE_RECIPROCAL` projects every lossy
+interface matrix onto its reciprocal part. An uncapped lossy cascade is
+therefore reciprocal to round-off (1e-14 or less) by construction, whatever
+the asymmetry's origin.
+
+* On the FEM basis the asymmetry is the antisymmetric self-overlap of §5.2.
+* On FD-PML bases (report 13's design point and FD variants, report 22),
+  truncation and degenerate continuum pairs contribute too. They were not
+  separated from `A`.
+* A truncated basis with `M = I` is non-reciprocal as well
+  (`tests/test_reciprocal_interface.py`).
+* The projection also hides a sign-gauge disagreement between the two
+  overlap sets (report 22 §2.7: merge-step reflection 0.073 → 1.3e-4).
+
+So the check measures the basis only with the switch off. The three gates
+and `examples/kocabas_reciprocity.py` compute it that way
+(`single_eme.interface_switches`), which is where the figures above come
+from.
 
 **5.2 Mode-basis convergence with `force_unitary=False`.** The demos currently
 run `force_unitary=True`, which projects each section onto the nearest unitary
@@ -62,16 +86,122 @@ either way.
 by construction. It must be **off** for anything reporting bend loss,
 radiation, or metal loss. Never use `force_passive=True` alone (README
 documents it over-attenuating to 0.63 on a unit-transmission taper).
-*On a lossy basis the interface columns are capped at unit power instead*
-(`SingleEME.INTERFACE_COLUMN_CAP = "auto"`, 2026-09-23): the projection is
-not passive for the discretised continuum (5–16 % gain on a continuum
-input, 83 % of all columns slightly above 1), and a cascade of a few hundred
-interfaces compounds it until the guided channel itself reports more power
-than launched (6.9 for unit input at 311 interfaces; 0.91 at 231). The cap
-is the weakest passivity statement in the basis's own measure; it moves the
-guided channel by 0.3 points and makes long cascades usable (report 13
-§12). A singular-value clip is *not* equivalent — the 2-norm is not power
+*From 2026-09-23 to 2026-09-30 the interface columns of a lossy basis were
+capped at unit power* (`SingleEME.INTERFACE_COLUMN_CAP = "auto"`; now opt-in,
+see below).
+
+* The projection is not passive for the discretised continuum: 5–16 % gain
+  on a continuum input, and 83 % of all columns slightly above 1.
+* A cascade of a few hundred interfaces compounds it until the guided
+  channel itself reports more power than launched: 6.9 for unit input at
+  311 interfaces, 0.91 at 231.
+* The cap is the weakest passivity statement in the basis's own measure. It
+  moved the guided channel by 0.3 points and appeared to make long cascades
+  usable (report 13 §12), which the corrections below withdraw. A singular-value clip is *not* equivalent — the 2-norm is not power
 in an unconjugated-normalised basis — and cut the guided channel in half.
+*Correction (2026-09-30).* The 6.9 at 311 interfaces came with upstream's
+two-mask sign gauge (§5.6; README → Fixed). With one gauge and upstream's
+reflection block that path is passive uncapped (0.96).
+
+The continuum gain is real in that cascade (2026-10-01, below: it is the
+self-overlap floor, not truncation of the mode set).
+
+* With the reflection block corrected, that path's transmission chain alone
+  compounds to 38 uncapped (every reflection block zeroed, all of it
+  forward), and the cap holds it to 0.93.
+* With the reflections included, the capped path still reaches 28: under
+  the cap the gain comes back through the reflection blocks. Upstream's
+  reflection block, not power-conserving, had been damping it.
+* Every other lossy path re-run on the final code is passive uncapped (at
+  most 0.91): report 12's demo, report 13's demo and the design points of
+  `kocabas_gauge_check.py`, and report 22's six device paths.
+* The 232- and 382-section paths of the same family, and the FEM 112-section
+  row, were not re-run.
+
+The cap is therefore **opt-in** (`INTERFACE_COLUMN_CAP = False` by default).
+
+* It keeps no path passive that is not passive without it.
+* Where it acted it cost 0.3–2.4 points on report 13's design point and
+  variants, and 0.00–0.12 dB on report 22.
+* It degraded report 22's reciprocity (at 1310 nm 0.41 % against 0.025 %).
+* Evidence: `examples/kocabas_gauge_check.py` →
+  `reports/output/kocabas_gauge_check.json`.
+
+*Diagnosed and treated (2026-10-01): the gain was the self-overlap floor.*
+
+* **Mechanism.** Biorthogonalisation makes only the symmetric part of a
+  section's self-overlap `M = ½∫e_i × h_j` equal to `I`. The FEM basis keeps
+  an antisymmetric part `A` (median continuum column norm 0.05; FD bases
+  0.01–0.02).
+  * Its origin is not settled. The overlaps cover the inner window, not the
+    absorber ring where continuum modes still carry field. The
+    window-boundary Lorentz term tracks `A` on saved fields, and the
+    quadrature weights hardly move it.
+  * With `M = I` assumed and the output-side projection (the lossy default),
+    an interface between a section and itself transmits `I − A²` and
+    reflects `−A(I − A²)`, at every step size.
+  * On the 311-interface path both compound against a continuum damped
+    0.39 % per section. The reflections carry 36 of the 38; the
+    transmission floor alone gives 38.5.
+  * Exact `M` from fresh solves of sections 200–311 removes the segment's
+    chain gain (43.4 → 1.004). So this is not truncation of the mode set.
+  * Nor is it the window-edge modes as such: their 3.8 % per interface is
+    `2 Re(AᵀA)_jj`.
+* **Default treatment.** `SingleEME.INTERFACE_RECIPROCAL = "auto"` projects
+  every lossy interface matrix onto its reciprocal part.
+  * Lorentz reciprocity requires `R12 = R12ᵀ`, `R21 = R21ᵀ` and
+    `T21 = T12ᵀ`.
+  * It is exact on complete bases with `M = I` and removes the zero-step
+    reflection exactly. At a finite step it is off by `O(A·δ)`.
+  * The 312-section path: 85.59 %, passivity 0.851 over physical outputs,
+    38.9 over all outputs (the transmission floor, in forward continuum).
+* **Opt-in treatment.** `SingleEME.INTERFACE_SELF_OVERLAP = "estimate"`
+  corrects the equations for `M = I + A`, with `A` estimated from the
+  reflection asymmetry. It also removes the transmission floor: 85.59 %,
+  passivity 0.934, cap not needed.
+  * Against the default it moves the other Kocabas paths by −0.11 to +0.16
+    points and report 12 by 0.0003 dB or less.
+  * It refuses an estimate above norm 0.3. Report 22's FD-PML bases reach
+    6.6 at degenerate continuum pairs, so it refuses there and is not the
+    default.
+  * The limit guards only the zero-step series. At a real step truncation
+    asymmetry enters the estimate (27 % off at one FD section). It is
+    checked against exact `M` only on the FEM path.
+* **Rule.** A lossy cascade reports its lumped passivity over all outputs
+  and over physical outputs only, for the physical inputs at both ends.
+  `kocabas_gauge_check.py` records all four.
+  * Physical-output passivity above 1 disqualifies its numbers.
+  * All-output passivity above 1 with physical outputs at or below 1 means
+    the continuum carries spurious gain. The physical channel still sees it.
+    On the 312-section path:
+    * the launched column's deficit is +0.021 at the default against +0.066
+      with the estimate;
+    * the far-end inputs read 1.011 over all outputs and 0.963 over physical
+      outputs, against 0.946 and 0.924;
+    * the gain stays in the exported S-matrix (circuit layer, chained
+      devices).
+  * While that gain lasts, the deficit, the continuum outputs and the full
+    S-matrix are disqualified.
+  * A physical-channel number may be quoted only if the opt-in estimate
+    reproduces it within 0.1 points, with all-output passivity at or below 1
+    at both ends.
+  * Where the estimate refuses, the column cap is not a validator. It moves
+    numbers by 0.3–2.4 points and certifies only columns. Require a
+    mode-count convergence scan instead, as report 13's N = 10–20 scan.
+* **Not adopted: a passivity clip in the modes' conjugated Poynting
+  metric.** That metric is not stored. Propagation is not contractive in it
+  (a fully clipped segment still gains 1.09). It costs 1.4e-4 per interface.
+  On the two FD interfaces checked, the flux gain it would remove is not
+  caused by `A`; truncation and a metric artefact were not separated.
+* **Future datasets** should store each point's `M`. It is formed in
+  `assemble.biorthogonalise` anyway, and it makes the correction exact where
+  the estimate degrades (membership changes, truncation asymmetry).
+* **Still open:**
+  * the origin of `A`, to be settled by recomputing `M` over the window plus
+    the ring;
+  * long lossy cascades where the estimate refuses.
+* Evidence: `tests/test_reciprocal_interface.py`;
+  `examples/kocabas_gauge_check.py` → `reports/output/kocabas_gauge_check.json`.
 
 **5.3 Grid-step scaling of the conversion floor.** The ~1e-4 plateau in
 `taper_4_length_sweep.png` is claimed to be the 20 nm width-staircase floor.
@@ -116,6 +246,12 @@ allowed to persist overlaps without persisting fields:
   touching point `k` must come from one field array. Since only overlaps are
   persisted, a later re-solve of `P` in a fresh gauge would leave `O(A,P)`
   (pickle) and `O(P,B)` (fresh) inconsistent. Hence `_pin_gauge`.
+* The same `G_k` must also go on **both overlap sets**. `O_ab` and `O_ba`
+  of a link come from one field array, and `_equalize_overlap_phase` has to
+  put one sign per mode on the two alike. Upstream took the `O_ba` signs from
+  its own diagonal. On a lossy basis a branch's two diagonals can disagree,
+  and the propagated `O_ba` sign then drifted from the `O_ab` one (README →
+  Fixed, "One sign per mode in both overlap sets"; `tests/test_overlap_gauge.py`).
 
 *Which stored files carry gauge:* `neff.pkl` (eigenvalue) and `TE_pol.pkl`
 (ratio of quadratics) are gauge-**invariant** and structurally immune.
@@ -153,6 +289,10 @@ no biorthogonal basis exists and it raises rather than papering over.
 
 *Measured:* constant-width `T` 1.59 → 1.0000 ± 2e-4; per-interface
 `|SᴴS − I|` 1.5e-1 → 2.1e-3; on the SIRAC taper at N = 6, max 6.4e-1 → 9.6e-3.
+These figures carried upstream's reflection block, which alone gives a
+lossless step `|SᴴS − I| = 2t|r|`, and they were not re-measured. For
+comparison, on the README linear taper the median per-interface value is
+9.2e-3 with upstream's block and 2.5e-3 after the 2026-09-30 correction.
 *Regression:* `tests/test_mode_basis.py`. *Dataset impact:* stored overlaps
 change meaning, so `dataset_identity.BASIS_CONVENTION = 2` invalidates every
 pre-fix cache — see `reports/07_sirac_optimization.md` §8.3, §8.6.

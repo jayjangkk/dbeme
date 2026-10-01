@@ -52,13 +52,17 @@ def _convert_3Dmatrix(matrix):
     """
     matrix: 3-dimension ndarray where matrix[i] is i-th section Tmatrix or Smatrix
     convert Tmatrix-> Smatrix or Smatrix->Tmatrix
+
+    ``[F2; B2] = M [F1; B1]``  <->  ``[F2; B1] = S [F1; B2]``; the map is its own
+    inverse.  Upstream had ``n12 = -m12 inv(m22)``, which is neither the
+    conversion nor an involution (README, "What changed relative to upstream").
     """
     # tolerance = 0.1 # if specfic mode energy transfer to the next section is less than tolerance, ignore the mode 
     tolerance = 0.9
     mode_count = int(matrix.shape[1]/2)
     m11, m12, m21, m22 = _extract_blockmatrix_3D(matrix)
     n11 = m11 - m12 @ _inverse_3D_matrix(m22, tolerance=tolerance) @ m21
-    n12 = (-1) * m12 @ _inverse_3D_matrix(m22, tolerance=tolerance)
+    n12 = m12 @ _inverse_3D_matrix(m22, tolerance=tolerance)
     n21 = (-1) * _inverse_3D_matrix(m22, tolerance=tolerance) @ m21
     n22 = _inverse_3D_matrix(m22, tolerance=tolerance)
 
@@ -84,7 +88,7 @@ def _convert_3Dmatrix_ray(matrix):
     m11, m12, m21, m22 = _extract_blockmatrix_3D(matrix)
     inverse_m22 = _inverse_3D_matrix_ray(m22, tolerance=tolerance)
     n11 = m11 - m12 @ inverse_m22 @ m21
-    n12 = (-1) * m12 @ inverse_m22
+    n12 = m12 @ inverse_m22
     n21 = (-1) * inverse_m22 @ m21
     n22 = inverse_m22
 
@@ -105,7 +109,7 @@ def _convert_2Dmatrix(matrix):
     tolerance = 0.9
     m11, m12, m21, m22 = _extract_blockmatrix_2D(matrix)
     n11 = m11 - m12 @ _inverse_2D_matrix(m22, tolerance=tolerance) @ m21
-    n12 = (-1) * m12 @ _inverse_2D_matrix(m22, tolerance=tolerance)
+    n12 = m12 @ _inverse_2D_matrix(m22, tolerance=tolerance)
     n21 = (-1) * _inverse_2D_matrix(m22, tolerance=tolerance) @ m21
     n22 = _inverse_2D_matrix(m22, tolerance=tolerance)
 

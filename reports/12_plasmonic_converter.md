@@ -23,6 +23,70 @@
 > reproduced, and §3 and §5 say why a fixed-grid staircase cannot show them.
 > Reciprocity of the physical channel holds to 1e-3, not 1e-6 (§1).
 
+> **Note (2026-09-30, interface reflection block).** Upstream's reflection
+> block mixed the indices of the two sections, and the T→S conversion had a
+> sign error; together they reversed the sign of every round trip (README →
+> Fixed, "Interface reflection block"). Re-run warm on the 20 nm gap,
+> rounded corners:
+>
+> * The converter reads **−1.69 dB at 600 nm** (was −1.61).
+> * The length sweep is **no longer monotonic**:
+>
+>   | taper length | 150 nm | 300 nm | 450 nm | 600 nm | 800 nm | 1000 nm | 1500 nm |
+>   |---|---|---|---|---|---|---|---|
+>   | conversion (dB) | −1.75 | −1.66 | −1.66 | −1.69 | −1.72 | −1.78 | −1.92 |
+>
+>   * There is a shallow optimum at 300–450 nm (−1.66 dB at both).
+>   * Short tapers lose to coherent round trips between the 40 staircase
+>     steps, which reflect nearly in phase at 3.75 nm spacing (§8). With the
+>     reflection blocks zeroed the sweep is monotonic (−1.54 → −1.92 dB,
+>     warm check).
+>   * So the optimum is a staircase artefact, not an adiabatic one, and the
+>     paper's 600 nm optimum is still not reproduced (§5).
+> * **What this replaces:** the "monotonic, no optimum" reading of §3, §5,
+>   §6 item 4 and the outcome paragraph.
+>   * The mismatch loss is no longer length-independent.
+>   * The staircase-times-propagation estimate (0.691 at 600 nm) no longer
+>     matches the cascade (0.678). So the −1.4 / −0.2 dB split leaves
+>     −0.08 dB of round-trip loss unaccounted for.
+> * **The gate verdicts are unchanged:**
+>   * passivity 0.690 (was 0.704);
+>   * physical-channel reciprocity 1.0e-3;
+>   * the physical-block `S = Sᵀ` asymmetry grows from 3.1e-2 to 5.6e-2
+>     (4.9e-2 with the opt-in cap). The continuity reflection block is less
+>     symmetric on this truncated basis.
+> * The sign-gauge fix and the interface column cap (now opt-in) move
+>   nothing else here.
+> * **Not re-run:**
+>   * the sharp-corner dataset of §8 (`Si_plasmonic_slot_1550_sharp`, built):
+>     its column in §8 and the `_sharp` rows of §1 are pre-fix;
+>   * the direct EME of §4. Its absolute values (−1.61 dB, −2.88 dB at 21
+>     sections) are pre-fix. Its agreement with the cache is expected to carry
+>     over, since both sides use the same formulas, but was not re-checked.
+>   * The 40 nm gap was never computed.
+> * The figures, tables and `reports/output/plasmonic_converter.json` below
+>   show the values as written.
+>
+> **Note (2026-10-01, reciprocal interface matrix).** Each lossy interface
+> matrix is now projected onto its reciprocal part (README → Fixed). Warm
+> re-run on the same path:
+>
+> * **600 nm:** still −1.69 dB (−1.690 → −1.687).
+> * **Sweep:**
+>
+>   | taper length | 150 nm | 300 nm | 450 nm | 600 nm | 800 nm | 1000 nm | 1500 nm |
+>   |---|---|---|---|---|---|---|---|
+>   | conversion (dB) | −1.74 | −1.65 | −1.66 | −1.69 | −1.72 | −1.78 | −1.92 |
+>
+>   The shallow optimum stays, now at 300 nm.
+> * **Gate:**
+>   * passivity 0.691;
+>   * the two reciprocity rows read 5.6e-2 and 1.0e-3, as before. The gate
+>     now computes them with the projection off, because with it on the
+>     cascade is reciprocal by construction (3e-15).
+> * The opt-in self-overlap estimate moves these by 0.0003 dB or less
+>   (warm re-run).
+
 **Device.** Ono, Taniyama, Kuramochi, Nozaki, Notomi — *Toward Application of
 Plasmonic Waveguides to Optical Devices*, NTT Technical Review **16**(7), 2018
 (the device: Ono *et al.*, Optica **3**, 999, 2016). A 400 × 200 nm Si wire
@@ -151,6 +215,11 @@ are Berenger modes.
 
 (Co-located fields, §10. On the offset fields the same sweep read −0.94 →
 −1.83 dB with 6.6 % reflected at 150 nm.)
+
+*(2026-09-30: with the corrected reflection block the sweep reads −1.75 /
+−1.66 / −1.66 / −1.69 / −1.72 / −1.78 / −1.92 dB, with a shallow optimum at
+300–450 nm that comes from round trips over the staircase; see the note at
+the top.)*
 
 Monotonic in length, with no optimum. That is what the model must say, and
 it is the report's most useful negative result about DBEME on this device:

@@ -325,6 +325,8 @@ class DirectGeometry(metaclass=abc.ABCMeta):
     #endregion reorder
 
     def _equalize_overlap_phase(self, overlap_ab, overlap_ba):
+        """One sign per mode per section, the same in both overlap sets - see
+        ``Geometry._equalize_overlap_phase``."""
         if getattr(self, "_verbose", True):
             print("Equalizing phase..")
         section_num, mode_count, _ = overlap_ab.shape
@@ -332,47 +334,36 @@ class DirectGeometry(metaclass=abc.ABCMeta):
         backward_mode_mask = np.ones(shape=(mode_count,))
         backward_mode_mask = np.concatenate((backward_mode_mask, -backward_mode_mask))
 
-        i = 0
+        previous = np.ones(2 * mode_count)
+
+        def section_mask(overlap):
+            # an exactly zero diagonal says nothing about the sign: keep the previous
+            # section's (np.sign(0) as a mask would delete the mode for the rest of the path)
+            nonlocal previous
+            mask = np.sign(np.diagonal(overlap).real) * backward_mode_mask
+            previous = np.where(mask == 0, previous, mask)
+            return previous
+
         for i in range(len(overlap_ab) - 1):
-            # Create mask for each diagonal element in the 2D slice overlap[i]
-            mask = np.sign(np.diagonal(overlap_ab[i]).real)
-            mask *= backward_mode_mask
+            # mask of section i+1, from the diagonal of the i-th ab overlap
+            mask = section_mask(overlap_ab[i])
 
             # mask needs to be reshaped to broadcast correctly along rows and columns
             mask_row = mask[:, np.newaxis]  # Shape (m, 1) for broadcasting across columns
             mask_col = mask[np.newaxis, :]   # Shape (1, m) is fine for broadcasting across rows
 
-            # Apply the mask across all columns for the i-th layer
+            # section i+1: columns of ab[i], rows of ab[i+1], rows of ba[i], columns of ba[i+1]
             overlap_ab[i] *= mask_col
-
-            # Apply the mask across all rows for the (i+1)-th layer
             overlap_ab[i + 1] *= mask_row
-
-        if i > 0:
-            # last overlap matrix row phase
-            mask = np.sign(np.diagonal(overlap_ab[i+1]).real)
-            mask *= backward_mode_mask
-            mask_col = mask[np.newaxis, :]
-            overlap_ab[i+1] *= mask_col
-
-
-        for i in range(len(overlap_ba) - 1):
-            # for some reason, overlap_ab and overlap_ba have different sign sometimes
-            mask = np.sign(np.diagonal(overlap_ba[i]).real)
-            mask *= backward_mode_mask
-
-            mask_row = mask[:, np.newaxis]
-            mask_col = mask[np.newaxis, :]
-
             overlap_ba[i] *= mask_row
             overlap_ba[i + 1] *= mask_col
-        
-        if i > 0:
-            # last overlap matrix col phase
-            mask = np.sign(np.diagonal(overlap_ba[i+1]).real)
-            mask *= backward_mode_mask
-            mask_row = mask[:, np.newaxis]
-            overlap_ba[i+1] *= mask_row
+
+        if len(overlap_ab) > 0:
+            # the last section: columns of the last ab overlap, rows of the last ba overlap
+            last = len(overlap_ab) - 1
+            mask = section_mask(overlap_ab[last])
+            overlap_ab[last] *= mask[np.newaxis, :]
+            overlap_ba[last] *= mask[:, np.newaxis]
 
         return overlap_ab, overlap_ba
     

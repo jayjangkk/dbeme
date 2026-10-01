@@ -767,15 +767,36 @@ class Geometry():
         
     def _equalize_overlap_phase(self, overlap_ab, overlap_ba, overlap_dict = 0, index_mapping = 0):
         """
+        Give every mode one sign per section, the same in both overlap sets.
+
+        The mask of section i+1 is chosen so that ``Re diag(overlap_ab[i])``
+        comes out positive for the forward and negative for the backward
+        modes, and the same mask multiplies that section in ``overlap_ba``. A
+        sign belongs to the mode's field, and the interface formulas combine
+        ``O_ab`` with ``O_ba``, so both sets must carry the same one. Upstream
+        took a second, independent set of masks from ``diag(overlap_ba)``: in a
+        lossless basis ``O_ba ~ O_ab^T`` and the two agree, but on a PML basis a
+        radiating branch can have diagonals of opposite sign in the two sets,
+        and from there on it carried opposite signs in them (README, "What
+        changed relative to upstream").
+
         Parameters:
-            - index_mapping : dictionary mapping from EME_path index to simul_params_index
-            - overlap_ab : ndarray overlap along EME_path
+            - overlap_ab : ndarray, ``overlap_ab[i] = <E(i), H(i+1)>`` - section i
+                in its rows, section i+1 in its columns
+            - overlap_ba : ndarray, ``overlap_ba[i] = <E(i+1), H(i)>`` - section
+                i+1 in its rows, section i in its columns
             - overlap_dict: dictionary, two keys: "ab" and "ba"
                 overlap_dict["ab"]: dict where multi_adj index in simul_params is key and list of overlaps is value
                 overlap_dict["ba"]: dict where multi_adj index in simul_params is key and list of overlaps is value
+            - index_mapping : dictionary mapping from EME_path index to simul_params_index
+
+        The ``overlap_dict`` entries take the same masks as upstream gave them,
+        now from ``overlap_ab`` for both sets; with a many-to-one
+        ``index_mapping`` those are cumulative rather than the path section's
+        own.  No propagator reads the dict.
         """
         if overlap_dict == 0:
-            overlap_dict = dict()   # dummy overlap_dict
+            overlap_dict = {"ab": dict(), "ba": dict()}   # dummy overlap_dict
             index_mapping = {i: i for i in range(len(overlap_ab))}  # dummmy index mapping
 
         section_num, mode_count, _ = overlap_ab.shape
@@ -783,57 +804,48 @@ class Geometry():
         backward_mode_mask = np.ones(shape=(mode_count,))
         backward_mode_mask = np.concatenate((backward_mode_mask, -backward_mode_mask))
 
-        i = 0
+        previous = np.ones(2 * mode_count)
+
+        def section_mask(overlap):
+            # an exactly zero diagonal says nothing about the sign: keep the previous
+            # section's (np.sign(0) as a mask would delete the mode for the rest of the path)
+            nonlocal previous
+            mask = np.sign(np.diagonal(overlap).real) * backward_mode_mask
+            previous = np.where(mask == 0, previous, mask)
+            return previous
+
         for i in range(len(overlap_ab) - 1):
-            # Create mask for each diagonal element in the 2D slice overlap[i]
-            mask = np.sign(np.diagonal(overlap_ab[i]).real)
-            mask *= backward_mode_mask
+            # mask of section i+1, from the diagonal of the i-th ab overlap
+            mask = section_mask(overlap_ab[i])
 
             # mask needs to be reshaped to broadcast correctly along rows and columns
             mask_row = mask[:, np.newaxis]  # Shape (m, 1) for broadcasting across columns
             mask_col = mask[np.newaxis, :]   # Shape (1, m) is fine for broadcasting across rows
 
-            # Apply the mask across all columns for the i-th layer
+            # section i+1 is the columns of ab[i] and the rows of ab[i+1] ...
             overlap_ab[i] *= mask_col
+            overlap_ab[i + 1] *= mask_row
             if index_mapping[i] in overlap_dict["ab"]:
                 overlap_dict["ab"][index_mapping[i]] *= mask_col
-
-            # Apply the mask across all rows for the (i+1)-th layer
-            overlap_ab[i + 1] *= mask_row
             if index_mapping[i+1] in overlap_dict["ab"]:
                 overlap_dict["ab"][index_mapping[i+1]] *= mask_row
 
-        if i > 0:
-            # last overlap matrix row phase
-            mask = np.sign(np.diagonal(overlap_ab[i+1]).real)
-            mask *= backward_mode_mask
-            mask_col = mask[np.newaxis, :]
-            overlap_ab[i+1] *= mask_col
-
-
-        for i in range(len(overlap_ba) - 1):
-            # for some reason, overlap_ab and overlap_ba have different sign sometimes
-            mask = np.sign(np.diagonal(overlap_ba[i]).real)
-            mask *= backward_mode_mask
-
-            mask_row = mask[:, np.newaxis]
-            mask_col = mask[np.newaxis, :]
-
+            # ... and the rows of ba[i] and the columns of ba[i+1]
             overlap_ba[i] *= mask_row
             overlap_ba[i + 1] *= mask_col
             if index_mapping[i] in overlap_dict["ba"]:
                 overlap_dict["ba"][index_mapping[i]] *= mask_row
             if index_mapping[i+1] in overlap_dict["ba"]:
                 overlap_dict["ba"][index_mapping[i+1]] *= mask_col
-        
-        if i > 0:
-            # last overlap matrix col phase
-            mask = np.sign(np.diagonal(overlap_ba[i+1]).real)
-            mask *= backward_mode_mask
-            mask_row = mask[:, np.newaxis]
-            overlap_ba[i+1] *= mask_row
 
-        return overlap_ab, overlap_ba, overlap_dict 
+        if len(overlap_ab) > 0:
+            # the last section: columns of the last ab overlap, rows of the last ba overlap
+            last = len(overlap_ab) - 1
+            mask = section_mask(overlap_ab[last])
+            overlap_ab[last] *= mask[np.newaxis, :]
+            overlap_ba[last] *= mask[:, np.newaxis]
+
+        return overlap_ab, overlap_ba, overlap_dict
 
     #endregion reorder data, overlaps & equalize phase
     

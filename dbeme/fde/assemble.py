@@ -131,6 +131,12 @@ def biorthogonalise(E, H, x, y, prop_axis=2):
     Mixing modes of different ``beta`` is only free when they are degenerate;
     here the mixing is large only where ``Δbeta`` is small, and tiny elsewhere.
 
+    No transformation of the modes can remove the antisymmetric part
+    ``½(M − Mᵀ)`` (a congruence keeps it), and only the input-side ``T`` is
+    blind to it: the output-side ``T`` and the reflection block see it as a
+    zero-step gain and reflection. ``SingleEME.INTERFACE_RECIPROCAL`` and
+    ``INTERFACE_SELF_OVERLAP`` deal with it at the interface (2026-10-01).
+
     :param E: ``(n_pts, N, 3, nx, ny)`` forward fields, already normalised.
     :returns: ``(E, H)`` transformed in place-compatible fashion.
     """

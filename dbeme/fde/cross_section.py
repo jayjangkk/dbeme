@@ -736,3 +736,281 @@ class BiLevelStrip(CrossSection):
         half_width = 0.5 * float(max_params["w_slab"]) + 1.3e-6
         y_half = 0.5 * self.thickness + 0.9e-6
         return half_width, -y_half, y_half
+
+
+class BiLevelPair(CrossSection):
+    """Two mirrored arms, each a thin base with a full-height part on its
+    inner edge: the double-tip edge coupler of Wan & Wang, *Adv. Photonics
+    Nexus* **4**, 026004 (2025).
+
+    ::
+
+          |<- w_low ->|<w_high>|   gap   |<w_high>|<- w_low ->|
+        air           +--------+         +--------+
+        oxide +-------+  arm   |         |  arm   +-------+   } thickness
+        ------|  shelf, thickness_low    |                |---- y = -t/2
+        BOX   +--------------------+ +------------------+
+        ====================== Si substrate ==========   (y < -t/2 - box)
+                                   ^
+                                 x = 0
+
+    Each arm is a full-height part of width ``w_high`` on its inner edge and
+    a ``thickness_low`` shelf of width ``w_low`` outside it; the arm is
+    ``w_low + w_high`` wide.  ``gap`` is the edge-to-edge distance between
+    the two inner edges.  Every combination of the three is a valid
+    geometry, which is why the axes are not ``(w, w_hi)``: a path walked one
+    axis at a time passes through corner points, and with ``w_hi <= w`` as a
+    constraint a narrowing full-height strip would walk through invalid ones.
+    One family covers the whole device:
+
+    * ``w_high = 0``: two ``thickness_low`` strips (the double tip);
+    * both non-zero: the height converter, an L-shaped arm;
+    * ``w_low = 0``: two full-height strips;
+    * ``gap = 0``, ``w_low = 0``: the arms touch and form one strip of width
+      ``2 w_high`` centred on ``x = 0``.  That is how the MMI and the output
+      guide are represented, so the whole path shares one grid and one
+      window.
+
+    ``gap = 0`` is allowed on purpose: the arms merge into the MMI, and a
+    merge is a geometric fact here rather than the silent aliasing
+    ``CoupledStrips`` guards against.
+
+    **Stack.**  The device layer spans ``[-t/2, t/2]``.  Below it lie ``box``
+    of ``cladding`` and then ``substrate`` (Si) to the bottom of the window;
+    above it ``cladding`` up to ``top_oxide`` above the BOX surface, then
+    ``top`` (air).  ``substrate=None`` makes the oxide semi-infinite below and
+    ``top=None`` above - the lossless comparison stack.
+
+    ``cladding_index_at`` returns the *oxide* index even with a Si substrate:
+    the cut-off that separates the device's modes from the radiation
+    continuum is the local cladding.  Over a finite BOX every device mode is
+    leaky into the substrate; that is a PML backend's job, not the cut-off's.
+
+    :param thickness: Full device-layer thickness (220 nm).
+    :param thickness_low: Silicon left after the partial etch (150 nm).
+    :param box: BOX thickness in metres.
+    :param top_oxide: Top oxide thickness above the BOX surface.
+    :param substrate: ``"silicon"`` (the core material), a material, or ``None``.
+    :param top: ``"air"``, a material, or ``None``.
+    :param core_mask_margin: How far around the Si the confinement mask of a
+        lossy backend reaches, metres.  The default mask of those backends
+        takes the high-index half of every column, which here is the Si
+        substrate; this cross section answers the question itself.
+    """
+
+    def __init__(
+        self,
+        thickness=220e-9,
+        thickness_low=150e-9,
+        box=2.0e-6,
+        top_oxide=2.0e-6,
+        core=None,
+        cladding=None,
+        substrate="silicon",
+        top="air",
+        swept_parameters=("w_low", "w_high", "gap"),
+        reference_wavelength=1.31e-6,
+        core_mask_margin=0.1e-6,
+    ):
+        from .materials import air as _air
+
+        if not 0.0 < thickness_low <= thickness:
+            raise ValueError(
+                f"thickness_low ({thickness_low}) must lie in (0, thickness={thickness}]"
+            )
+        self.thickness = float(thickness)
+        self.thickness_low = float(thickness_low)
+        self.box = float(box)
+        self.top_oxide = float(top_oxide)
+        self.parameter_names = tuple(swept_parameters)
+        self.reference_wavelength = float(reference_wavelength)
+        self.core_mask_margin = float(core_mask_margin)
+
+        self.core = as_material(core) if core is not None else silicon()
+        self.cladding = as_material(cladding) if cladding is not None else silica()
+        if substrate is None:
+            self.substrate = None
+        elif isinstance(substrate, str) and substrate == "silicon":
+            self.substrate = self.core
+        else:
+            self.substrate = as_material(substrate)
+        if top is None:
+            self.top = None
+        elif isinstance(top, str) and top == "air":
+            self.top = _air()
+        else:
+            self.top = as_material(top)
+        self.curvature_sign = 1
+
+    # ------------------------------------------------------------- materials
+
+    def materials(self):
+        out = [self.core, self.cladding]
+        if self.substrate is not None:
+            out.append(self.substrate)
+        if self.top is not None:
+            out.append(self.top)
+        return out
+
+    def cladding_index_at(self, wavelength):
+        return float(np.real(self.cladding.index(wavelength)))
+
+    def core_index_at(self, wavelength):
+        return float(np.real(self.core.index(wavelength)))
+
+    @property
+    def core_index(self):
+        return self.core_index_at(self.reference_wavelength)
+
+    def fingerprint(self):
+        parts = [
+            type(self).__name__,
+            f"t={self.thickness:.6g}",
+            f"tlow={self.thickness_low:.6g}",
+            f"box={self.box:.6g}" if self.substrate is not None else "box=inf",
+            f"top={self.top_oxide:.6g}" if self.top is not None else "top=inf",
+            f"mask={self.core_mask_margin:.6g}",
+        ]
+        parts += [m.fingerprint() for m in self.materials()]
+        return "|".join(parts)
+
+    # ---------------------------------------------------------------- geometry
+
+    @property
+    def y_bottom(self):
+        """Bottom of the device layer (the BOX surface)."""
+        return -0.5 * self.thickness
+
+    @property
+    def y_substrate(self):
+        """Top of the Si substrate, or ``None``."""
+        return None if self.substrate is None else self.y_bottom - self.box
+
+    @property
+    def y_top_oxide(self):
+        """Top surface of the top oxide, or ``None``."""
+        return None if self.top is None else self.y_bottom + self.top_oxide
+
+    @staticmethod
+    def _arm_params(params):
+        w_low = float(params["w_low"])
+        w_high = float(params["w_high"])
+        gap = float(params.get("gap", 0.0))
+        if w_low < 0.0 or w_high < 0.0 or gap < 0.0:
+            raise ValueError(
+                f"w_low ({w_low}), w_high ({w_high}) and gap ({gap}) must be >= 0"
+            )
+        if w_low + w_high <= 0.0:
+            raise ValueError("an arm needs w_low + w_high > 0")
+        return w_low, w_high, gap
+
+    def arm_rectangles(self, params):
+        """``[(x_lo, x_hi, y_lo, y_hi), ...]`` of every Si rectangle, metres.
+
+        Disjoint by construction: the lower ``thickness_low`` of the whole
+        arm, then the upper part over ``w_high`` only.
+        """
+        w_low, w_high, gap = self._arm_params(params)
+        yb = self.y_bottom
+        y_mid = yb + self.thickness_low
+        yt = 0.5 * self.thickness
+        g2 = 0.5 * gap
+        w = w_low + w_high
+        rects = [(g2, g2 + w, yb, y_mid), (-g2 - w, -g2, yb, y_mid)]
+        if w_high > 0.0 and y_mid < yt:
+            rects += [(g2, g2 + w_high, y_mid, yt), (-g2 - w_high, -g2, y_mid, yt)]
+        return rects
+
+    def nominal_width(self, params):
+        w_low, w_high, gap = self._arm_params(params)
+        return 2.0 * (w_low + w_high) + gap
+
+    def core_mask(self, x, y, params):
+        """Si of the device layer, grown by ``core_mask_margin``.
+
+        Lossy backends rank modes by the fraction of their power in this
+        region before sorting by index.  Their own default - the high-index
+        half of each column - would count the Si *substrate* as core.
+        """
+        x = np.asarray(np.real(x), dtype=float)[:, None]
+        y = np.asarray(np.real(y), dtype=float)[None, :]
+        m = self.core_mask_margin
+        mask = np.zeros((x.shape[0], y.shape[1]), dtype=bool)
+        for x_lo, x_hi, y_lo, y_hi in self.arm_rectangles(params):
+            mask |= (x >= x_lo - m) & (x <= x_hi + m) & (y >= y_lo - m) & (y <= y_hi + m)
+        return mask
+
+    def index(self, x, y, params):
+        wavelength = self.wavelength_of(params)
+        n_core = self.core_index_at(wavelength)
+        n_ox = float(np.real(self.cladding.index(wavelength)))
+
+        x = np.asarray(np.real(x), dtype=float)
+        y = np.asarray(np.real(y), dtype=float)
+
+        # Background stack, row by row, averaged in eps where an interface
+        # falls inside a cell.
+        eps_bg = np.full(y.size, n_ox**2)
+        if self.substrate is not None:
+            n_sub = float(np.real(self.substrate.index(wavelength)))
+            f = _fill_fraction(y, y.min() - 1.0, self.y_substrate)
+            eps_bg = f * n_sub**2 + (1.0 - f) * eps_bg
+        if self.top is not None:
+            n_top = float(np.real(self.top.index(wavelength)))
+            f = _fill_fraction(y, self.y_top_oxide, y.max() + 1.0)
+            eps_bg = f * n_top**2 + (1.0 - f) * eps_bg
+        eps_bg = np.broadcast_to(eps_bg[np.newaxis, :], (x.size, y.size))
+
+        # The Si rectangles never overlap (disjoint heights or disjoint
+        # sides), so their fill fractions add; at gap = 0 the two arms share
+        # an edge and the sum is still at most one per cell.
+        f_core = np.zeros((x.size, y.size))
+        for x_lo, x_hi, y_lo, y_hi in self.arm_rectangles(params):
+            f_core += np.outer(_fill_fraction(x, x_lo, x_hi), _fill_fraction(y, y_lo, y_hi))
+        f_core = np.clip(f_core, 0.0, 1.0)
+
+        return np.sqrt(f_core * n_core**2 + (1.0 - f_core) * eps_bg)
+
+    def polygons(self, params):
+        """Substrate and top half-planes, then the Si; oxide is the background."""
+        from collections import OrderedDict
+
+        from shapely.geometry import box as _box
+        from shapely.ops import unary_union
+
+        wl = self.wavelength_of(params)
+        big = 1.0  # metres: far larger than any window; the backend clips to it
+        regions = OrderedDict()
+        if self.substrate is not None:
+            n_sub = complex(np.asarray(self.substrate.index(wl)).ravel()[0])
+            regions["substrate"] = (_box(-big, -big, big, self.y_substrate), n_sub**2)
+        if self.top is not None:
+            n_top = complex(np.asarray(self.top.index(wl)).ravel()[0])
+            regions["top"] = (_box(-big, self.y_top_oxide, big, big), n_top**2)
+        rects = [
+            _box(x0, y0, x1, y1)
+            for x0, x1, y0, y1 in self.arm_rectangles(params)
+            if x1 > x0 and y1 > y0
+        ]
+        regions["core"] = (unary_union(rects), complex(self.core_index_at(wl)) ** 2)
+        return regions
+
+    def background_epsilon(self, params):
+        n = complex(np.asarray(self.cladding.index(self.wavelength_of(params))).ravel()[0])
+        return n**2
+
+    def default_window(self, max_params):
+        """Lateral: the widest pair plus 4.2 um for the fibre beam.  Vertical:
+        0.6 um of substrate and of air where they exist, else 3 um of oxide."""
+        w = float(max_params["w_low"]) + float(max_params["w_high"])
+        gap = float(max_params.get("gap", 0.0))
+        half_width = 0.5 * gap + w + 4.2e-6
+        if self.substrate is not None:
+            y_min = self.y_substrate - 0.6e-6
+        else:
+            y_min = self.y_bottom - 3.0e-6
+        if self.top is not None:
+            y_max = self.y_top_oxide + 0.6e-6
+        else:
+            y_max = 0.5 * self.thickness + 3.0e-6
+        return half_width, y_min, y_max

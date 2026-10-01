@@ -15,6 +15,15 @@ Method and solver
   PML, complex/leaky modes, why the unconjugated overlap.
 * A. W. Snyder and J. D. Love, *Optical Waveguide Theory*, ch. 31 —
   orthogonality in lossy / non-Hermitian waveguides.
+* G. K. Svendsen, M. W. Haakestad and J. Skaar, *Phys. Rev. A* **87**,
+  013838 (2013), doi:10.1103/PhysRevA.87.013838 — reciprocity makes `C·S`
+  symmetric for unconjugated-normalised modes (`C` the modal Gram matrix,
+  symmetric for exact modes); truncated mode matching breaks it. The
+  reciprocal interface projection, `SingleEME.INTERFACE_RECIPROCAL`.
+* P. Bienstman, CAMFR, `camfr/interface.cpp` (`calcRT_non_orth_*`,
+  switched on by `set_orthogonal(False)`) — interface equations projected
+  with the modes' Gram matrices when the modes are not exactly orthogonal;
+  the form of `SingleEME.INTERFACE_SELF_OVERLAP`.
 * M. Heiblum and J. H. Harris, *IEEE J. Quantum Electron.* **11**, 75 (1975) —
   conformal transformation for bend modes.
 

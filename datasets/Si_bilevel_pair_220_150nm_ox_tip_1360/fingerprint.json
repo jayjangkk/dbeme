@@ -1,0 +1,78 @@
+{
+  "backend": {
+    "colocate": true,
+    "confinement_threshold": 0.01,
+    "pml_edges": [
+      "+x",
+      "+y",
+      "-x",
+      "-y"
+    ],
+    "pml_factor": [
+      1.0,
+      2.0
+    ],
+    "pml_thickness_m": {
+      "+x": 5e-07,
+      "+y": 5e-07,
+      "-x": 5e-07,
+      "-y": 5e-07
+    },
+    "refine_x": [
+      [
+        -1.2e-06,
+        1.2e-06,
+        1e-08
+      ]
+    ],
+    "refine_y": [
+      [
+        -4.1e-07,
+        4.4e-07,
+        1e-08
+      ]
+    ],
+    "stretch_convention": 1,
+    "target_rule": "fundamental of a lossless oxide-only solve: PEC box +-3 x +-2 um, 40 nm cells, 2 modes about n_core, rounded to 3 decimals; t=2.2e-07, tlow=1.5e-07"
+  },
+  "basis_convention": 2,
+  "cross_section": "BiLevelPair|t=2.2e-07|tlow=1.5e-07|box=inf|top=2e-06|mask=1e-07|pyoptik:main/Si/Li-293K|pyoptik:main/SiO2/Malitson|const:1+0j",
+  "mesh": [
+    413,
+    177
+  ],
+  "mode_numbers": 40,
+  "parameter_grid": {
+    "gap": {
+      "count": 107,
+      "max": 1.9e-06,
+      "min": 0.0,
+      "sum": 9.2615e-05
+    },
+    "w_high": {
+      "count": 162,
+      "max": 8.5e-07,
+      "min": 0.0,
+      "sum": 5.17425e-05
+    },
+    "w_low": {
+      "count": 102,
+      "max": 4e-07,
+      "min": 0.0,
+      "sum": 1.8855e-05
+    }
+  },
+  "parameter_names": [
+    "w_low",
+    "w_high",
+    "gap"
+  ],
+  "solver": "TargetRulePMLBackend",
+  "thickness_m": 2.2e-07,
+  "wavelength_m": 1.3600000000000001e-06,
+  "window_m": [
+    5.5e-06,
+    -2.61e-06,
+    2.79e-06
+  ]
+}

@@ -955,3 +955,207 @@ def ring_coupler_dataset_info(wavelength=1.55e-6, mode_numbers=6, cell=10e-9,
         mode_numbers=mode_numbers,
         mesh=mesh,
     )
+
+
+# ------------------------------------------- bilayer double-tip edge coupler
+
+WAN2025_DESIGN = {
+    # Table 1 of Wan & Wang, Adv. Photonics Nexus 4(2), 026004 (2025), metres
+    "W0": 0.45e-6, "W1": 0.735e-6, "Wm1": 1.5e-6, "Wm2": 1.6e-6, "Wtip": 0.13e-6,
+    "d": 0.415e-6, "g": 1.6e-6, "Lm": 2.5e-6, "Lt": 8e-6, "L1": 25e-6, "L2": 20e-6,
+    "L3": 23e-6,
+    # this project's readings of what Table 1 leaves open (tasks/18, Q1-Q3)
+    "L_out": 8e-6,           # the W1 -> W0 output taper: 86.5 - 78.5 um
+}
+
+
+class FundamentalTarget:
+    """Shift-invert target rule: the local fundamental of a quick lossless solve.
+
+    The same arms in plain oxide (no substrate, no air, no PML), a PEC box of
+    ``+-half_width x +-y_half`` at ``cell``, two modes about the core index:
+    the highest is the TE-like fundamental, which a lossy basis then finds
+    at the top of its set with the device's other modes and the near-cutoff
+    continuum right behind it (``TargetRulePMLBackend``).  About a second a
+    point; memoised; rounded so the rule is reproducible to the digit.
+    """
+
+    def __init__(self, wavelength, cell=40e-9, half_width=3.0e-6, y_half=2.0e-6, decimals=3,
+                 thickness=220e-9, thickness_low=150e-9):
+        from .fde import BiLevelPair
+        from .fde.pml import PMLModeSolver
+
+        si, sio2 = _materials(wavelength)
+        self.wavelength = float(wavelength)
+        self.decimals = int(decimals)
+        self.section = BiLevelPair(thickness=thickness, thickness_low=thickness_low,
+                                   core=si, cladding=sio2, substrate=None, top=None,
+                                   reference_wavelength=wavelength)
+        mesh = int(round(2 * half_width / cell)) + 1
+        mesh_y = int(round(2 * y_half / cell)) + 1
+        self.solver = PMLModeSolver(self.section, wavelength=wavelength,
+                                    window=(half_width, -y_half, y_half), mesh=mesh, mesh_y=mesh_y,
+                                    pml_thickness=0.0, pml_edges=(), num_modes=2,
+                                    confinement_threshold=0.0, colocate=False)
+        self.n_core = self.section.core_index_at(wavelength)
+        self.name = (f"fundamental of a lossless oxide-only solve: PEC box +-{half_width * 1e6:g} x "
+                     f"+-{y_half * 1e6:g} um, {cell * 1e9:g} nm cells, 2 modes about n_core, "
+                     f"rounded to {decimals} decimals; t={thickness:g}, tlow={thickness_low:g}")
+        self._memo = {}
+
+    def __call__(self, params):
+        key = tuple(round(float(params[k]) * 1e12) for k in ("w_low", "w_high", "gap"))
+        if key not in self._memo:
+            p = {k: float(params[k]) for k in ("w_low", "w_high", "gap")}
+            p["wavelength"] = self.wavelength
+            data, _ = self.solver.mode_data(p, self.n_core)
+            self._memo[key] = round(float(np.max(np.real(data.neff))), self.decimals)
+        return self._memo[key]
+
+
+def wan2025_edge_coupler_dataset_info(
+    wavelength=1.31e-6,
+    mode_numbers=40,
+    target_neff="fundamental",
+    substrate=True,
+    base=50e-9,
+    fine=10e-9,
+    half_width=5.5e-6,
+    x_fine=1.2e-6,
+    y_fine=(-0.41e-6, 0.44e-6),
+    lateral_pml=0.5e-6,
+    bottom_pml=0.25e-6,
+    air=0.4e-6,
+    top_pml=0.5e-6,
+    confinement_threshold=0.01,
+    core_mask_margin=0.1e-6,
+    axis_steps=None,
+    tip_step=None,
+):
+    """The Wan & Wang bilayer double-tip edge coupler on a lossy PML basis.
+
+    SOI with a 220 nm device layer partially etched to 150 nm, a 2 um BOX on
+    a Si substrate, 2 um of top oxide, air above (``BiLevelPair``).  One
+    family ``(w_low, w_high, gap)`` carries the whole device from the 150 nm
+    tips to the 450 nm output strip (``tasks/18_edge_coupler_oband.md``).
+
+    **The bottom edge, and why the datasets use ``substrate=False``.**  With
+    the Si substrate in the window (``substrate=True``: taken straight into a
+    thin Si-only PML at the BOX interface, ``bottom_pml``) the Si is a slab
+    between the oxide and the PML wall, and it carries a dense band of
+    PML-guided modes - ``Re n`` 1.95-3.2, ``Im n`` 0.12-0.45, one family per
+    lateral order of the window.  Around any target at a confined point that
+    band fills the set before the device's TM modes arrive (the MMI lost
+    TM0-TM3 and TE3/TE4 with 40 modes about its own fundamental), and a
+    thinner layer moved it by only 40 % in ``Im n``.  So the EME datasets
+    use the oxide-only stack, and the full stack is solved only where it
+    matters - the weakly bound tip points, whose substrate leakage enters as
+    a correction (``studies/edge_coupler/leakage.py``, ``reports/22``).  At
+    those points, with the target at the local fundamental, the band is far
+    from the set.
+
+    **Grid.**  A ``base`` grid with ``fine`` cells over the cores
+    (``|x| < x_fine``, ``y`` in ``y_fine``); every layer boundary (BOX
+    surface, 70 nm step, Si substrate, oxide surface) sits on a node.  Width
+    axes step ``fine`` (``gap`` 2 x ``fine``, both edges move by one cell);
+    the few design values between cells (``d / 2`` = 207.5 nm, ``W1 / 2`` =
+    367.5 nm, ``W0 / 2`` = 225 nm) are on the axes too and land mid-cell,
+    which the sub-pixel fill handles for a dielectric edge.
+
+    **Target.**  ``target_neff="fundamental"`` (the default) sets the
+    shift-invert target point by point at the local fundamental
+    (:class:`FundamentalTarget`, :class:`~dbeme.fde.pml.TargetRulePMLBackend`):
+    the guided index runs from 1.449 at the tip to ~2.6 at the output, and
+    any single target between them met a PML band first.  A number gives the
+    fixed-target backend.
+
+    :param substrate: ``False`` for the comparison stack: oxide below the
+        device down to an oxide PML, no substrate leakage.
+    :param axis_steps: ``{"w": step, "gap": step}`` in metres, to coarsen the
+        axes (a fast pipeline check); ``None`` keeps them tied to the cell.
+    :param tip_step: Adds a finer width lattice (metres) over 90-260 nm on both
+        width axes, for the near-cutoff tip (the ``_tip`` datasets).
+    """
+    from .fde import BiLevelPair
+    from .fde.pml import PMLBackend, TargetRulePMLBackend
+
+    si, sio2 = _materials(wavelength)
+    t, t_low, box, top_ox = 220e-9, 150e-9, 2.0e-6, 2.0e-6
+    y_dev = -0.5 * t
+    if substrate:
+        section = BiLevelPair(thickness=t, thickness_low=t_low, box=box, top_oxide=top_ox,
+                              core=si, cladding=sio2, reference_wavelength=wavelength,
+                              core_mask_margin=core_mask_margin)
+        y_min = y_dev - box - bottom_pml
+        pml_bottom = bottom_pml
+    else:
+        section = BiLevelPair(thickness=t, thickness_low=t_low, box=box, top_oxide=top_ox,
+                              core=si, cladding=sio2, substrate=None,
+                              reference_wavelength=wavelength, core_mask_margin=core_mask_margin)
+        pml_bottom = top_pml
+        y_min = y_dev - box - pml_bottom
+    y_max = y_dev + top_ox + air + top_pml
+
+    def on_base(v):
+        return abs((v - y_min) / base - round((v - y_min) / base)) < 1e-6
+
+    for v in (y_dev, y_dev + t_low, -y_dev, y_dev - box, y_dev + top_ox, *y_fine, y_max):
+        if not on_base(v) and not (y_fine[0] <= v <= y_fine[1]):
+            raise ValueError(f"layer boundary {v:g} m is not on the {base:g} m base grid")
+    mesh = int(round(2 * half_width / base)) + 1
+    mesh_y = int(round((y_max - y_min) / base)) + 1
+    pml = {"+x": lateral_pml, "-x": lateral_pml, "+y": top_pml, "-y": pml_bottom}
+
+    def cross_section(core, cladding, wl, names):
+        return section
+
+    f = fine * 1e9
+    if axis_steps is None:
+        parameters = {
+            "w_low": axis(nm(0, 400 + 0.5 * f, f)),
+            "w_high": axis(nm(0, 850 + 0.5 * f, f), nm(220, 370 + 1, 5), np.array([367.5e-9])),
+            "gap": axis(nm(0, 200, f), nm(200, 1900 + f, 2 * f), np.array([415e-9])),
+        }
+    else:
+        sw, sg = axis_steps["w"] * 1e9, axis_steps["gap"] * 1e9
+        parameters = {
+            "w_low": axis(nm(0, 400 + 0.5 * sw, sw), np.array([130e-9])),
+            "w_high": axis(nm(0, 850 + 0.5 * sw, sw), np.array([130e-9, 225e-9, 367.5e-9])),
+            "gap": axis(nm(0, 1900 + 0.5 * sg, sg), np.array([415e-9, 1.6e-6])),
+        }
+    if tip_step is not None:
+        # a finer width lattice where the tip mode sits near cut-off: there a
+        # 10 nm step sheds a few percent of TE (reports/22, section 6)
+        s = tip_step * 1e9
+        parameters["w_low"] = axis(parameters["w_low"], nm(90, 260 + 0.5 * s, s))
+        parameters["w_high"] = axis(parameters["w_high"], nm(90, 260 + 0.5 * s, s))
+
+    def backend(cross_section, names, wl, window, modes, mesh_points):
+        common = dict(
+            parameter_names=names, wavelength=wl, window=window, mesh=mesh_points,
+            mesh_y=mesh_y, pml_thickness=pml, pml_edges=("+x", "-x", "+y", "-y"),
+            num_modes=modes, colocate=True, confinement_threshold=confinement_threshold,
+            refine_x=((-x_fine, x_fine, fine),), refine_y=((y_fine[0], y_fine[1], fine),),
+        )
+        if target_neff == "fundamental":
+            rule = FundamentalTarget(wl, thickness=t, thickness_low=t_low)
+            return TargetRulePMLBackend(cross_section, target_rule=rule,
+                                        target_rule_name=rule.name, **common)
+        return PMLBackend(cross_section, target_neff=float(target_neff), **common)
+
+    stack = "Si substrate, 2 um BOX" if substrate else "oxide-only substrate"
+    return _make_dataset_info(
+        name=f"Wan & Wang 2025 bilayer double-tip edge coupler: 220/150 nm Si, {stack}, "
+             "2 um top oxide, air",
+        description="complex neff, TE_pol and overlaps of the (w_low, w_high, gap) family, "
+                    "lossy PML basis",
+        wavelength=wavelength,
+        parameters=parameters,
+        parameter_names=("w_low", "w_high", "gap"),
+        cross_section_factory=cross_section,
+        window=(half_width, y_min, y_max),
+        mode_numbers=mode_numbers,
+        mesh=mesh,
+        cladding=sio2,
+        backend_factory=backend,
+    )

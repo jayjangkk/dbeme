@@ -45,7 +45,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 from _plotting import OUTPUT_DIR, save  # noqa: E402
 from demo_plasmonic_converter import (  # noqa: E402
-    PHYSICAL_IMAG_NEFF, budget, guided_block, lumped, physical, ports, standard_form,
+    PHYSICAL_IMAG_NEFF, budget, guided_block, interface_switches, lumped, physical, ports, standard_form,
 )
 from dbeme import DataExtractor, DataUpdater, DirectParametricPath, ParametricPath  # noqa: E402
 from dbeme.platforms import KOCABAS_SETS, kocabas_converter_dataset_info, kocabas_path  # noqa: E402
@@ -221,14 +221,19 @@ def gate(payload, du):
                  "neff": [float(np.real(n0)), float(np.imag(n0))]})
     path, length = device(du)
     res = lumped(path); S, od = res["S"], res["od"]; N = S.shape[0] // 2
-    std = standard_form(S); block = guided_block(S, od)
+    # a lossy basis is reciprocal only to ~1e-3 (report 13 section 11: on the
+    # FEM basis the antisymmetric self-overlap, on FD bases such as this one
+    # truncation as well); SingleEME.INTERFACE_RECIPROCAL (2026-10-01) makes
+    # the cascade reciprocal by construction, so this row is measured with it
+    # off.  The 1e-6 of docs/validation_backlog.md section 5.1 is the lossless
+    # guided-basis figure
+    with interface_switches(INTERFACE_RECIPROCAL=False):
+        S_basis = lumped(path)["S"]
+    std = standard_form(S_basis); block = guided_block(S_basis, od)
     i_in, j_out = ports(od)
-    channel = float(abs(S[j_out, i_in] - S[N + i_in, N + j_out]))
+    channel = float(abs(S_basis[j_out, i_in] - S_basis[N + i_in, N + j_out]))
     block_asym = float(np.abs((std - std.T)[np.ix_(block, block)]).max()) if block.size else float("nan")
-    # a lossy truncated basis is reciprocal to ~1e-3 by construction (report 13
-    # section 11: the reflection blocks between continuum modes); the 1e-6 of
-    # CLAUDE.md section 5.1 is the lossless guided-basis figure
-    relative = channel / max(abs(S[j_out, i_in]), 1e-300)
+    relative = channel / max(abs(S_basis[j_out, i_in]), 1e-300)
     rows.append({"check": "reciprocity of the physical channel |T12 - T21| (design path)", "criterion": "< 1e-2 relative (lossy basis)",
                  "measured": channel, "relative": relative,
                  "block": block_asym, "pass": bool(relative < 1e-2)})

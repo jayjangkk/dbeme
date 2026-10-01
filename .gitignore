@@ -23,3 +23,9 @@ cache/
 
 # Datasets under datasets/ are regenerable but expensive, so they ARE tracked.
 # They stay small because only the parameter points a device visits are solved.
+
+# Datasets over GitHub's file limit ship as release assets (docs/git_workflow.md §4);
+# their dataset_info.py and fingerprint.json stay tracked.
+datasets/Si_bilevel_pair_220_150nm_ox_1260/*.pkl
+datasets/Si_bilevel_pair_220_150nm_ox_1310/*.pkl
+datasets/Si_bilevel_pair_220_150nm_ox_1360/*.pkl

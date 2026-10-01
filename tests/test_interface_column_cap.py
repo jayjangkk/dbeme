@@ -30,12 +30,24 @@ def test_cap_leaves_a_unitary_matrix_alone():
     assert np.allclose(cap_columns(q[None]), q[None])
 
 
+class _Fake(SingleEME):
+    def __init__(self, lossless):
+        self._lossless = lossless
+
+
+def test_the_cap_is_opt_in():
+    """Off by default since 2026-09-30 (README, "What changed relative to
+    upstream"): with one sign gauge and the continuity reflection block it
+    protected no warm lossy path and cost up to 2.4 points."""
+    assert SingleEME.INTERFACE_COLUMN_CAP is False
+    assert _Fake(False)._column_cap_enabled() is False
+    assert _Fake(True)._column_cap_enabled() is False
+
+
 def test_auto_means_lossy_only():
-    class Fake(SingleEME):
-        def __init__(self, lossless):
-            self._lossless = lossless
+    class Fake(_Fake):
+        INTERFACE_COLUMN_CAP = "auto"
     assert Fake(True)._column_cap_enabled() is False
     assert Fake(False)._column_cap_enabled() is True
-    Fake.INTERFACE_COLUMN_CAP = False
-    assert Fake(False)._column_cap_enabled() is False
-    Fake.INTERFACE_COLUMN_CAP = "auto"
+    Fake.INTERFACE_COLUMN_CAP = True
+    assert Fake(True)._column_cap_enabled() is True

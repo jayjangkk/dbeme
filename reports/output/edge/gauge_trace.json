@@ -1,0 +1,221 @@
+{
+ "1260": {
+  "interfaces": 279,
+  "modes": 40,
+  "events": 120,
+  "events_on_physical_branches": 3,
+  "merge_step": {
+   "interface": 240,
+   "point": [
+    0.0,
+    7.9e-07,
+    2e-08
+   ],
+   "next": [
+    0.0,
+    7.9e-07,
+    1e-08
+   ],
+   "TE0_branch": 1,
+   "partner_branch": 27,
+   "abs_O_ab_TE0_partner": 0.2459334433078766,
+   "abs_O_ba_partner_TE0": 0.2609660029411316,
+   "partner_neff_at_merge": [
+    2.669929027557373,
+    1.4680369723311382e-17
+   ],
+   "partner_raw_diagonals_agree_here": true,
+   "partner_events_upstream": [
+    {
+     "interface": 22,
+     "abs_ab_jj": 0.04094795882701874,
+     "abs_ba_jj": 0.17449019849300385,
+     "neff": [
+      1.398000955581665,
+      0.03550567105412483
+     ]
+    },
+    {
+     "interface": 23,
+     "abs_ab_jj": 0.17449019849300385,
+     "abs_ba_jj": 0.04094795882701874,
+     "neff": [
+      1.8208460807800293,
+      0.3316637873649597
+     ]
+    },
+    {
+     "interface": 24,
+     "abs_ab_jj": 0.042900752276182175,
+     "abs_ba_jj": 0.1752581149339676,
+     "neff": [
+      1.398000955581665,
+      0.03550567105412483
+     ]
+    },
+    {
+     "interface": 25,
+     "abs_ab_jj": 0.17364685237407684,
+     "abs_ba_jj": 0.04079073294997215,
+     "neff": [
+      1.8208460807800293,
+      0.3316637873649597
+     ]
+    },
+    {
+     "interface": 172,
+     "abs_ab_jj": 8.63145146468014e-08,
+     "abs_ba_jj": 8.065359935471861e-08,
+     "neff": [
+      1.8143001794815063,
+      0.342170774936676
+     ]
+    }
+   ],
+   "parity_at_merge": "odd - opposite signs in ab and ba"
+  }
+ },
+ "1310": {
+  "interfaces": 279,
+  "modes": 40,
+  "events": 148,
+  "events_on_physical_branches": 4,
+  "merge_step": {
+   "interface": 240,
+   "point": [
+    0.0,
+    7.9e-07,
+    2e-08
+   ],
+   "next": [
+    0.0,
+    7.9e-07,
+    1e-08
+   ],
+   "TE0_branch": 1,
+   "partner_branch": 9,
+   "abs_O_ab_TE0_partner": 0.24058666825294495,
+   "abs_O_ba_partner_TE0": 0.25693076848983765,
+   "partner_neff_at_merge": [
+    2.612703561782837,
+    7.524533807127832e-17
+   ],
+   "partner_raw_diagonals_agree_here": true,
+   "partner_events_upstream": [
+    {
+     "interface": 38,
+     "abs_ab_jj": 0.0020430907607078552,
+     "abs_ba_jj": 0.002257277024909854,
+     "neff": [
+      1.4367926120758057,
+      0.006992681417614222
+     ]
+    },
+    {
+     "interface": 39,
+     "abs_ab_jj": 0.012572082690894604,
+     "abs_ba_jj": 0.005455647129565477,
+     "neff": [
+      1.813272476196289,
+      0.38107797503471375
+     ]
+    },
+    {
+     "interface": 40,
+     "abs_ab_jj": 0.007575629279017448,
+     "abs_ba_jj": 0.027011364698410034,
+     "neff": [
+      1.419467568397522,
+      0.015114918351173401
+     ]
+    },
+    {
+     "interface": 179,
+     "abs_ab_jj": 4.261615629275184e-07,
+     "abs_ba_jj": 1.768363802057138e-07,
+     "neff": [
+      1.8245527744293213,
+      0.3812744915485382
+     ]
+    }
+   ],
+   "parity_at_merge": "even - same sign"
+  }
+ },
+ "1360": {
+  "interfaces": 279,
+  "modes": 40,
+  "events": 137,
+  "events_on_physical_branches": 3,
+  "merge_step": {
+   "interface": 240,
+   "point": [
+    0.0,
+    7.9e-07,
+    2e-08
+   ],
+   "next": [
+    0.0,
+    7.9e-07,
+    1e-08
+   ],
+   "TE0_branch": 1,
+   "partner_branch": 12,
+   "abs_O_ab_TE0_partner": 0.2340269833803177,
+   "abs_O_ba_partner_TE0": 0.25168219208717346,
+   "partner_neff_at_merge": [
+    2.555849075317383,
+    1.474161417586481e-17
+   ],
+   "partner_raw_diagonals_agree_here": true,
+   "partner_events_upstream": [
+    {
+     "interface": 49,
+     "abs_ab_jj": 0.008046750910580158,
+     "abs_ba_jj": 0.0018911098595708609,
+     "neff": [
+      1.8506325483322144,
+      0.40630364418029785
+     ]
+    },
+    {
+     "interface": 50,
+     "abs_ab_jj": 0.0023920023813843727,
+     "abs_ba_jj": 0.00786732416599989,
+     "neff": [
+      1.429024577140808,
+      0.013894610106945038
+     ]
+    },
+    {
+     "interface": 51,
+     "abs_ab_jj": 0.008311635814607143,
+     "abs_ba_jj": 0.0022158052306622267,
+     "neff": [
+      1.8506325483322144,
+      0.40630364418029785
+     ]
+    },
+    {
+     "interface": 52,
+     "abs_ab_jj": 0.004778449423611164,
+     "abs_ba_jj": 0.005344359204173088,
+     "neff": [
+      1.4290311336517334,
+      0.013762438669800758
+     ]
+    },
+    {
+     "interface": 183,
+     "abs_ab_jj": 4.998027520741744e-07,
+     "abs_ba_jj": 2.0828400693062576e-07,
+     "neff": [
+      1.8523198366165161,
+      0.4046524167060852
+     ]
+    }
+   ],
+   "parity_at_merge": "odd - opposite signs in ab and ba"
+  }
+ }
+}
