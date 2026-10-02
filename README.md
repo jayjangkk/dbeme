@@ -586,13 +586,13 @@ reasonable.
       * The short tapers gain 0.01 dB: −1.74 / −1.65 dB at 150 / 300 nm.
       * Gate passivity 0.690 → 0.691.
       * The estimate moves these by 0.0003 dB or less.
-    * **Report 22:** best estimates move by at most +0.009 dB (TM,
-      1310 nm).
-      * TE 0.93 / 0.86 / 0.93, TM 1.56 / 1.59 / 1.88, PDL 0.64 / 0.73 /
+    * **Report 22** (regenerated on this code, 2026-10-02): best estimates
+      move by at most +0.009 dB (TM, 1310 nm).
+      * TE 0.92 / 0.86 / 0.94, TM 1.56 / 1.59 / 1.88, PDL 0.64 / 0.73 /
         0.94 dB.
-      * The 1310 nm TM excess over the paper is now +0.501 dB on the re-run
-        (+0.4999 dB with every term re-run). That sits on the task's 0.5 dB
-        criterion, inside the ±0.01 dB digitisation error.
+      * The 1310 nm TM excess over the paper is now +0.4999 dB. That passes
+        the task's 0.5 dB criterion by 8e-5 dB, well inside the ±0.01 dB
+        digitisation error, so the call is not resolved.
     * **Reciprocity:** an uncapped lossy cascade is now reciprocal to
       round-off by construction (1e-14 or less).
       * The reciprocity rows of the Kocabas, plasmonic and edge-coupler gates,

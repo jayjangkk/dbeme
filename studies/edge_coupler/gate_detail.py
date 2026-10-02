@@ -1,6 +1,10 @@
 """Localise the gate's reciprocity defect and refine F3/F4 (warm, no solves).
 
     python studies/edge_coupler/gate_detail.py [nm]
+
+The reciprocity rows are computed with ``SingleEME.INTERFACE_RECIPROCAL``
+off: the projection (on for lossy bases since 2026-10-01) makes the cascade
+reciprocal by construction, and the defect it removes is what is localised.
 """
 import json
 import os
@@ -14,7 +18,7 @@ import analyse as an  # noqa: E402
 import device as dv  # noqa: E402
 from dbeme.matrix_calculation_tool import _redheffer_star_product as star  # noqa: E402
 from dbeme.propagator.fiber import gaussian_fields, gaussian_launch, physical_interior  # noqa: E402
-from dbeme.propagator.single_propagator.single_eme import SingleEME  # noqa: E402
+from dbeme.propagator.single_propagator.single_eme import interface_switches  # noqa: E402
 
 
 def cascade_from(cas, k0):
@@ -32,14 +36,13 @@ def main():
     du._is_testmode = True
     n_ox = float(du.get_cladding_index())
     out = {}
-    default_cap = SingleEME.INTERFACE_COLUMN_CAP
     for variant in (sys.argv[2:] or ["bilayer"]):
         res = {}
         for cap in ("auto", False):
-            SingleEME.INTERFACE_COLUMN_CAP = cap
-            path, _ = dv.build_path(du, variant)
-            od = path.calc_output_data()
-            cas = an.Cascade(path, od)
+            with interface_switches(INTERFACE_COLUMN_CAP=cap, INTERFACE_RECIPROCAL=False):
+                path, _ = dv.build_path(du, variant)
+                od = path.calc_output_data()
+                cas = an.Cascade(path, od)
             N = cas.N
             ports = dv.output_ports(od)
             rows = {}
@@ -54,7 +57,6 @@ def main():
                     row[pol] = float(abs(f - b) / abs(f))
                 rows[f"{z0:g}"] = row
             res[f"cap={cap}"] = rows
-        SingleEME.INTERFACE_COLUMN_CAP = default_cap
         out[variant] = {"reciprocity_from_z_um": res}
         # membership: the rule's fundamental (any polarisation) vs the top stored physical mode
         rule = du.backend.target_rule

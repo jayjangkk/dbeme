@@ -13,3 +13,6 @@ dbeme/circuit/roundtrip.py                        # tasks/12 section 3.1: planne
 # Task 16, Phase 1 - created when that phase runs
 datasets/__init__                                 # tasks/16 step 1.6, a guess at where dataset names resolve
 dbeme/CLAUDE.md                                   # tasks/16 step 1.6: the public repo's CLAUDE.md inside the private repo's submodule
+
+# Not paths
+docs/readme-install                               # docs/git_workflow.md section 3: an example branch name

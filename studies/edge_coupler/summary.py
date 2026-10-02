@@ -37,7 +37,7 @@ summary = {"wavelengths": {}, "notes": {
     "final_dB": "BEST ESTIMATE: lower_dB + adiabatic_dB - the join-to-L3 stretch's loss is lattice except its length-dependent part",
     "conservative_dB": "UPPER BOUND: full_dB + tip_lattice_dB - corners_dB - only the lattice error measured directly removed",
     "staircase_offset_dB": "kept for the record: main path minus the linear m->0 extrapolation of 1x/2x/3x merged-step staircases; NOT used - the merge factor is not the step size (119/67/51 steps), and for bilayer TE it removes more loss than the stretch contains",
-    "uncertainty": "column cap off (the default since 2026-09-30); opting in raises the losses by 0.00-0.12 dB over 1260-1360 nm; first-order leakage after the join; the tip term comes from the oxide tip dataset",
+    "uncertainty": "reciprocal interface projection on (the lossy default since 2026-10-01); column cap off (the default since 2026-09-30); opting in raises the losses by 0.00-0.12 dB over 1260-1360 nm; first-order leakage after the join; the tip term comes from the oxide tip dataset",
 }}
 ZJ, Z68 = 13.825, 68.0
 _scan_fn = os.path.join(OUT, "stretch_scan.json")
@@ -123,8 +123,7 @@ for name in ("staircase_1310", "opt_lengths_1310", "opt_lengths_1260_1310_1360",
     if os.path.exists(p):
         j = json.load(open(p))
         if name.startswith("direct"):
-            summary.setdefault("direct", {})[name] = {k: j[k] for k in ("dbeme", "direct", "abs_dT", "sections", "seconds_direct") if k in j} | {
-                "formulas": "previous (before the 2026-09-30 corrections)" if "_exact_" in name else "current"}
+            summary.setdefault("direct", {})[name] = {k: j[k] for k in ("dbeme", "direct", "abs_dT", "sections", "seconds_direct") if k in j}
         elif name.startswith("staircase"):
             summary["staircase_1310"] = {v: {"factors": j[v]["factors"], "TE": j[v]["TE"], "TM": j[v]["TM"], "new_points": j[v]["new_points"], "seconds": j[v]["seconds"]} for v in j}
         elif name == "opt_facet":

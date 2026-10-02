@@ -11,10 +11,10 @@
   as ``_two_mask_rule`` (the merge-step reflection and the device loss at
   1260/1310/1360 nm);
 * the DBEME side of every direct_*.json recomputed with the current path
-  code.  Only the aligned runs were re-run on the current code; the
-  exact-value runs predate the 2026-09-30 corrections on their direct side
-  too (previous reflection block, column cap), so their abs_dT_current mixes
-  formulas and is not like-for-like.
+  code, cut from the full device path (``direct.py`` cuts it from a path that
+  ends 2 um past the stretch).  Every direct run was re-run on the code of
+  2026-10-02 (reciprocal projection on), so both sides use the same
+  interface formulas.
 
 Writes reports/output/edge/archive_checks.json.
 """
