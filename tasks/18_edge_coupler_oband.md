@@ -306,8 +306,10 @@ curves (`reports/output/edge/paper_digitised.json`) where there is data:
 ## Status 2026-09-30 — done; `reports/22_edge_coupler_oband.md`
 
 All phases run at 1260 / 1310 / 1360 nm. The other four wavelengths were
-not built (compute). The numbers are after the three corrections to the
-cascade this task led to (see *Found on the way*).
+not built (compute). The numbers are after four corrections to the cascade:
+the three this task led to (see *Found on the way*) and the reciprocal
+interface projection that followed. The report was regenerated on the 1.0.0
+solver on 2026-10-02.
 
 - **Phase 0.** Done.
   - Built `BiLevelPair` with axes `(w_low, w_high, gap)`, the fibre launch and
@@ -334,26 +336,32 @@ cascade this task led to (see *Found on the way*).
   - The walked corners of the height converter cost 0.27 dB (TE); the
     `(w_low, w_high)` axis choice causes this.
   - The paper's L2 TM attribution is not reproduced at 1260–1310 nm, and
-    only partly at 1360 nm (0.10 dB).
+    only partly at 1360 nm (0.09 dB).
 - **Phase 3.** Best estimate against the paper's FDTD:
-  - TE is within +0.04 … +0.09 dB.
-  - TM is +0.46 … +0.64 dB, mostly the Q3 wedge-MMI TM loss. So the PDL
-    gate fails (0.63–0.94 dB); about half of the excess at 1310 nm is the
+  - TE is within +0.03 … +0.09 dB.
+  - TM is +0.47 … +0.64 dB, mostly the Q3 wedge-MMI TM loss. So the PDL
+    gate fails (0.64–0.94 dB); about half of the excess at 1310 nm is the
     facet's reversed TE/TM order.
-  - The 1310 nm TM best estimate meets the 0.5 dB criterion by 0.008 dB,
-    within the digitisation error; the conservative bound does not.
-  - The conservative bound is TE 1.68–1.75 dB and TM 2.10–2.34 dB.
+  - The 1310 nm TM best estimate is +0.4999 dB. It meets the 0.5 dB
+    criterion by 8e-5 dB, a hundredth of the digitisation error, so the call
+    is not resolved; the conservative bound does not meet it.
+  - The conservative bound is TE 1.68–1.75 dB and TM 2.11–2.35 dB.
   - The conventional tips' TM penalty is 4.0 / 3.3 / 2.7 dB, falling with λ.
   - §5.8 aligned matches a from-scratch EME to ≤ 2.2e-6 on 60 of 280
     sections (≤ 3.6e-5 when cut from the device's own path); the full device
     was not run.
   - §5.4 slicing fails by the letter (2.4e-3 against 1e-4).
-  - Reciprocity is 2.5e-4 (the column cap is off; with it, 4.1e-3).
+  - Reciprocity is 2.5e-4, measured with the reciprocal projection off
+    (the column cap is off; with it, 4.1e-3).
 - **Phase 4.** Lengths optimised at zero mode solves.
-  - The 1310 nm objective falls from 2.06 to 1.75 dB and the band objective
-    from 2.28 to 2.02 dB (CMA-ES plus polish).
-  - L-BFGS-B alone stalls at 1310 nm and converges 0.03 dB short on the
+  - The 1310 nm objective falls from 2.06 to 1.74 dB and the band objective
+    from 2.28 to 2.03 dB (CMA-ES plus polish).
+  - L-BFGS-B alone stalls at 1310 nm and converges 0.02 dB short on the
     band.
+  - The seeded CMA-ES landed on a different 1310 nm optimum after the
+    reciprocal projection (43/19/42 → 31/31/57 µm for L1/L2/L3, 1.755 →
+    1.739 dB), although the projection moved the Table 1 objective by only
+    0.001 dB: the surface is flat-bottomed.
   - The staircase moves by as much under a length change, so the gains are
     indicative.
   - A facet CMA-ES (41 solves, 38 archived) found `Wtip` 95 nm, `g` 1.28 µm,
@@ -374,6 +382,11 @@ cascade this task led to (see *Found on the way*).
   - **The interface column cap is opt-in.** It had been introduced against
     a gain that was the gauge bug, and it cost this device 0.00–0.12 dB
     (tag `pre_column_cap_default`).
+  - **Later: the reciprocal interface projection** (from report 13's
+    passivity work, tag `pre_passivity`). Here it moved the best estimates
+    by ≤ 0.009 dB. It also removes the two-mask rule's reflection signature
+    (merge-step reflection 0.073 → 1.3e-4) but not its spurious transmission
+    (1.073).
 
 ## Limits to state
 

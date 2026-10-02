@@ -18,52 +18,20 @@ marks; ±0.004 in overlap, ±0.01 dB in loss). Table 1, the text's measured
 * The facet overlaps are in `phase1_*.json`, the stretch budgets in
   `device_<λ>.json`, the length scan in `stretch_scan.json`, and the
   direct-EME runs in `direct_*.json`.
-* Every number is from the code after the three 2026-09-30 corrections to
-  the cascade (README, "What changed relative to upstream" → Fixed):
+* Every number is from the 1.0.0 solver, regenerated on 2026-10-02 (all
+  outputs above, the six direct-EME runs and the Fig. 4 planes included),
+  with the four corrections to the cascade (README, "What changed relative
+  to upstream" → Fixed):
   * one sign per mode in both overlap sets;
   * the interface reflection block;
-  * the interface column cap, now opt-in and off.
-* Where a number predates the corrections, the text says so in place: §1
-  (the exact-value §5.8 row), §2.7, §4.1, §4.3, §5 and §6.
-
-> **Note (2026-10-01, reciprocal interface matrix).** A fourth correction
-> postdates this report: each lossy interface matrix is projected onto its
-> reciprocal part (README → Fixed, "Reciprocal interface matrix"). The text,
-> tables, figures and JSON files show the values as written.
->
-> Warm re-run of `analyse.py` 1260/1310/1360, `archive_checks.py` and
-> `stretch_scan.py`, then `summary.py`; zero path and mode solves.
-> `fullstack_tip.py` and `staircase.py` were not re-run; an offline replica
-> of them moves 0.001 dB or less.
->
-> | quantity | 1260 / 1310 / 1360 nm, as written | re-run |
-> |---|---|---|
-> | TE best estimate (dB) | 0.926 / 0.863 / 0.936 | 0.926 / 0.863 / 0.935 |
-> | TM best estimate (dB) | 1.559 / 1.583 / 1.873 | 1.564 / 1.592 / 1.878 |
-> | PDL (dB) | 0.63 / 0.72 / 0.94 | 0.64 / 0.73 / 0.94 |
-> | TE / TM conservative bound (dB) | 1.68–1.75 / 2.10–2.34 | 1.68–1.75 / 2.11–2.35 |
->
-> * **The 1310 nm TM excess over the paper is now +0.501 dB** on the re-run
->   (1.5921 − 1.0915 dB), 6e-4 dB outside the task's "within 0.5 dB"
->   criterion.
->   * The +0.009 dB move comes from the tip-lattice extrapolation
->     `2P(2.5 nm) − P(5 nm)`, which amplifies small path changes.
->   * The re-run keeps the archived `fullstack_tip.py` and `staircase.py`
->     terms. The offline replica with those re-run too gives +0.4999 dB.
->   * The pass/fail call is inside the ±0.01 dB digitisation error either
->     way, and the conservative bound still fails.
-> * **Reciprocity (note 1).** A lossy cascade is reciprocal by construction
->   at the default now, so `gate.py` computes this row with the projection
->   off and still measures the basis. `gate.py` was not re-run.
-> * **Column cap.** It costs 0.10 / 0.06 dB (TE/TM), unchanged.
-> * **The two-mask rows of §2.7** now read:
->   * band-edge TE loss 2.48 / 2.34 dB (was 1.81 / 1.33 dB);
->   * merge-step reflection 1.3e-4 (was 0.073). The projection removes the
->     sign flip's antisymmetric reflection; the spurious 1.073 transmission
->     stays.
->   * The current rule's numbers are unchanged to 0.002 dB.
-> * The opt-in self-overlap estimate refuses on this basis: its estimate
->   reaches norm 6.6 at degenerate continuum pairs.
+  * the interface column cap, now opt-in and off;
+  * the reciprocal projection of each lossy interface matrix. It makes the
+    cascade reciprocal by construction, so §1's reciprocity rows are
+    computed with it off and still measure the basis.
+* The report was first written (2026-09-30) before the fourth correction.
+  It moved the best estimates by ≤ 0.009 dB; §2.7's two-mask rows and §7's
+  length optimum moved more, and each says so in place. §2.7 also quotes the
+  upstream reflection block's figures, as history.
 
 > **Outcome.** This is the first fibre-to-chip device in the repository: a
 > Gaussian fibre launch on the lossy PML basis, into an 86.5 µm path of 280
@@ -78,8 +46,8 @@ marks; ±0.004 in overlap, ±0.01 dB in loss). Table 1, the text's measured
 >     0.848 / 0.858. Both are within 3 points of polarisation-insensitive,
 >     though the TE/TM order is reversed.
 >   * The conventional 220 nm tips' TM collapses to 0.375, against 0.428.
-> * **The TE coupling loss (best estimate) is 0.04–0.09 dB above the paper's
->   3D-FDTD across the band:** 0.93 / 0.86 / 0.94 dB at 1260 / 1310 / 1360 nm,
+> * **The TE coupling loss (best estimate) is 0.03–0.09 dB above the paper's
+>   3D-FDTD across the band:** 0.92 / 0.86 / 0.94 dB at 1260 / 1310 / 1360 nm,
 >   against the paper's 0.89 / 0.77 / 0.87.
 >   * For TE the best estimate is the lower bound to within 0.02 dB. It rests
 >     on treating the join-to-L3 stretch as lattice, which is measured for L3
@@ -87,19 +55,20 @@ marks; ±0.004 in overlap, ±0.01 dB in loss). Table 1, the text's measured
 >   * Part of the agreement is compensation: the TE facet couples 0.12 dB
 >     better than the paper's (§3).
 >   * The conservative bound is 0.83–0.91 dB above the paper.
-> * **TM runs 0.46–0.64 dB high:** 1.56 / 1.58 / 1.87 dB, against
+> * **TM runs 0.47–0.64 dB high:** 1.56 / 1.59 / 1.88 dB, against
 >   1.10 / 1.09 / 1.23.
 >   * The main term is our reading of the wedge MMI (Q3). TM loses
 >     0.41–0.68 dB there, 0.38–0.48 dB more than TE.
 >   * Smaller terms: the facet overlap (0.08 dB at 1310 nm), substrate
 >     leakage in the tips, and at 1360 nm a length-dependent TM loss in the
 >     height converter.
->   * The **PDL gate fails**: 0.63 / 0.72 / 0.94 dB, against < 0.5. About
+>   * The **PDL gate fails**: 0.64 / 0.73 / 0.94 dB, against < 0.5. About
 >     half of the excess over the paper's PDL at 1310 nm is the facet, whose
 >     TE/TM order is reversed (§4.4).
->   * The 1310 nm TM best estimate is +0.49 dB against the task's 0.5 dB
->     criterion. That 0.008 dB margin is within the digitisation error, and
->     the conservative bound fails (+1.01 dB).
+>   * The 1310 nm TM best estimate is +0.4999 dB against the task's 0.5 dB
+>     criterion. It passes by the letter, by 8e-5 dB, a hundredth of the
+>     ±0.01 dB digitisation error, so the call is not resolved; the
+>     conservative bound fails (+1.02 dB).
 > * **The conventional tips' TM penalty** is there and falls with wavelength,
 >   as in Fig. 5: 4.0 / 3.3 / 2.7 dB, against the paper's 3.4 / 2.4 / 1.8.
 > * **The width lattice is the dominant numerical error.** As built on the
@@ -121,7 +90,7 @@ marks; ±0.004 in overlap, ±0.01 dB in loss). Table 1, the text's measured
 >     the best estimate.
 >   * The conservative bound removes only the tip term and the corners (the
 >     corners measured at 1310 nm) and keeps the arm-step loss: TE
->     1.68–1.75 dB, TM 2.10–2.34 dB.
+>     1.68–1.75 dB, TM 2.11–2.35 dB.
 > * **The facet needed the full stack.** On the oxide-only EME basis, the
 >   near-cutoff tip mode touches the bottom PML (F5 fails there). So the launch
 >   and the tip are solved on the full stack, with the Si substrate. They join
@@ -129,12 +98,13 @@ marks; ±0.004 in overlap, ±0.01 dB in loss). Table 1, the text's measured
 >   which transmits the fundamental with 0.99993 / 0.9984 at 1310 nm.
 > * **Phase 4.** Re-optimising the six lengths on the warm cache, at zero
 >   mode solves:
->   * the 1310 nm objective falls from 2.06 to 1.75 dB (CMA-ES, then
+>   * the 1310 nm objective falls from 2.06 to 1.74 dB (CMA-ES, then
 >     L-BFGS-B; L-BFGS-B alone stalls at 1.84 dB);
->   * the band objective falls from 2.28 to 2.02 dB (L-BFGS-B alone reaches
+>   * the band objective falls from 2.28 to 2.03 dB (L-BFGS-B alone reaches
 >     2.05 dB).
 >   * The staircase's own response to a length change is of the same size,
->     so the gains are indicative (§7).
+>     and a cascade change worth 0.001 dB at Table 1 moved the 1310 nm
+>     optimum by 15 µm in total length, so the gains are indicative (§7).
 >   * A CMA-ES over the facet (41 lossy solves, 38 distinct candidates
 >     archived) moves the worse polarisation's coupling from 0.831 to 0.872,
 >     at `Wtip` 95 nm, `g` 1.28 µm.
@@ -146,10 +116,11 @@ marks; ±0.004 in overlap, ±0.01 dB in loss). Table 1, the text's measured
 >   * F3 parity by the letter;
 >   * the PDL.
 >
->   Reciprocity is 2.5e-4. The full-device §5.8 check was not run. On the
->   tip stretch (oxide basis) and on the MMI plus output (60 of 280
->   sections), the cached cascade reproduces a from-scratch EME to ≤ 2.2e-6
->   (≤ 3.6e-5 when the stretch is cut from the device's own path).
+>   Reciprocity, measured with the reciprocal projection off, is 2.5e-4. The
+>   full-device §5.8 check was not run. On the tip stretch (oxide basis) and
+>   on the MMI plus output (60 of 280 sections), the cached cascade
+>   reproduces a from-scratch EME to ≤ 9.2e-7 (≤ 3.7e-5 when the stretch is
+>   cut from the device's own path).
 
 ---
 
@@ -162,35 +133,39 @@ so the facet rows F3/F4 are on that basis.
 
 | check (§5.x / task gate) | criterion | measured | pass |
 |---|---|---|---|
-| 5.1 reciprocity, physical channel (facet fundamental → output TE0/TM0) | < 1e-2 relative (lossy) | **2.5e-4 / 2.0e-4** (TE/TM; conventional 1.8e-4 / 6.3e-6); with the opt-in column cap 4.1e-3 / 1.1e-3 | ✓ — note 1 |
+| 5.1 reciprocity, physical channel (facet fundamental → output TE0/TM0), reciprocal projection off | < 1e-2 relative (lossy) | **2.5e-4 / 2.0e-4** (TE/TM; conventional 1.8e-4 / 6.3e-6); with the opt-in column cap 4.1e-3 / 1.1e-3 | ✓ — note 1 |
 | passivity: physical input columns of the lumped \|S\|² | < 1.05 | 0.733; conventional 0.779 | ✓ |
-| passivity: the fibre launch, out + reflected (oxide launch) | ≤ the beam's power in the window, 0.973 | 0.643 + 0.00015 (TE), 0.652 + 0.00035 (TM) | ✓ downstream — on the oxide basis the launched TE fundamental alone carries \|a\|²·r = 1.05 > 0.973 (the PML-affected tip mode, §5 †); the full-stack launch is passive |
-| 5.4 slicing: `z` sampled at 50 / 12.5 nm instead of 25 nm | max\|ΔT\| < 1e-4 (§5.4) | ≤ 2.4e-3 (bilayer), 2.5e-3 (conventional), i.e. ≤ 0.018 dB (bilayer ≤ 0.016 dB). The resampling moves where the lattice steps fall (280 sections in all three samplings), so the staircase itself changes; the total reflection is only 1.5e-4 / 3.5e-4 | ✗ by the letter (a staircase-position effect, ≪ the lattice terms of §4.3) |
+| passivity: the fibre launch, out + reflected (oxide launch) | ≤ the beam's power in the window, 0.973 | 0.643 + 6.8e-5 (TE), 0.652 + 1.4e-5 (TM) | ✓ downstream — on the oxide basis the launched TE fundamental alone carries \|a\|²·r = 1.05 > 0.973 (the PML-affected tip mode, §5 †); the full-stack launch is passive |
+| 5.4 slicing: `z` sampled at 50 / 12.5 nm instead of 25 nm | max\|ΔT\| < 1e-4 (§5.4) | ≤ 2.4e-3 (bilayer), 2.5e-3 (conventional), i.e. ≤ 0.018 dB (bilayer ≤ 0.016 dB). The resampling moves where the lattice steps fall (280 sections in all three samplings), so the staircase itself changes; the total reflection is only 6.8e-5 / 1.4e-5 | ✗ by the letter (a staircase-position effect, ≪ the lattice terms of §4.3) |
 | 5.7 / F5 window and PML at the facet, **full stack** (0.25 µm Si PML; the launch basis's 0.5 µm Si PML is one of the variants) | eq. (1) < 1e-3, `Im n` < 10 % | ≤ 7e-4, ≤ 7.2 % | ✓ |
 | 5.7 / F5, **oxide-only stack** (the EME basis away from the tip) | same | a ±6.5 µm window moves eq. (1) by 0.019 (TE) / 4e-4 (TM); a 1 µm PML moves it by 0.086 / 0.072 and `Im n` by −81 % / −79 % | ✗ — why the launch and tip are on the full stack (§2.4) |
-| 5.8 DBEME vs direct EME, **aligned**: tip stretch 0–25 µm (25 sections) | max\|ΔT\| < 1e-3 | **2.1e-6 / 2.2e-6** against the stretch's own cascade; 3.6e-5 / 2.9e-5 against the device cascade | ✓ |
-| 5.8 aligned: MMI + output 76–86.5 µm (35 sections) | max\|ΔT\| < 1e-3 | **1.4e-7 / 8.7e-7** | ✓ |
+| 5.8 DBEME vs direct EME, **aligned**: tip stretch 0–25 µm (25 sections) | max\|ΔT\| < 1e-3 | **6.3e-7 / 9.2e-7** against the stretch's own cascade; 3.7e-5 / 2.6e-5 against the device cascade | ✓ |
+| 5.8 aligned: MMI + output 76–86.5 µm (35 sections) | max\|ΔT\| < 1e-3 | **1.5e-7 / 2.8e-7** | ✓ |
 | 5.8 full device (task Phase 3 gate) | max\|ΔT\| < 1e-3 | not run (~8 h aligned) | — |
-| 5.8 exact-value sections: L1 / L2 / L3 / MMI + output | reported | \|ΔT\| 0.028 / 0.062 / 0.023 / 0.005 (TE), run before the 2026-09-30 corrections: snapping and walked corners (§6) | — |
+| 5.8 exact-value sections: L1 / L2 / L3 / MMI + output | reported | \|ΔT\| 0.020 / 0.061 / 0.023 / 0.005 (TE): snapping and walked corners (§6) | — |
 | 5.13a the launched branches' tracked links | > 0.5 | min 0.868 (TE), 0.905 (TM), both at the MMI output face; one link < 0.9 | ✓ |
 | 5.13a the fundamental in the stored set at every point | top stored mode vs the target rule's coarse lossless estimate | within −0.032 … +0.029 (bilayer, 263 points), −0.032 … +0.049 (conventional, 210 points) | ✓ |
 | F1 150 nm overlaps against Fig. 3 | ±0.05; TE/TM gap ≤ 5 points over 100–150 nm | inside ±0.05 except TE at `Wtip` 180 and 190 nm (−0.073, −0.079); gap ≤ 2.9 points | ✓ except two points |
 | F2 220 nm TM | ≥ 30 points below TE at 130 nm | 42 points | ✓ |
 | F3 parity: centred launch into x-odd modes (oxide basis) | < 1e-4 | 5.8e-3 (TE), 1.1e-2 (TM) | ✗ by the letter — note 2 |
 | F4 completeness (oxide basis) | reported | the window holds 0.973 of the beam; Σ\|c_m\|² = 1.60 (TE) / 1.73 (TM) — the lossy basis is not orthogonal; there the fundamental takes \|a\|² = 0.945 / 0.901 (conjugated power coupling 0.848 / 0.843); on the full stack η = 0.859 / 0.829 | — note 2 |
-| Phase 3: bilayer against Fig. 5 at 1310 nm | each within 0.5 dB | TE +0.09, TM +0.49 dB (best estimate); conservative bound +0.91 / +1.01 | ✓ on the best estimate (TM by 0.008 dB, inside the ±0.01 dB digitisation); ✗ on the conservative bound |
-| Phase 3: PDL over 1260–1360 nm | < 0.5 dB | 0.63 / 0.72 / 0.94 dB (best estimate) | ✗ |
+| Phase 3: bilayer against Fig. 5 at 1310 nm | each within 0.5 dB | TE +0.09, TM +0.4999 dB (best estimate); conservative bound +0.91 / +1.02 | ✓ by the letter on the best estimate (TM by 8e-5 dB, inside the ±0.01 dB digitisation, so the call is not resolved); ✗ on the conservative bound |
+| Phase 3: PDL over 1260–1360 nm | < 0.5 dB | 0.64 / 0.73 / 0.94 dB (best estimate) | ✗ |
 | Phase 3: 220 nm reference | TM penalty ≥ 1.5 dB, falling with λ | 4.0 / 3.3 / 2.7 dB | ✓ |
-| tests | | `tests/test_bilevel_pair.py`, `tests/test_fiber_launch.py`, `tests/test_overlap_gauge.py`, `tests/test_interface_reflection.py`; full suite 430 passed | ✓ |
+| tests | | `tests/test_bilevel_pair.py`, `tests/test_fiber_launch.py`, `tests/test_overlap_gauge.py`, `tests/test_interface_reflection.py`, `tests/test_reciprocal_interface.py`; full suite 473 passed | ✓ |
 
 **Note 1 — reciprocity and the column cap.**
 
-* **At the default** (cap off) the physical channel is reciprocal to
-  2.5e-4 / 2.0e-4 (TE/TM).
+* **The basis** (cap off, reciprocal projection off) keeps the physical
+  channel reciprocal to 2.5e-4 / 2.0e-4 (TE/TM). At the default the
+  projection makes the lossy cascade reciprocal by construction, so
+  `gate.py` and `gate_detail.py` compute this row with it off (README →
+  Fixed, "Reciprocal interface matrix").
 * **The opt-in cap** (`SingleEME.INTERFACE_COLUMN_CAP`, report 13 §12)
-  raises that to 4.1e-3 / 1.1e-3.
+  raises that to 4.1e-3 / 1.1e-3, also with the projection off.
   * It scales down every interface column whose power exceeds 1, which is a
-    one-directional operation.
+    one-directional operation. It acts after the projection, so a capped
+    cascade is not reciprocal by construction.
   * Uncapped, 52 interfaces have a physical column up to 0.59 % above 1
     (their locations are not archived), and the device stays passive
     (0.733).
@@ -466,14 +441,20 @@ to upstream").
     |diag| < 1e-6.
   * It has five such events at 1260 and 1360 nm and four at 1310 nm. The
     odd parity leaves it with opposite signs in the two sets at the merge.
-* **The result.** `archive_checks.json` runs both rules on the current code.
-  * Under the two-mask rule the merge step transmits 1.073 of TE0 and
-    reflects 0.073 at 1260 nm. Under the current rule it transmits 1.0004
-    and reflects 0.0002, within the ≤ 0.59 % column excess of note 1.
-  * The band-edge TE loss (raw, before leakage) reads 1.81 / 1.33 dB instead
-    of 2.07 / 1.89 dB.
-  * At 1310 nm the parity is even and the two rules differ by 0.0004 /
-    0.0005 dB.
+* **The result.** `archive_checks.json` runs both rules on the current code,
+  reciprocal projection included.
+  * Under the two-mask rule the merge step transmits 1.073 of TE0 at
+    1260 nm. Under the current rule it transmits 1.0004 and reflects 1.6e-4,
+    within the ≤ 0.59 % column excess of note 1.
+  * The flip's reflection is antisymmetric, and the projection removes it:
+    the two-mask merge step now reflects 1.3e-4, against 0.073 without the
+    projection. The projection leaves `T` alone (`T21 = T12ᵀ` already), so
+    the spurious 1.073 stays. The gauge error no longer shows as reflection.
+  * The band-edge TE loss (raw, before leakage) now reads 2.48 / 2.34 dB
+    instead of 2.07 / 1.89 dB, 0.41 / 0.45 dB worse. Without the projection
+    the flip had made it better, 1.81 / 1.33 dB.
+  * At 1310 nm the parity is even and the two rules differ by 0.0008 /
+    0.0002 dB.
   * Under upstream's reflection block, with which this was first found, the
     same flip appeared as 7.0 % / 5.8 % reflection, and the band-edge TE loss
     read 3.79 / 3.81 dB.
@@ -577,8 +558,7 @@ full-stack values above.
 amplitudes, in the path's own branch order and gauge (oxide launch). The
 figure shows |E| on the device layer and four cross sections at the paper's
 inset planes; the insets are cut to the window's physical interior. The
-planes were computed before the 2026-09-30 corrections. The march they use
-has moved by up to 0.11 dB (TE; 0.06 dB TM), which the figure cannot show.
+planes and the march they use are from the current code (2026-10-02).
 
 ![propagation](output/edge_4_propagation.png)
 
@@ -616,11 +596,11 @@ Loss by stretch, in dB:
 
 **The MMI is the largest polarisation-dependent term that is not lattice.**
 
-* At 1310 nm its TM − TE of 0.38 dB is half the 0.72 dB PDL.
+* At 1310 nm its TM − TE of 0.38 dB is half the 0.73 dB PDL.
 * Its share of the PDL is 0.38 / 0.38 / 0.48 dB at 1260 / 1310 / 1360 nm.
 * The facet adds 0.25 / 0.15 / 0.10 dB.
 
-The PDL grows 0.31 dB from 1260 to 1360 nm. The main changes in TM − TE:
+The PDL grows 0.30 dB from 1260 to 1360 nm. The main changes in TM − TE:
 
 | term | 1260 → 1360 nm |
 |---|---|
@@ -631,7 +611,7 @@ The PDL grows 0.31 dB from 1260 to 1360 nm. The main changes in TM − TE:
 | the full-stack output against the stretch-by-stretch march | −0.09 dB |
 | the facet | −0.16 dB |
 
-The remaining terms (tip lattice, Lt, output taper) sum to +0.02 dB.
+The remaining terms (tip lattice, Lt, output taper) sum to +0.03 dB.
 
 ### 4.3 The lattice: three terms, each measured
 
@@ -643,11 +623,11 @@ loss come from the lattice, not the device.
 signed permutation between the two paths' branch bases,
 `analyse.joined_lumped`). Extrapolating to 0 gives:
 
-* bilayer tips: −0.00 … −0.07 dB (TE 1.878 → 1.859 → 1.852 → 1.846 dB at
+* bilayer tips: +0.00 … −0.07 dB (TE 1.878 → 1.859 → 1.852 → 1.845 dB at
   1310 nm);
 * conventional tips: −0.09 … −0.35 dB;
 * the exception: at 1360 nm the bilayer sequences are not monotonic (the
-  term is −0.007 / −0.002 dB).
+  term is −0.008 / +0.003 dB).
 
 **2. The walked corners.** On the `(w_low, w_high)` axes nearly every step of
 the height converter changes both widths.
@@ -657,9 +637,10 @@ the height converter changes both widths.
   branch of the §4.5 plot.
 * The main path against its corner-free twin, in which every change is one
   interface, gives TE 0.271 and TM 0.059 dB.
-* The exact-value direct EME over L2 (§6), which has no corners, was run with
-  the previous formulas. It gave 0.281 / 0.078 dB, against 0.278 / 0.077 dB
-  from the corner-free twin under the same formulas.
+* The exact-value direct EME over L2 (§6), which has neither corners nor
+  snapping, gives 0.274 / 0.070 dB against the snapped path, and the
+  corner-free twin 0.271 / 0.059 dB: the corners are nearly all of it for
+  TE, and snapping adds ~0.01 dB for TM.
 * The corners were measured at 1310 nm and are applied unchanged at the band
   edges.
 * A `(w_arm, w_high)` parameterisation would have made the converter mostly
@@ -678,12 +659,12 @@ sideways by 10 nm and sheds 0.27 % of TE: the per-interface ratio is
 * **For the bilayer tips the stretch grows linearly with merged step size.**
   * The staircase merges steps across the rest of L1, L2 and L3 together.
   * Corner-free staircases with 1× / 2× / 3× merged steps give TE
-    1.597 / 2.701 / 3.808 dB, linear to 0.001 dB.
+    1.596 / 2.701 / 3.808 dB, linear to 0.001 dB.
   * The conventional tips' staircases are not linear (residual
     0.06 / 0.08 dB).
 * **It persists with exact geometry values at the same sections.** L3 still
-  loses 0.60 dB of TE (§6, previous formulas); 0.12 / 0.10 dB (TE/TM) of
-  its loss is snapping and corners.
+  loses 0.60 dB of TE (§6); 0.12 / 0.10 dB (TE/TM) of its loss is
+  snapping and corners.
 
 So this term is mostly the steps, with no adiabatic component beyond
 0.01 dB (TE, 1260 nm).
@@ -702,16 +683,16 @@ part.
 |---|---|---|
 | 1260 nm | 0.02 dB (0.01 of it L3) | 0.01 dB |
 | 1310 nm | 0.00 dB | 0.04 dB (0.03 of it L2, at its minimum at 2.4×) |
-| 1360 nm | 0.02 dB | 0.12 dB (0.10 of it L2, at its minimum at 2.8×) |
+| 1360 nm | 0.02 dB | 0.12 dB (0.09 of it L2, at its minimum at 2.8×) |
 
 Where TE rises from 1.2–1.7×, a slower adiabatic fall could be hidden
 underneath. The TE figures are a bound set by that onset, not a measurement.
 
 | 1310 nm, dB (2.5 nm tip, before leakage) | main path | corner-free 1× | 2× | 3× | linear 0× | corners |
 |---|---|---|---|---|---|---|
-| bilayer TE | 1.868 | 1.597 | 2.701 | 3.808 | 0.491 | 0.271 |
-| bilayer TM | 1.828 | 1.769 | 2.363 | 2.961 | 1.172 | 0.059 |
-| conventional TE | 2.076 | 2.127 | 2.852 | 3.753 | 1.285 | −0.051 |
+| bilayer TE | 1.867 | 1.596 | 2.701 | 3.808 | 0.490 | 0.271 |
+| bilayer TM | 1.833 | 1.774 | 2.368 | 2.966 | 1.177 | 0.059 |
+| conventional TE | 2.076 | 2.126 | 2.852 | 3.752 | 1.284 | −0.051 |
 | conventional TM | 5.288 | 5.311 | 5.855 | 6.148 | 4.935 | −0.023 |
 
 **The linear intercept is not the smooth device.** The merge factor is not the
@@ -735,15 +716,15 @@ intercept removes 1.38 dB from a stretch that loses only 1.09 dB in all.
 | dB / facet | oxide launch, 10 nm | full-stack launch, 10 nm | tip | join→L3 | its length-dependent part | **best estimate** | conservative | paper 3D-FDTD | measured † |
 |---|---|---|---|---|---|---|---|---|---|
 | **1310 nm, bilayer TE** | 1.90 | 1.99 | −0.03 | 1.09 | 0.00 | **0.86** | 1.68 | 0.77 | 1.16 |
-| **1310 nm, bilayer TM** | 2.01 | 2.20 | −0.03 | 0.62 | 0.04 | **1.58** | 2.10 | 1.09 | 1.62 |
+| **1310 nm, bilayer TM** | 2.01 | 2.19 | −0.02 | 0.62 | 0.04 | **1.59** | 2.11 | 1.09 | 1.62 |
 | 1310 nm, conventional TE | 2.13 | 2.14 | −0.15 | 0.74 | 0.00 | 1.24 | 1.99 | 1.13 | — |
 | 1310 nm, conventional TM | 5.36 | 5.31 | −0.29 | 0.46 | 0.00 | 4.56 | 5.02 | 3.56 | — |
-| 1260 nm, bilayer TE | 2.06 | 2.09 | −0.07 | 1.12 | 0.02 | 0.93 | 1.75 | 0.89 | 1.27 |
-| 1260 nm, bilayer TM | 2.21 | 2.30 | −0.05 | 0.71 | 0.01 | 1.56 | 2.19 | 1.10 | 1.54 |
+| 1260 nm, bilayer TE | 2.06 | 2.09 | −0.07 | 1.12 | 0.02 | 0.92 | 1.75 | 0.89 | 1.27 |
+| 1260 nm, bilayer TM | 2.21 | 2.30 | −0.04 | 0.71 | 0.01 | 1.56 | 2.20 | 1.10 | 1.54 |
 | 1260 nm, conventional TE | 2.65 | 2.64 | −0.18 | 0.82 | 0.01 | 1.66 | 2.46 | 1.33 | — |
 | 1260 nm, conventional TM | 6.60 | 6.55 | −0.35 | 0.54 | 0.00 | 5.66 | 6.19 | 4.76 | — |
-| 1360 nm, bilayer TE | 1.82 | 1.97 | −0.01 | 1.05 | 0.02 | 0.94 | 1.70 | 0.87 | 1.25 |
-| 1360 nm, bilayer TM | 2.28 | 2.40 | −0.00 | 0.65 | 0.12 | 1.87 | 2.34 | 1.23 | 1.45 |
+| 1360 nm, bilayer TE | 1.82 | 1.98 | −0.01 | 1.05 | 0.02 | 0.94 | 1.70 | 0.87 | 1.25 |
+| 1360 nm, bilayer TM | 2.28 | 2.40 | +0.00 | 0.64 | 0.12 | 1.88 | 2.35 | 1.23 | 1.45 |
 | 1360 nm, conventional TE | 1.88 | 1.92 | −0.09 | 0.70 | 0.00 | 1.14 | 1.83 | 0.92 | — |
 | 1360 nm, conventional TM | 4.40 | 4.37 | −0.18 | 0.38 | 0.00 | 3.81 | 4.19 | 2.71 | — |
 
@@ -753,13 +734,13 @@ intercept removes 1.38 dB from a stretch that loses only 1.09 dB in all.
 * † Fig. 8 trace, median over ±1 nm. The paper's text gives 1.18 / 1.46 dB
   at 1310 nm.
 
-**TE agrees.** The bilayer TE best estimate is within +0.04 / +0.09 /
+**TE agrees.** The bilayer TE best estimate is within +0.03 / +0.09 /
 +0.07 dB of the paper's FDTD at 1260 / 1310 / 1360 nm. Part of this is
 compensation: at 1310 nm the TE facet overlap is 0.024 above the paper's
 (0.872 against 0.848, 0.12 dB), so the rest of the TE device runs ~0.2 dB
 above the FDTD.
 
-**TM is 0.46–0.64 dB high**, and the excess is polarisation-specific. The
+**TM is 0.47–0.64 dB high**, and the excess is polarisation-specific. The
 model identifies these contributors; they overlap, so they are not an
 additive account:
 
@@ -769,19 +750,19 @@ additive account:
 * the tip on the full stack: TM loses 0.14 dB between the facet and the
   join, from tip evolution plus substrate leakage (TE loses 0.08 dB there).
   The paper does not state whether its FDTD included the Si substrate;
-* at 1360 nm, a 0.10 dB length-dependent TM loss in the height converter.
+* at 1360 nm, a 0.09 dB length-dependent TM loss in the height converter.
 
-**PDL:** 0.63 / 0.72 / 0.94 dB, against the paper's simulated 0.21 / 0.32 /
+**PDL:** 0.64 / 0.73 / 0.94 dB, against the paper's simulated 0.21 / 0.32 /
 0.37 dB and its measured 0.48 dB. The gate fails at every wavelength.
 
-* At 1310 nm about half of the 0.40 dB excess over the paper's PDL is the
+* At 1310 nm about half of the 0.41 dB excess over the paper's PDL is the
   facet. Its TE/TM order is reversed (§3), worth 0.20 dB: TE couples 0.12 dB
   better and TM 0.08 dB worse than the paper's eq. (1).
 * The rest is the TM terms above.
 
-* The conservative bound's PDL is lower (0.44 / 0.42 / 0.64 dB), but only
+* The conservative bound's PDL is lower (0.45 / 0.43 / 0.65 dB), but only
   because the arm-step loss it keeps is larger for TE than for TM.
-* The lower bound's PDL is 0.64 / 0.68 / 0.84 dB.
+* The lower bound's PDL is 0.65 / 0.69 / 0.84 dB.
 
 **The conventional TM penalty** (TM − TE) is 4.0 / 3.3 / 2.7 dB, falling with
 wavelength as in Fig. 5 (paper 3.4 / 2.4 / 1.8 dB). The trend is the paper's.
@@ -837,7 +818,7 @@ The segment boundaries differ from §4.3's partition by one section.
 
 | segment | T at Table 1, TE / TM | length dependence |
 |---|---|---|
-| L1 (double tip) | 0.866 / 0.954 † | TE improves up to ~50 µm (0.62 → 0.52 dB) and collapses below 10 µm; TM 0.21 → 0.17 dB at ~39 µm: the clearest adiabatic knee |
+| L1 (double tip) | 0.866 / 0.954 † | TE improves up to ~50 µm (0.62 → 0.52 dB) and collapses below 10 µm; TM 0.20 → 0.17 dB at ~39 µm: the clearest adiabatic knee |
 | L2 (height converter) | 0.927 / 0.948 | TE within 0.33–0.40 dB (mostly 0.33–0.36) from ~6.5 to ~46 µm, 0.51 dB at 100 µm; TM gains ~0.06 dB up to ~46–59 µm |
 | L3 | 0.850 / 0.904 | **flat from 2.3 to 115 µm** (TE 0.708 dB throughout): per step, not per length |
 | Lt | 0.829 / 0.942 | still improves with length at its Table 1 value: TE 0.81 → 0.31 dB at ~31 µm and back to 0.98 dB at 40 µm (fundamental to fundamental; in the device the MMI's higher modes re-image) |
@@ -852,11 +833,11 @@ ratio; the full-stack march gives the tip's physical loss (§4.2).
 puts its TM penalty in the height converter, where "the optical field
 dissipates into the cladding".
 
-* **What the converter loses.** With exact geometry values (§6, previous
-  formulas) it loses 0.12 dB of TM against 0.03 dB of TE, a difference of
+* **What the converter loses.** With exact geometry values (§6) it loses
+  0.11 dB of TM against 0.03 dB of TE, a difference of
   0.08 dB. Most of that is step loss, which exact values keep.
 * **The length-dependent part.** That part, which a smooth converter would
-  keep, is 0.01 / 0.03 / 0.10 dB of TM at 1260 / 1310 / 1360 nm (§4.3).
+  keep, is 0.01 / 0.03 / 0.09 dB of TM at 1260 / 1310 / 1360 nm (§4.3).
   Against the paper's 0.21–0.37 dB PDL, that is a partial reproduction at
   1360 nm only.
 * **Where the model puts the larger TM excess instead:** at the wedge MMI,
@@ -878,26 +859,19 @@ no cache, no tracking. It runs in two versions:
   step. So it measures snapping and corners at a fixed section count, not
   the z-discretisation.
 
-The two aligned stretches were re-run on the current code:
+All six runs are on the current code (2026-10-02, reciprocal projection on),
+so both sides of every row use the same interface formulas:
 
 | stretch (1310 nm, bilayer) | sections | DBEME TE / TM | direct TE / TM | \|ΔT\| TE / TM | direct time |
 |---|---|---|---|---|---|
-| tip 0–25 µm, **aligned** | 25 | 0.8620 / 0.9557 | 0.8620 / 0.9557 | **2.1e-6 / 2.2e-6** | 849 s |
-| MMI + output 76–86.5 µm, **aligned** | 35 | 0.7807 / 0.8174 | 0.7807 / 0.8174 | **1.4e-7 / 8.7e-7** | 2 054 s |
+| tip 0–25 µm, **aligned** | 25 | 0.8620 / 0.9558 | 0.8620 / 0.9558 | **6.3e-7 / 9.2e-7** | 1 184 s |
+| MMI + output 76–86.5 µm, **aligned** | 35 | 0.7807 / 0.8174 | 0.7807 / 0.8174 | **1.5e-7 / 2.8e-7** | 3 076 s |
+| L1 0–25 µm, exact values | 25 | 0.8620 / 0.9558 | 0.8821 / 0.9547 | 0.020 / 0.001 | 2 220 s |
+| L2 25–45 µm, exact values | 78 | 0.9321 / 0.9590 | 0.9927 / 0.9745 | 0.061 / 0.016 | 7 299 s |
+| L3 45–68 µm, exact values | 75 | 0.8490 / 0.9040 | 0.8718 / 0.9244 | 0.023 / 0.020 | 7 971 s |
+| MMI + output, exact values | 35 | 0.7807 / 0.8174 | 0.7760 / 0.8148 | 0.005 / 0.003 | 3 275 s |
 
-The exact-value runs predate the corrections, and both of their sides used
-upstream's reflection block and the column cap. Their differences are
-between two runs of the same formulas, but their absolute values are not
-current:
-
-| stretch (1310 nm, bilayer), previous formulas | sections | DBEME TE / TM | direct TE / TM | \|ΔT\| TE / TM | direct time |
-|---|---|---|---|---|---|
-| L1 0–25 µm, exact values | 25 | 0.8443 / 0.9450 | 0.8718 / 0.9492 | 0.028 / 0.004 | 3 955 s |
-| L2 25–45 µm, exact values | 78 | 0.9305 / 0.9562 | 0.9928 / 0.9736 | 0.062 / 0.017 | 9 333 s |
-| L3 45–68 µm, exact values | 75 | 0.8490 / 0.9040 | 0.8717 / 0.9244 | 0.023 / 0.020 | 11 303 s |
-| MMI + output, exact values | 35 | 0.7806 / 0.8174 | 0.7760 / 0.8148 | 0.005 / 0.003 | 5 680 s |
-
-**The aligned comparisons agree to ≤ 2.2e-6 on both stretches.** One is the
+**The aligned comparisons agree to ≤ 9.2e-7 on both stretches.** One is the
 near-cutoff tip with its continuum, where tracking and gauge are hardest; the
 other is the MMI with the abrupt face. So the method adds nothing to what the
 cross sections contain.
@@ -907,36 +881,37 @@ cross sections contain.
   against a direct EME.
 * The DBEME column is each stretch's own cascade.
 * Cut from the device's own path, the same sections differ from the direct
-  result by ≤ 3.6e-5 on the tip and 8.7e-7 on the MMI (`archive_checks.json`).
+  result by ≤ 3.7e-5 on the tip and 2.8e-7 on the MMI (`archive_checks.json`).
   * The difference comes from the path the stretch is cut from: `direct.py`
     builds a path that ends 2 µm past the stretch, while `archive_checks.py`
     uses the full device path. Both cascade only the stretch's own sections.
   * The MMI stretch ends at the device end, so there the two paths coincide.
-* Before the corrections the same checks gave 9.1e-6 / 1.1e-5 and
-  3.6e-7 / 5.0e-6.
-* The full 280-section device was not run aligned (~3–5 h at the re-runs'
-  34–59 s per point).
+* Before the reciprocal projection the same checks gave 2.1e-6 / 2.2e-6 and
+  1.4e-7 / 8.7e-7, and before the 2026-09-30 corrections 9.1e-6 / 1.1e-5
+  and 3.6e-7 / 5.0e-6.
+* The full 280-section device was not run aligned (~4–7 h at the re-runs'
+  47–88 s per point).
 
-**The exact-value runs isolate the snapping and the corners** (previous
-formulas). The corrections moved the aligned L1 cascade from 0.8443 / 0.9450
-to 0.8620 / 0.9557, against < 0.002 on L2, L3 and the MMI, so the L1 row is
-the least current:
+**The exact-value runs isolate the snapping and the corners**, as
+10 log₁₀(direct / DBEME) per stretch:
 
 | stretch | TE | TM |
 |---|---|---|
-| L1 | 0.14 dB | 0.02 dB |
-| L2 (the corners, matching §4.3) | 0.28 dB | 0.08 dB |
+| L1 | 0.10 dB | −0.00 dB |
+| L2 (the corners, matching §4.3) | 0.27 dB | 0.07 dB |
 | L3 | 0.12 dB | 0.10 dB |
 | MMI | −0.03 dB | −0.01 dB |
 
-The DBEME column uses each stretch's own first and last sections, under the
-previous formulas. On the current code the same 78 sections of L2 give
-0.9321 / 0.9589 (`archive_checks.json`); §5's boundaries differ by one
-section, hence 0.927 / 0.948 there.
+The L1 row moved most with the corrections (0.14 / 0.02 dB before them): its
+old DBEME side predated all four. The DBEME column uses each stretch's own
+first and last sections. Cut from the device's path, the same 78 sections of
+L2 give 0.9321 / 0.9590 (`archive_checks.json`); §5's boundaries differ by
+one section, hence 0.927 / 0.948 there.
 
-**Cost:** the direct runs take 0.24–3.1 h per stretch (aligned: 849 s and
-2 054 s on the current code; exact-value: 1.1–3.1 h). The same stretches from
-the cache take well under a second.
+**Cost:** the direct runs take 0.3–2.2 h per stretch (aligned:
+1 184 s and 3 076 s; exact-value: 0.6–2.2 h), on four threads each with four
+runs sharing the P-cores. The same stretches from the cache take well under a
+second.
 
 ## 7. Optimisation (Phase 4)
 
@@ -961,30 +936,31 @@ the cache take well under a second.
 
 | lengths (µm) | L1 | L2 | L3 | Lt | Lm | L_out | total | objective (dB) |
 |---|---|---|---|---|---|---|---|---|
-| Table 1 | 25 | 20 | 23 | 8 | 2.5 | 8 | 86.5 | 2.059 (1310) / 2.284 (band) |
-| L-BFGS-B from Table 1, 1310 nm | 23.56 | 19.66 | 22.96 | 7.95 | 2.25 | 8.00 | 84.4 | 1.841 |
-| L-BFGS-B from Table 1, band | 21.79 | 21.21 | 22.94 | 8.70 | 2.17 | 7.98 | 84.8 | 2.054 |
-| CMA-ES + polish, 1310 nm | 43.38 | 19.47 | 42.09 | 2.05 | 2.30 | 12.48 | 121.8 | **1.755** (TE 1.753, TM 1.754) |
-| CMA-ES + polish, band | 20.54 | 31.33 | 20.92 | 9.03 | 2.18 | 8.29 | 92.3 | **2.024** (worst: 2.21 / 1.84 / 1.92) |
+| Table 1 | 25 | 20 | 23 | 8 | 2.5 | 8 | 86.5 | 2.058 (1310) / 2.282 (band) |
+| L-BFGS-B from Table 1, 1310 nm | 23.60 | 19.64 | 22.95 | 7.94 | 2.25 | 8.01 | 84.4 | 1.840 |
+| L-BFGS-B from Table 1, band | 21.30 | 21.64 | 22.84 | 9.03 | 2.19 | 7.96 | 85.0 | 2.048 |
+| CMA-ES + polish, 1310 nm | 30.94 | 31.33 | 57.04 | 2.02 | 2.36 | 13.57 | 137.3 | **1.739** (TE 1.731, TM 1.714) |
+| CMA-ES + polish, band | 19.85 | 30.55 | 25.74 | 10.09 | 2.11 | 7.35 | 95.7 | **2.028** (worst: 2.26 / 1.90 / 1.85) |
 
 * **The cost.** An evaluation is one re-cascade of 280 cached sections per
   wavelength, fibre-offset scan included. The 480 CMA-ES candidates plus the
-  L-BFGS-B polish ran in 90 s (1310 nm) and 358 s (band, three cascades per
-  evaluation), after 37 s / 110 s of warm setup, with **no mode solve**.
+  L-BFGS-B polish ran in 144 s (1310 nm) and 286 s (band, three cascades per
+  evaluation), after 56 s / 161 s of warm setup, with **no mode solve**,
+  timed under load (other solver jobs shared the cores).
 * **L-BFGS-B.**
   * At 1310 nm it stops early: SciPy reports `ABNORMAL` after 5 iterations
-    and 50 evaluations. The surface is rugged, from MMI interference and
+    and 48 evaluations. The surface is rugged, from MMI interference and
     forward step coupling between modes.
-  * On the band it converges in 7 iterations, 0.03 dB short of the CMA-ES
+  * On the band it converges in 9 iterations, 0.02 dB short of the CMA-ES
     optimum.
 * **The short MMI access.** Only the 1310 nm search found it: Lt ≈ 2 µm,
   the 0.25× lower bound of the search box.
   * At fixed other lengths, Lt = 2.0 µm takes the worse polarisation at
     1310 nm from 2.01 to 1.87 dB, and it is still falling there, so a
     shorter access was not explored.
-  * The band optimum keeps Lt at 9 µm; its worst wavelength is 1260 nm.
-* **The band optimum at 1310 nm** reaches 1.84 dB (TE 1.84 / TM 1.82),
-  against 1.75 dB for the 1310-only search.
+  * The band optimum keeps Lt at 10 µm; its worst wavelength is 1260 nm.
+* **The band optimum at 1310 nm** reaches 1.90 dB (TE 1.90 / TM 1.87),
+  against 1.73 dB (the worse polarisation) for the 1310-only search.
 * **The MMI length is the sensitive one.** With the other lengths fixed, the
   worse polarisation goes from 1.86 dB at 2.17 µm to 5.74 dB at 4.9 µm, and
   back to 2.02 dB at 7 µm, the next image. Table 1's 2.5 µm sits near the
@@ -997,10 +973,19 @@ the cache take well under a second.
     0.05–0.17 dB.
   * Below ~10 µm the worse polarisation rises by more than 0.6 dB.
 * **What the 1310 nm optimum trades away.**
-  * It is 35 µm longer than Table 1, mostly in L1 (43 µm) and L3 (42 µm).
-  * L3 is flat at 1310 nm, so that part can likely go back to Table 1 at no
-    cost. Much of the rest of its gain sits in the MMI access, where our
-    geometry is a reading (Q3) rather than the paper's.
+  * It is 51 µm longer than Table 1, mostly in L3 (57 µm) and L2 (31 µm).
+  * L3 and the output taper are flat at 1310 nm in the 1-D scans (about
+    Table 1 and the L-BFGS-B optima; not checked about this one), so those
+    40 µm can likely go back to Table 1 at no cost. Much of the rest of its
+    gain sits in the MMI access, where our geometry is a reading (Q3) rather
+    than the paper's.
+  * **Where the optimum sits is not robust.** Before the reciprocal
+    projection (README → Fixed, "Reciprocal interface matrix") the same
+    seeded search ended at L1/L2/L3 = 43/19/42 µm (121.8 µm, 1.755 dB). The
+    projection moves the Table 1 objective by 0.001 dB, yet the two runs
+    part after 18 of 40 generations and end 15 µm apart in total length and
+    0.016 dB apart in objective. The surface is rugged and flat-bottomed:
+    only Lt ≈ 2 µm and Lm = 2.3–2.4 µm recur.
 
 ### 7.2 The facet: CMA-ES over `Wtip` and `g`
 
@@ -1050,9 +1035,9 @@ the 130 nm the paper chose "considering manufacturing capabilities".
 | facet overlap, 150 nm TE / TM (eq. 1) | 0.872 / 0.843 | 0.848 / 0.858 | +0.024 / −0.015 | material indices, mesh, the tips' sidewalls — none stated in the paper |
 | facet overlap, 220 nm TM | 0.375 | 0.428 | −0.053 | the most tightly bound tip mode: the most sensitive to index and cross section |
 | bilayer TE loss | 0.86 dB | 0.77 dB | +0.09 | at the lower bound of the lattice treatment (0.86 dB); not accounted for — index and cross-section differences as for the facet |
-| bilayer TM loss | 1.58 dB | 1.09 dB | +0.49 | TM-specific loss in the wedge MMI (0.48 dB TM against 0.10 dB TE, Q3 reading), facet 0.08 dB, the tip on the full stack 0.14 dB TM (tip evolution plus substrate leakage; TE loses 0.08 dB there) — contributors, not an additive account |
-| bilayer TM loss, 1360 nm | 1.87 dB | 1.23 dB | +0.64 | the MMI TM loss grows to 0.68 dB (TE 0.20); the tip's TM leakage and the converter's length-dependent TM loss grow too |
-| PDL, 1260–1360 nm | 0.63–0.94 dB | 0.21–0.37 dB | +0.40–0.57 | the facet's reversed TE/TM order (0.20 dB at 1310 nm) and the TM terms above |
+| bilayer TM loss | 1.59 dB | 1.09 dB | +0.50 | TM-specific loss in the wedge MMI (0.48 dB TM against 0.10 dB TE, Q3 reading), facet 0.08 dB, the tip on the full stack 0.14 dB TM (tip evolution plus substrate leakage; TE loses 0.08 dB there) — contributors, not an additive account |
+| bilayer TM loss, 1360 nm | 1.88 dB | 1.23 dB | +0.64 | the MMI TM loss grows to 0.68 dB (TE 0.20); the tip's TM leakage and the converter's length-dependent TM loss grow too |
+| PDL, 1260–1360 nm | 0.64–0.94 dB | 0.21–0.37 dB | +0.41–0.57 | the facet's reversed TE/TM order (0.20 dB at 1310 nm) and the TM terms above |
 | conventional TE loss | 1.24 dB | 1.13 dB | +0.11 | |
 | conventional TM loss | 4.56 dB | 3.56 dB | +1.00 | facet overlap 0.57 dB; MMI TM loss 0.48 dB (TE 0.10) — contributors, not an additive account |
 | TE ripple (150 nm: ~18–19 nm period) | not resolved | 0.1–0.2 dB | — | three wavelengths |
@@ -1069,29 +1054,32 @@ the 130 nm the paper chose "considering manufacturing capabilities".
     value, but it rises from 1.2–1.7×, where the step couplings dephase. So
     a slower adiabatic fall cannot be excluded.
   * A smooth-geometry EME would need several times more sections than the
-    3.1 h exact-value L3 run.
+    2.2 h exact-value L3 run.
   * At 1310 nm the three estimates span TE 0.86 / 0.86 / 1.68 dB and TM
-    1.54 / 1.58 / 2.10 dB (lower / best / conservative).
+    1.55 / 1.59 / 2.11 dB (lower / best / conservative).
   * The corners were measured at 1310 nm only.
   * The merged-step extrapolation over-corrects and is not used.
 * **Three wavelengths** of the seven the task names. 1280, 1300, 1320 and
   1340 nm were not built, for compute; only their `dataset_info.py` exists.
 * **The path basis is the oxide-only stack** away from the tip. Substrate
   leakage after the join is a first-order correction (≤ 0.09 dB).
-* **Numbers before the corrections.** The exact-value direct-EME runs (§6)
-  and the field planes of Fig. 4 predate the 2026-09-30 corrections.
 * **The column cap is off.** With it (opt-in) the losses read 0.00–0.12 dB
-  higher and reciprocity 4.1e-3 (§1, note 1).
+  higher and reciprocity, with the projection off, 4.1e-3 (§1, note 1).
 * **Passivity.** The device is passive at 0.733. On a truncated PML basis a
-  long lossy cascade need not be: report 13's 312-section path is not
-  (README, "Interface reflection block").
+  long lossy cascade need not be: report 13's 312-section path is not at
+  the default (38.9 over all outputs, the self-overlap transmission floor;
+  README, "Reciprocal interface matrix").
+* **The reciprocal projection is on** (the lossy default since 2026-10-01).
+  It removes each interface's antisymmetric reflection exactly at a zero
+  step and is an `O(A·δ)` error on a finite step's reflection (README). It
+  moved the best estimates by ≤ 0.009 dB.
 * **Q1–Q3** — the tip widening through L1–L3, the gap convention, the MMI
   access and the output taper — are this project's readings of what Table 1
   leaves open. The TM excess sits where Q3 acts.
 * **No facet Fresnel term:** the beam is launched in oxide. A lensed fibre in
   air adds ~0.15 dB (air/SiO₂).
 * **Other simplifications:** vertical sidewalls and no fabrication tolerance.
-  The reflection back into the fibre is ≤ 0.04 % at 1260–1310 nm and up to
+  The reflection back into the fibre is ≤ 0.02 % at 1260–1310 nm and up to
   0.11 % (bilayer TE, 1360 nm).
 
 ## Reproducing
